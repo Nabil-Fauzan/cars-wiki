@@ -23,8 +23,17 @@
                     <input type="text" name="model_id" value="{{ $duplicate->model_id ?? old('model_id') }}" placeholder="e.g. PC-911-GTS" class="w-full bg-surface-container border-none border-b border-outline-variant focus:ring-0 focus:border-primary text-on-surface p-3" required>
                 </div>
                 <div class="space-y-2">
-                    <label class="font-label-caps text-label-caps text-secondary">MAKE / BRAND</label>
+                    <label class="font-label-caps text-label-caps text-secondary">MAKE / BRAND (TITLE)</label>
                     <input type="text" name="make" value="{{ $duplicate->make ?? old('make') }}" placeholder="e.g. Porsche" class="w-full bg-surface-container border-none border-b border-outline-variant focus:ring-0 focus:border-primary text-on-surface p-3" required>
+                </div>
+                <div class="space-y-2">
+                    <label class="font-label-caps text-label-caps text-secondary">ASSOCIATED BRANDS (MULTI-SELECT)</label>
+                    <select name="brand_ids[]" multiple class="w-full bg-surface-container border-none border-b border-outline-variant focus:ring-0 focus:border-primary text-on-surface p-3 h-32">
+                        @foreach($brands as $brand)
+                            <option value="{{ $brand->id }}" {{ (isset($duplicate) && $duplicate->brands->contains($brand->id)) ? 'selected' : '' }}>{{ $brand->name }}</option>
+                        @endforeach
+                    </select>
+                    <p class="text-[10px] text-on-surface-variant italic">Hold Ctrl/Cmd to select multiple (e.g. Acura & Honda)</p>
                 </div>
                 <div class="space-y-2">
                     <label class="font-label-caps text-label-caps text-secondary">MODEL NAME</label>

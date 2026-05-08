@@ -20,8 +20,17 @@
             @method('PUT')
             <div class="grid grid-cols-1 md:grid-cols-2 gap-gutter">
                 <div class="space-y-2">
-                    <label class="font-label-caps text-label-caps text-secondary">MAKE / BRAND</label>
+                    <label class="font-label-caps text-label-caps text-secondary">MAKE / BRAND (TITLE)</label>
                     <input type="text" name="make" value="{{ $car->make }}" class="w-full bg-surface-container border-none border-b border-outline-variant focus:ring-0 focus:border-primary text-on-surface p-3" required>
+                </div>
+                <div class="space-y-2">
+                    <label class="font-label-caps text-label-caps text-secondary">ASSOCIATED BRANDS (MULTI-SELECT)</label>
+                    <select name="brand_ids[]" multiple class="w-full bg-surface-container border-none border-b border-outline-variant focus:ring-0 focus:border-primary text-on-surface p-3 h-32">
+                        @foreach($brands as $brand)
+                            <option value="{{ $brand->id }}" {{ $car->brands->contains($brand->id) ? 'selected' : '' }}>{{ $brand->name }}</option>
+                        @endforeach
+                    </select>
+                    <p class="text-[10px] text-on-surface-variant italic">Hold Ctrl/Cmd to select multiple</p>
                 </div>
                 <div class="space-y-2">
                     <label class="font-label-caps text-label-caps text-secondary">MODEL NAME</label>

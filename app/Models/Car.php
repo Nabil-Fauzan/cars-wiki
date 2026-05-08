@@ -15,4 +15,19 @@ class Car extends Model
         'engine' => 'array',
         'hp' => 'array',
     ];
+
+    public function brands()
+    {
+        return $this->belongsToMany(Brand::class);
+    }
+
+    public function comments()
+    {
+        return $this->hasMany(Comment::class);
+    }
+
+    public function favoritedBy()
+    {
+        return $this->belongsToMany(User::class);
+    }
 }

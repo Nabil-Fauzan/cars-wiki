@@ -6,8 +6,15 @@
             <div class="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent"></div>
             <div class="absolute bottom-margin-page left-margin-page right-margin-page max-w-container-max mx-auto">
                 <div class="flex flex-col gap-2">
-                    <span class="font-label-caps text-label-caps text-primary-fixed uppercase tracking-widest">{{ $car->category }} Series</span>
-                    <h1 class="font-headline-xl text-headline-xl text-on-surface">{{ $car->model }}</h1>
+                <div class="flex items-center gap-3">
+                    @foreach($car->brands as $brand)
+                        <span class="font-label-caps text-label-caps text-primary-fixed uppercase tracking-widest">{{ $brand->name }}</span>
+                        @if(!$loop->last) <span class="text-secondary/50">•</span> @endif
+                    @endforeach
+                    <span class="text-secondary/50 mx-2">|</span>
+                    <span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-widest">{{ $car->category }} Series</span>
+                </div>
+                <h1 class="font-headline-xl text-headline-xl text-on-surface">{{ $car->model }}</h1>
                     <div class="flex items-center gap-4 mt-stack-sm">
                         <a href="{{ route('compare') }}" class="bg-primary px-stack-md py-3 text-on-primary font-label-caps text-label-caps rounded-[4px] hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-2">
                             <span class="material-symbols-outlined">compare_arrows</span> Compare with another car
@@ -143,6 +150,63 @@
                         </ul>
                     </div>
                 </div>
+
+                <!-- Tactical Log (Comment Section) -->
+                <section class="mt-stack-lg space-y-stack-md">
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined text-primary">forum</span>
+                        <h3 class="font-label-caps text-label-caps text-on-surface">Tactical Discussion Log</h3>
+                    </div>
+
+                    @auth
+                        <form action="{{ route('comments.store', $car->id) }}" method="POST" class="glass-card p-stack-sm machined-edge space-y-3">
+                            @csrf
+                            <textarea name="content" rows="3" class="w-full bg-surface-container-low border-none border-b border-outline-variant focus:ring-0 focus:border-primary text-on-surface p-3 font-body-md" placeholder="Enter transmission data..." required></textarea>
+                            <div class="flex justify-end">
+                                <button type="submit" class="bg-primary text-on-primary px-6 py-2 font-label-caps text-label-caps hover:brightness-110 transition-all">DEPLOY COMMENT</button>
+                            </div>
+                        </form>
+                    @else
+                        <div class="glass-card p-stack-md machined-edge text-center border border-dashed border-outline-variant">
+                            <p class="font-body-md text-on-surface-variant mb-4">Authorization required to access tactical logs.</p>
+                            <a href="{{ route('login') }}" class="text-primary font-label-caps text-label-caps hover:underline">AUTHENTICATE NOW</a>
+                        </div>
+                    @endauth
+
+                    <div class="space-y-4">
+                        @forelse($car->comments()->latest()->get() as $comment)
+                            <div class="glass-card p-stack-sm machined-edge border border-outline-variant/10 group">
+                                <div class="flex justify-between items-start">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-8 h-8 rounded-full bg-surface-container-highest flex items-center justify-center font-bold text-primary text-xs">
+                                            {{ substr($comment->user->name, 0, 1) }}
+                                        </div>
+                                        <div>
+                                            <p class="font-label-caps text-xs text-primary">{{ $comment->user->name }}</p>
+                                            <p class="text-[10px] text-on-surface-variant font-mono">{{ $comment->created_at->diffForHumans() }}</p>
+                                        </div>
+                                    </div>
+                                    @if(Auth::id() === $comment->user_id)
+                                        <form action="{{ route('comments.destroy', $comment->id) }}" method="POST" class="opacity-0 group-hover:opacity-100 transition-opacity">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="text-error hover:scale-110 transition-transform">
+                                                <span class="material-symbols-outlined text-sm">delete</span>
+                                            </button>
+                                        </form>
+                                    @endif
+                                </div>
+                                <div class="mt-3 font-body-md text-on-surface leading-relaxed">
+                                    {{ $comment->content }}
+                                </div>
+                            </div>
+                        @empty
+                            <div class="py-10 text-center">
+                                <p class="font-body-md text-on-surface-variant opacity-50 italic">No tactical data recorded for this specimen.</p>
+                            </div>
+                        @endforelse
+                    </div>
+                </section>
             </div>
 
             <!-- Right Column: Gallery & Related -->

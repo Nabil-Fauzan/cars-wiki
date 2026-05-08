@@ -48,9 +48,51 @@
                         <span class="material-symbols-outlined text-on-surface-variant">favorite</span>
                     </button>
                     @auth
-                        <a href="{{ route('dashboard') }}" class="p-2 hover:bg-white/5 rounded-full transition-colors active:scale-95">
-                            <span class="material-symbols-outlined text-on-surface-variant">admin_panel_settings</span>
-                        </a>
+                        <div class="relative" x-data="{ open: false }">
+                            <button @click="open = !open" @click.away="open = false" class="flex items-center gap-3 pl-3 pr-1 py-1 bg-surface-container-high hover:bg-surface-container-highest rounded-full border border-outline-variant/30 transition-all active:scale-95">
+                                <span class="font-label-caps text-[10px] text-primary hidden md:block">{{ Auth::user()->name }}</span>
+                                <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center font-bold text-on-primary text-xs">
+                                    {{ substr(Auth::user()->name, 0, 1) }}
+                                </div>
+                            </button>
+
+                            <!-- Dropdown Menu -->
+                            <div x-show="open" 
+                                 x-transition:enter="transition ease-out duration-200"
+                                 x-transition:enter-start="opacity-0 scale-95"
+                                 x-transition:enter-end="opacity-100 scale-100"
+                                 x-transition:leave="transition ease-in duration-75"
+                                 x-transition:leave-start="opacity-100 scale-100"
+                                 x-transition:leave-end="opacity-0 scale-95"
+                                 class="absolute right-0 mt-3 w-56 glass-card machined-edge border border-outline-variant/50 shadow-2xl py-2 z-[60]"
+                                 style="display: none;">
+                                
+                                <div class="px-4 py-2 border-b border-outline-variant/20 mb-2">
+                                    <p class="text-[10px] font-label-caps text-secondary">Authorized Operator</p>
+                                    <p class="font-body-md text-on-surface truncate">{{ Auth::user()->email }}</p>
+                                </div>
+
+                                <a href="{{ route('dashboard') }}" class="flex items-center gap-3 px-4 py-2 text-on-surface hover:bg-primary/10 hover:text-primary transition-colors">
+                                    <span class="material-symbols-outlined text-sm">dashboard</span>
+                                    <span class="font-label-caps text-xs">Admin Dashboard</span>
+                                </a>
+
+                                <a href="{{ route('profile.edit') }}" class="flex items-center gap-3 px-4 py-2 text-on-surface hover:bg-primary/10 hover:text-primary transition-colors">
+                                    <span class="material-symbols-outlined text-sm">person_gear</span>
+                                    <span class="font-label-caps text-xs">Profile Settings</span>
+                                </a>
+
+                                <div class="border-t border-outline-variant/20 mt-2 pt-2">
+                                    <form method="POST" action="{{ route('logout') }}">
+                                        @csrf
+                                        <button type="submit" class="w-full flex items-center gap-3 px-4 py-2 text-error hover:bg-error/10 transition-colors">
+                                            <span class="material-symbols-outlined text-sm">logout</span>
+                                            <span class="font-label-caps text-xs uppercase">Terminate Session</span>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
                     @else
                         <a href="{{ route('login') }}" class="font-label-caps text-label-caps text-secondary hover:text-primary transition-colors">LOGIN</a>
                     @endauth

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 
 use App\Models\Car;
+use App\Models\Brand;
 use Illuminate\Support\Facades\DB;
 
 class CarController extends Controller
@@ -138,7 +139,8 @@ class CarController extends Controller
 
     public function create()
     {
-        return view('cars.create');
+        $brands = Brand::orderBy('name')->get();
+        return view('cars.create', compact('brands'));
     }
 
     public function store(Request $request)
@@ -158,6 +160,8 @@ class CarController extends Controller
             'torque' => 'nullable',
             'transmission' => 'nullable',
             'drivetrain' => 'nullable',
+            'brand_ids' => 'nullable|array',
+            'brand_ids.*' => 'exists:brands,id',
         ]);
 
         $pros = $request->pros ? explode("\n", str_replace("\r", "", $request->pros)) : [];
@@ -174,6 +178,10 @@ class CarController extends Controller
             'gallery' => $gallery,
         ]);
 
+        if ($request->has('brand_ids')) {
+            $car->brands()->sync($request->brand_ids);
+        }
+
         $car->update(['data_completion' => $this->calculateCompletion($car)]);
 
         return redirect()->route('dashboard')->with('success', 'Asset deployed successfully.');
@@ -181,7 +189,8 @@ class CarController extends Controller
 
     public function edit(Car $car)
     {
-        return view('cars.edit', compact('car'));
+        $brands = Brand::orderBy('name')->get();
+        return view('cars.edit', compact('car', 'brands'));
     }
 
     public function duplicate(Car $car)
@@ -190,7 +199,11 @@ class CarController extends Controller
         $newCar = $car->replicate();
         $newCar->model_id = $car->model_id . '-COPY';
         
-        return view('cars.create', ['duplicate' => $newCar]);
+        // Load brands for the replicated object to use in view
+        $newCar->setRelation('brands', $car->brands);
+        
+        $brands = Brand::orderBy('name')->get();
+        return view('cars.create', ['duplicate' => $newCar, 'brands' => $brands]);
     }
 
     public function update(Request $request, Car $car)
@@ -210,6 +223,8 @@ class CarController extends Controller
             'torque' => 'nullable',
             'transmission' => 'nullable',
             'drivetrain' => 'nullable',
+            'brand_ids' => 'nullable|array',
+            'brand_ids.*' => 'exists:brands,id',
         ]);
 
         $pros = $request->pros ? explode("\n", str_replace("\r", "", $request->pros)) : [];
@@ -225,6 +240,12 @@ class CarController extends Controller
             'hp' => $hp,
             'gallery' => $gallery,
         ]);
+
+        if ($request->has('brand_ids')) {
+            $car->brands()->sync($request->brand_ids);
+        } else {
+            $car->brands()->detach();
+        }
 
         $car->update(['data_completion' => $this->calculateCompletion($car)]);
 
