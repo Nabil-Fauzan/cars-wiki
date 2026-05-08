@@ -36,7 +36,7 @@
                         <a class="font-headline-md text-headline-md {{ request()->is('cars*') ? 'text-primary border-b-2 border-primary' : 'text-secondary hover:text-on-surface' }} pb-1 transition-all duration-200" href="{{ route('cars.index') }}">Explore Cars</a>
                         <a class="font-headline-md text-headline-md {{ request()->is('compare*') ? 'text-primary border-b-2 border-primary' : 'text-secondary hover:text-on-surface' }} pb-1 transition-all duration-200" href="{{ route('compare') }}">Compare</a>
                         <a class="font-headline-md text-headline-md {{ request()->is('brands*') ? 'text-primary border-b-2 border-primary' : 'text-secondary hover:text-on-surface' }} pb-1 transition-all duration-200" href="{{ route('brands') }}">Brands</a>
-                        <a class="font-headline-md text-headline-md text-secondary hover:text-on-surface transition-colors active:scale-[0.98] transition-all duration-200" href="#">Categories</a>
+                        <a class="font-headline-md text-headline-md {{ request()->is('categories*') ? 'text-primary border-b-2 border-primary' : 'text-secondary hover:text-on-surface' }} pb-1 transition-all duration-200" href="{{ route('categories') }}">Categories</a>
                     </div>
                 </div>
                 <div class="flex items-center gap-stack-sm">

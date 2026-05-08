@@ -12,29 +12,24 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // 1. First convert year to string (safe)
+        // 1. Temporarily change to string to allow JSON data
         Schema::table('cars', function (Blueprint $table) {
-            $table->string('year')->change();
+            $table->string('hp')->nullable()->change();
         });
 
-        // 2. Temporarily ensure engine is string/text to hold JSON
-        Schema::table('cars', function (Blueprint $table) {
-            $table->text('engine')->nullable()->change();
-        });
-
-        // 3. Convert existing strings to JSON format
+        // 2. Convert existing integers/strings to JSON format
         $cars = DB::table('cars')->get();
         foreach ($cars as $car) {
-            if ($car->engine && !str_starts_with($car->engine, '[')) {
+            if ($car->hp && !str_starts_with($car->hp, '[')) {
                 DB::table('cars')->where('id', $car->id)->update([
-                    'engine' => json_encode([$car->engine])
+                    'hp' => json_encode([(string)$car->hp])
                 ]);
             }
         }
 
-        // 4. Finalize engine as json
+        // 3. Finalize as json
         Schema::table('cars', function (Blueprint $table) {
-            $table->json('engine')->nullable()->change();
+            $table->json('hp')->nullable()->change();
         });
     }
 
@@ -44,8 +39,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('cars', function (Blueprint $table) {
-            $table->integer('year')->change();
-            $table->string('engine')->nullable()->change();
+            $table->integer('hp')->nullable()->change();
         });
     }
 };

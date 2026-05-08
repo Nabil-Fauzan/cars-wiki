@@ -13,8 +13,36 @@ class CarController extends Controller
     {
         $query = Car::where('status', 'Live');
         
-        if ($request->has('brand')) {
+        // Search Filter
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('make', 'LIKE', "%{$search}%")
+                  ->orWhere('model', 'LIKE', "%{$search}%");
+            });
+        }
+
+        // Brand Filter
+        if ($request->filled('brand')) {
             $query->where('make', $request->brand);
+        }
+
+        // Category Filter
+        if ($request->filled('category')) {
+            $query->where('category', $request->category);
+        }
+
+        // Horsepower Filter (e.g. 400+, 600+)
+        if ($request->filled('hp')) {
+            $minHp = (int) str_replace('+', '', $request->hp);
+            // Since hp is JSON array of strings like ["145 hp (NA)"], 
+            // we use whereRaw to extract the first number and compare.
+            $query->whereRaw("CAST(REGEXP_REPLACE(JSON_UNQUOTE(JSON_EXTRACT(hp, '$[0]')), '[^0-9]', '') AS UNSIGNED) >= ?", [$minHp]);
+        }
+
+        // Transmission Filter
+        if ($request->filled('transmission')) {
+            $query->where('transmission', 'LIKE', '%' . $request->transmission . '%');
         }
 
         $sort = $request->get('sort', 'newest');
@@ -23,12 +51,17 @@ class CarController extends Controller
         } elseif ($sort == 'best') {
             $query->orderBy('data_completion', 'desc');
         } else {
-            // Default newest - sorting by production year (string) or creation date
             $query->orderBy('year', 'desc')->latest();
         }
 
         $cars = $query->get();
-        return view('welcome', compact('cars'));
+
+        // Fetch dynamic options for filters
+        $brands = Car::where('status', 'Live')->distinct()->pluck('make')->sort();
+        $categories = Car::where('status', 'Live')->whereNotNull('category')->distinct()->pluck('category')->sort();
+        $transmissions = ['Manual', 'Automatic', 'PDK', 'Dual-Clutch', 'Sequential'];
+
+        return view('welcome', compact('cars', 'brands', 'categories', 'transmissions'));
     }
 
     public function brands()
@@ -40,6 +73,16 @@ class CarController extends Controller
         return view('brands.index', compact('brands'));
     }
 
+    public function categories()
+    {
+        $categories = Car::where('status', 'Live')
+            ->whereNotNull('category')
+            ->select('category', DB::raw('count(*) as total'), DB::raw('MAX(image_url) as image'))
+            ->groupBy('category')
+            ->get();
+        return view('categories.index', compact('categories'));
+    }
+
     public function show(string $model_id)
     {
         $car = Car::where('model_id', $model_id)->firstOrFail();
@@ -47,14 +90,33 @@ class CarController extends Controller
         return view('cars.show', compact('car', 'rivals'));
     }
 
-    public function dashboard()
+    public function dashboard(Request $request)
     {
-        $cars = Car::latest()->get();
+        $query = Car::latest();
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('make', 'LIKE', "%{$search}%")
+                  ->orWhere('model', 'LIKE', "%{$search}%")
+                  ->orWhere('model_id', 'LIKE', "%{$search}%");
+            });
+        }
+
+        $cars = $query->get();
         $stats = [
             'total' => Car::count(),
-            'completion' => Car::avg('data_completion'),
+            'completion' => Car::avg('data_completion') ?? 0,
         ];
         return view('dashboard', compact('cars', 'stats'));
+    }
+
+    public function toggleStatus(Car $car)
+    {
+        $car->update([
+            'status' => $car->status == 'Live' ? 'Draft' : 'Live'
+        ]);
+        return back()->with('success', 'Status updated for ' . $car->model_id);
     }
 
     public function compare(Request $request)
@@ -86,7 +148,6 @@ class CarController extends Controller
             'make' => 'required',
             'model' => 'required',
             'year' => 'required|string',
-            'hp' => 'nullable|integer',
             'category' => 'nullable',
             'image_url' => 'nullable|url',
             'zero_to_sixty' => 'nullable|numeric',
@@ -102,12 +163,15 @@ class CarController extends Controller
         $pros = $request->pros ? explode("\n", str_replace("\r", "", $request->pros)) : [];
         $cons = $request->cons ? explode("\n", str_replace("\r", "", $request->cons)) : [];
         $engine = array_filter([$request->engine_primary, $request->engine_secondary]);
+        $hp = array_filter([$request->hp_primary, $request->hp_secondary]);
+        $gallery = array_filter([$request->gallery_1, $request->gallery_2, $request->gallery_3]);
 
         $car = Car::create($validated + [
             'pros' => array_filter($pros),
             'cons' => array_filter($cons),
             'engine' => $engine,
-            'gallery' => [],
+            'hp' => $hp,
+            'gallery' => $gallery,
         ]);
 
         $car->update(['data_completion' => $this->calculateCompletion($car)]);
@@ -120,13 +184,21 @@ class CarController extends Controller
         return view('cars.edit', compact('car'));
     }
 
+    public function duplicate(Car $car)
+    {
+        // Replicate the car but remove unique model_id
+        $newCar = $car->replicate();
+        $newCar->model_id = $car->model_id . '-COPY';
+        
+        return view('cars.create', ['duplicate' => $newCar]);
+    }
+
     public function update(Request $request, Car $car)
     {
         $validated = $request->validate([
             'make' => 'required',
             'model' => 'required',
             'year' => 'required|string',
-            'hp' => 'nullable|integer',
             'status' => 'required',
             'category' => 'nullable',
             'image_url' => 'nullable|url',
@@ -143,11 +215,15 @@ class CarController extends Controller
         $pros = $request->pros ? explode("\n", str_replace("\r", "", $request->pros)) : [];
         $cons = $request->cons ? explode("\n", str_replace("\r", "", $request->cons)) : [];
         $engine = array_filter([$request->engine_primary, $request->engine_secondary]);
+        $hp = array_filter([$request->hp_primary, $request->hp_secondary]);
+        $gallery = array_filter([$request->gallery_1, $request->gallery_2, $request->gallery_3]);
 
         $car->update($validated + [
             'pros' => array_filter($pros),
             'cons' => array_filter($cons),
             'engine' => $engine,
+            'hp' => $hp,
+            'gallery' => $gallery,
         ]);
 
         $car->update(['data_completion' => $this->calculateCompletion($car)]);

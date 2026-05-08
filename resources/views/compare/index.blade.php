@@ -121,7 +121,9 @@
                                     $val2 = $car2->$key;
                                     $winner = null;
 
-                                    if (is_numeric($val1) && is_numeric($val2)) {
+                                    if ($key == 'make' || $key == 'category' || $key == 'engine' || $key == 'transmission' || $key == 'drivetrain' || $key == 'year') {
+                                        // Non-comparable text fields
+                                    } elseif (is_numeric($val1) && is_numeric($val2)) {
                                         if ($key == 'zero_to_sixty' || $key == 'braking' || $key == 'aerodynamics') {
                                             if ($val1 < $val2) $winner = 1;
                                             elseif ($val2 < $val1) $winner = 2;
@@ -129,6 +131,14 @@
                                             if ($val1 > $val2) $winner = 1;
                                             elseif ($val2 > $val1) $winner = 2;
                                         }
+                                    } elseif ($key == 'hp' && is_array($val1) && is_array($val2)) {
+                                        // Extract first number from HP string (e.g. "145 hp (NA)" -> 145)
+                                        preg_match('/\d+/', $val1[0] ?? '', $matches1);
+                                        preg_match('/\d+/', $val2[0] ?? '', $matches2);
+                                        $n1 = isset($matches1[0]) ? (int)$matches1[0] : 0;
+                                        $n2 = isset($matches2[0]) ? (int)$matches2[0] : 0;
+                                        if ($n1 > $n2) $winner = 1;
+                                        elseif ($n2 > $n1) $winner = 2;
                                     }
                                 @endphp
                                 <div class="grid grid-cols-1 md:grid-cols-3 border-b border-outline-variant/10">
@@ -139,6 +149,7 @@
                                         @elseif($key == 'braking') {{ $val1 }} FT
                                         @elseif($key == 'aerodynamics') {{ $val1 }} CD
                                         @elseif($key == 'engine' && is_array($val1)) {{ implode(' / ', $val1) }}
+                                        @elseif($key == 'hp' && is_array($val1)) {{ implode(' HP / ', $val1) }} HP
                                         @else {{ $val1 }} @endif
                                     </div>
                                     <div class="p-4 flex items-center justify-center font-body-md text-center border-l border-outline-variant/10 {{ $winner == 2 ? 'text-primary font-bold bg-primary/5' : 'text-on-surface' }}">
@@ -147,6 +158,7 @@
                                         @elseif($key == 'braking') {{ $val2 }} FT
                                         @elseif($key == 'aerodynamics') {{ $val2 }} CD
                                         @elseif($key == 'engine' && is_array($val2)) {{ implode(' / ', $val2) }}
+                                        @elseif($key == 'hp' && is_array($val2)) {{ implode(' HP / ', $val2) }} HP
                                         @else {{ $val2 }} @endif
                                     </div>
                                 </div>

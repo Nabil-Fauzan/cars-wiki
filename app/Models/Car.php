@@ -13,5 +13,6 @@ class Car extends Model
         'pros' => 'array',
         'cons' => 'array',
         'engine' => 'array',
+        'hp' => 'array',
     ];
 }

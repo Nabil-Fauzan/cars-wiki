@@ -94,8 +94,16 @@
                             </div>
                         </div>
                         <div class="grid grid-cols-2 p-stack-sm hover:bg-white/5 transition-colors">
-                            <span class="font-label-caps text-label-caps text-secondary">Horsepower</span>
-                            <span class="font-body-md text-body-md text-on-surface">{{ $car->hp }} HP</span>
+                            <span class="font-label-caps text-label-caps text-secondary">Horsepower Output</span>
+                            <div class="flex flex-col gap-1">
+                                @if(is_array($car->hp))
+                                    @foreach($car->hp as $rating)
+                                        <span class="font-body-md text-body-md text-on-surface">{{ $rating }} HP</span>
+                                    @endforeach
+                                @else
+                                    <span class="font-body-md text-body-md text-on-surface">{{ $car->hp }} HP</span>
+                                @endif
+                            </div>
                         </div>
                         <div class="grid grid-cols-2 p-stack-sm hover:bg-white/5 transition-colors">
                             <span class="font-label-caps text-label-caps text-secondary">Torque</span>
@@ -139,6 +147,20 @@
 
             <!-- Right Column: Gallery & Related -->
             <div class="lg:w-96 space-y-stack-lg">
+                <!-- Asset Gallery -->
+                @if(!empty($car->gallery))
+                    <section class="space-y-stack-sm">
+                        <h3 class="font-label-caps text-label-caps text-secondary">Asset Gallery</h3>
+                        <div class="grid grid-cols-2 gap-2">
+                            @foreach($car->gallery as $image)
+                                <div class="glass-card overflow-hidden aspect-video group cursor-zoom-in" onclick="openLightbox('{{ $image }}')">
+                                    <img src="{{ $image }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                                </div>
+                            @endforeach
+                        </div>
+                    </section>
+                @endif
+
                 <!-- Related Cars -->
                 <section class="space-y-stack-sm">
                     <h3 class="font-label-caps text-label-caps text-secondary">Recommended Rivals</h3>
@@ -158,6 +180,40 @@
                     </div>
                 </section>
             </div>
+
+            <!-- Lightbox Modal -->
+            <div id="lightbox" class="fixed inset-0 z-[100] bg-background/95 backdrop-blur-xl hidden flex items-center justify-center p-8 transition-all duration-300 opacity-0" onclick="closeLightbox()">
+                <img id="lightbox-img" src="" class="max-w-full max-h-full object-contain shadow-2xl scale-95 transition-transform duration-300">
+                <button class="absolute top-8 right-8 text-on-surface hover:text-primary transition-colors">
+                    <span class="material-symbols-outlined text-[40px]">close</span>
+                </button>
+            </div>
+
+            <script>
+                function openLightbox(src) {
+                    const lb = document.getElementById('lightbox');
+                    const img = document.getElementById('lightbox-img');
+                    img.src = src;
+                    lb.classList.remove('hidden');
+                    setTimeout(() => {
+                        lb.classList.add('flex', 'opacity-100');
+                        img.classList.remove('scale-95');
+                        img.classList.add('scale-100');
+                    }, 10);
+                }
+
+                function closeLightbox() {
+                    const lb = document.getElementById('lightbox');
+                    const img = document.getElementById('lightbox-img');
+                    lb.classList.remove('opacity-100');
+                    img.classList.remove('scale-100');
+                    img.classList.add('scale-95');
+                    setTimeout(() => {
+                        lb.classList.add('hidden');
+                        lb.classList.remove('flex');
+                    }, 300);
+                }
+            </script>
         </div>
     </main>
 </x-app-layout>

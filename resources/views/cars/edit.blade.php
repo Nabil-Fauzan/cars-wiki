@@ -32,8 +32,12 @@
                     <input type="text" name="year" value="{{ $car->year }}" class="w-full bg-surface-container border-none border-b border-outline-variant focus:ring-0 focus:border-primary text-on-surface p-3" required>
                 </div>
                 <div class="space-y-2">
-                    <label class="font-label-caps text-label-caps text-secondary">HORSEPOWER</label>
-                    <input type="number" name="hp" value="{{ $car->hp }}" class="w-full bg-surface-container border-none border-b border-outline-variant focus:ring-0 focus:border-primary text-on-surface p-3">
+                    <label class="font-label-caps text-label-caps text-secondary">HORSEPOWER PRIMARY (e.g. 145 (NA))</label>
+                    <input type="text" name="hp_primary" value="{{ $car->hp[0] ?? '' }}" class="w-full bg-surface-container border-none border-b border-outline-variant focus:ring-0 focus:border-primary text-on-surface p-3">
+                </div>
+                <div class="space-y-2">
+                    <label class="font-label-caps text-label-caps text-secondary">HORSEPOWER SECONDARY (OPTIONAL)</label>
+                    <input type="text" name="hp_secondary" value="{{ $car->hp[1] ?? '' }}" class="w-full bg-surface-container border-none border-b border-outline-variant focus:ring-0 focus:border-primary text-on-surface p-3">
                 </div>
                 <div class="space-y-2">
                     <label class="font-label-caps text-label-caps text-secondary">CATEGORY</label>
@@ -41,7 +45,10 @@
                 </div>
                 <div class="col-span-full space-y-2">
                     <label class="font-label-caps text-label-caps text-secondary">HERO IMAGE URL</label>
-                    <input type="url" name="image_url" value="{{ $car->image_url }}" class="w-full bg-surface-container border-none border-b border-outline-variant focus:ring-0 focus:border-primary text-on-surface p-3">
+                    <input type="url" name="image_url" value="{{ $car->image_url }}" data-preview="main-preview" class="preview-trigger w-full bg-surface-container border-none border-b border-outline-variant focus:ring-0 focus:border-primary text-on-surface p-3">
+                    <div id="main-preview" class="mt-2 w-32 h-20 bg-surface-container overflow-hidden rounded border border-outline-variant hidden">
+                        <img src="{{ $car->image_url }}" class="w-full h-full object-cover">
+                    </div>
                 </div>
                 <div class="space-y-2">
                     <label class="font-label-caps text-label-caps text-secondary">0-60 MPH (SECONDS)</label>
@@ -100,6 +107,29 @@
                     </select>
                 </div>
             </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-gutter">
+                <div class="space-y-2">
+                    <label class="font-label-caps text-label-caps text-secondary">GALLERY IMAGE 1 (URL)</label>
+                    <input type="url" name="gallery_1" value="{{ $car->gallery[0] ?? '' }}" data-preview="gal1-preview" class="preview-trigger w-full bg-surface-container border-none border-b border-outline-variant focus:ring-0 focus:border-primary text-on-surface p-3">
+                    <div id="gal1-preview" class="mt-2 w-20 h-14 bg-surface-container overflow-hidden rounded border border-outline-variant hidden">
+                        <img src="{{ $car->gallery[0] ?? '' }}" class="w-full h-full object-cover">
+                    </div>
+                </div>
+                <div class="space-y-2">
+                    <label class="font-label-caps text-label-caps text-secondary">GALLERY IMAGE 2 (URL)</label>
+                    <input type="url" name="gallery_2" value="{{ $car->gallery[1] ?? '' }}" data-preview="gal2-preview" class="preview-trigger w-full bg-surface-container border-none border-b border-outline-variant focus:ring-0 focus:border-primary text-on-surface p-3">
+                    <div id="gal2-preview" class="mt-2 w-20 h-14 bg-surface-container overflow-hidden rounded border border-outline-variant hidden">
+                        <img src="{{ $car->gallery[1] ?? '' }}" class="w-full h-full object-cover">
+                    </div>
+                </div>
+                <div class="space-y-2">
+                    <label class="font-label-caps text-label-caps text-secondary">GALLERY IMAGE 3 (URL)</label>
+                    <input type="url" name="gallery_3" value="{{ $car->gallery[2] ?? '' }}" data-preview="gal3-preview" class="preview-trigger w-full bg-surface-container border-none border-b border-outline-variant focus:ring-0 focus:border-primary text-on-surface p-3">
+                    <div id="gal3-preview" class="mt-2 w-20 h-14 bg-surface-container overflow-hidden rounded border border-outline-variant hidden">
+                        <img src="{{ $car->gallery[2] ?? '' }}" class="w-full h-full object-cover">
+                    </div>
+                </div>
+            </div>
 
             <div class="flex justify-end gap-4 pt-4">
                 <a href="{{ route('dashboard') }}" class="px-6 py-3 border border-outline-variant text-on-surface-variant font-label-caps text-label-caps hover:bg-white/5 transition-all">CANCEL</a>
@@ -107,4 +137,27 @@
             </div>
         </form>
     </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Image Preview logic
+            const triggers = document.querySelectorAll('.preview-trigger');
+            triggers.forEach(trigger => {
+                const previewId = trigger.dataset.preview;
+                const container = document.getElementById(previewId);
+                const img = container.querySelector('img');
+
+                function updatePreview() {
+                    if (trigger.value) {
+                        img.src = trigger.value;
+                        container.classList.remove('hidden');
+                    } else {
+                        container.classList.add('hidden');
+                    }
+                }
+
+                trigger.addEventListener('input', updatePreview);
+                updatePreview(); // Initial check
+            });
+        });
+    </script>
 </x-app-layout>

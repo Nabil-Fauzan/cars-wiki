@@ -9,39 +9,57 @@
             <div class="max-w-2xl">
                 <h1 class="font-headline-xl text-headline-xl text-on-surface mb-2">PCAR</h1>
                 <p class="font-body-lg text-body-lg text-secondary mb-stack-md">Smart Automotive Wiki for Enthusiasts</p>
-                <div class="relative mb-stack-lg">
-                    <input class="w-full bg-surface-container-highest/60 backdrop-blur-md border-b-2 border-secondary p-stack-sm font-body-md text-on-surface focus:border-primary focus:outline-none transition-all duration-300" placeholder="Explore 15,000+ technical entries..." type="text"/>
-                    <button class="absolute right-4 top-1/2 -translate-y-1/2 bg-primary text-on-primary px-stack-sm py-2 rounded-lg font-label-caps text-label-caps active:scale-95 transition-transform">
-                        SEARCH
-                    </button>
-                </div>
-                <!-- Quick Filters -->
-                <div class="flex flex-wrap gap-stack-sm">
-                    <div class="flex flex-col gap-1">
-                        <span class="font-label-caps text-label-caps text-secondary">BRAND</span>
-                        <select class="bg-transparent border border-outline-variant rounded-lg text-on-surface px-3 py-2 font-body-md outline-none focus:border-primary cursor-pointer">
-                            <option>Porsche</option><option>Ferrari</option><option>BMW</option><option>Lamborghini</option>
-                        </select>
+                <form action="{{ route('home') }}" method="GET" id="filterForm" class="space-y-stack-md">
+                    <input type="hidden" name="sort" value="{{ request('sort', 'newest') }}">
+                    
+                    <!-- Search Bar Integrated -->
+                    <div class="relative">
+                        <input name="search" value="{{ request('search') }}" class="w-full bg-surface-container-highest/60 backdrop-blur-md border-b-2 border-secondary p-stack-sm font-body-md text-on-surface focus:border-primary focus:outline-none transition-all duration-300" placeholder="Search by model or brand..." type="text"/>
+                        <button type="submit" class="absolute right-4 top-1/2 -translate-y-1/2 bg-primary text-on-primary px-stack-sm py-2 rounded-lg font-label-caps text-label-caps active:scale-95 transition-transform">
+                            SEARCH
+                        </button>
                     </div>
-                    <div class="flex flex-col gap-1">
-                        <span class="font-label-caps text-label-caps text-secondary">CATEGORY</span>
-                        <select class="bg-transparent border border-outline-variant rounded-lg text-on-surface px-3 py-2 font-body-md outline-none focus:border-primary cursor-pointer">
-                            <option>Supercar</option><option>GT</option><option>Hypercar</option><option>Sport Sedan</option>
-                        </select>
+
+                    <!-- Quick Filters -->
+                    <div class="flex flex-wrap gap-stack-sm">
+                        <div class="flex flex-col gap-1">
+                            <span class="font-label-caps text-label-caps text-secondary">BRAND</span>
+                            <select name="brand" onchange="this.form.submit()" class="bg-transparent border border-outline-variant rounded-lg text-on-surface px-3 py-2 font-body-md outline-none focus:border-primary cursor-pointer">
+                                <option value="">All Brands</option>
+                                @foreach($brands as $brand)
+                                    <option value="{{ $brand }}" {{ request('brand') == $brand ? 'selected' : '' }}>{{ $brand }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="flex flex-col gap-1">
+                            <span class="font-label-caps text-label-caps text-secondary">CATEGORY</span>
+                            <select name="category" onchange="this.form.submit()" class="bg-transparent border border-outline-variant rounded-lg text-on-surface px-3 py-2 font-body-md outline-none focus:border-primary cursor-pointer">
+                                <option value="">All Categories</option>
+                                @foreach($categories as $category)
+                                    <option value="{{ $category }}" {{ request('category') == $category ? 'selected' : '' }}>{{ $category }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="flex flex-col gap-1">
+                            <span class="font-label-caps text-label-caps text-secondary">HORSEPOWER</span>
+                            <select name="hp" onchange="this.form.submit()" class="bg-transparent border border-outline-variant rounded-lg text-on-surface px-3 py-2 font-body-md outline-none focus:border-primary cursor-pointer">
+                                <option value="">Any Power</option>
+                                <option value="400+" {{ request('hp') == '400+' ? 'selected' : '' }}>400+ HP</option>
+                                <option value="600+" {{ request('hp') == '600+' ? 'selected' : '' }}>600+ HP</option>
+                                <option value="800+" {{ request('hp') == '800+' ? 'selected' : '' }}>800+ HP</option>
+                            </select>
+                        </div>
+                        <div class="flex flex-col gap-1">
+                            <span class="font-label-caps text-label-caps text-secondary">TRANSMISSION</span>
+                            <select name="transmission" onchange="this.form.submit()" class="bg-transparent border border-outline-variant rounded-lg text-on-surface px-3 py-2 font-body-md outline-none focus:border-primary cursor-pointer">
+                                <option value="">Any Trans</option>
+                                @foreach($transmissions as $trans)
+                                    <option value="{{ $trans }}" {{ request('transmission') == $trans ? 'selected' : '' }}>{{ $trans }}</option>
+                                @endforeach
+                            </select>
+                        </div>
                     </div>
-                    <div class="flex flex-col gap-1">
-                        <span class="font-label-caps text-label-caps text-secondary">HORSEPOWER</span>
-                        <select class="bg-transparent border border-outline-variant rounded-lg text-on-surface px-3 py-2 font-body-md outline-none focus:border-primary cursor-pointer">
-                            <option>400+</option><option>600+</option><option>800+</option>
-                        </select>
-                    </div>
-                    <div class="flex flex-col gap-1">
-                        <span class="font-label-caps text-label-caps text-secondary">TRANSMISSION</span>
-                        <select class="bg-transparent border border-outline-variant rounded-lg text-on-surface px-3 py-2 font-body-md outline-none focus:border-primary cursor-pointer">
-                            <option>Manual</option><option>PDK</option><option>Sequential</option>
-                        </select>
-                    </div>
-                </div>
+                </form>
             </div>
         </div>
     </section>
@@ -80,7 +98,7 @@
                         <div class="grid grid-cols-2 gap-4 border-t border-outline-variant/30 pt-4">
                             <div>
                                 <p class="font-label-caps text-label-caps text-secondary mb-1">HORSEPOWER</p>
-                                <p class="font-body-md text-body-md text-on-surface">{{ $car->hp }} HP</p>
+                                <p class="font-body-md text-body-md text-on-surface">{{ is_array($car->hp) ? ($car->hp[0] ?? 'N/A') : $car->hp }} HP</p>
                             </div>
                             <div>
                                 <p class="font-label-caps text-label-caps text-secondary mb-1">CATEGORY</p>
@@ -124,16 +142,16 @@
                 </div>
             </div>
             <div class="grid grid-cols-2 gap-gutter">
-                <div class="glass-card p-stack-sm flex flex-col gap-2 aspect-square justify-center text-center">
-                    <span class="material-symbols-outlined text-primary text-[48px]">factory</span>
+                <a href="{{ route('brands') }}" class="glass-card p-stack-sm flex flex-col gap-2 aspect-square justify-center text-center hover:border-primary transition-all group">
+                    <span class="material-symbols-outlined text-primary text-[48px] group-hover:scale-110 transition-transform">factory</span>
                     <h4 class="font-headline-md text-headline-md text-on-surface">Brands</h4>
                     <p class="font-body-md text-body-md text-secondary">Historical depth on 200+ manufacturers.</p>
-                </div>
-                <div class="glass-card p-stack-sm flex flex-col gap-2 aspect-square justify-center text-center">
-                    <span class="material-symbols-outlined text-primary text-[48px]">compare_arrows</span>
+                </a>
+                <a href="{{ route('compare') }}" class="glass-card p-stack-sm flex flex-col gap-2 aspect-square justify-center text-center hover:border-primary transition-all group">
+                    <span class="material-symbols-outlined text-primary text-[48px] group-hover:scale-110 transition-transform">compare_arrows</span>
                     <h4 class="font-headline-md text-headline-md text-on-surface">Compare</h4>
                     <p class="font-body-md text-body-md text-secondary">Side-by-side technical metrics.</p>
-                </div>
+                </a>
             </div>
         </div>
     </section>
