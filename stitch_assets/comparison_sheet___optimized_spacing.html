@@ -1,0 +1,478 @@
+<!DOCTYPE html><html class="dark" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&amp;family=Metropolis:wght@400;700;800&amp;display=swap" rel="stylesheet">
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-card {
+            backdrop-filter: blur(20px);
+            background: rgba(43, 43, 43, 0.6);
+            border: 1px solid rgba(198, 198, 198, 0.2);
+        }
+        .machined-edge {
+            border-left: 1px solid rgba(255, 255, 255, 0.1);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .neon-glow {
+            box-shadow: 0 0 15px rgba(0, 163, 255, 0.3);
+        }
+        .inner-glow:hover {
+            box-shadow: inset 0 0 10px rgba(152, 203, 255, 0.2);
+        }
+        /* Custom scrollbar for technical look */
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: #131313; }
+        ::-webkit-scrollbar-thumb { background: #3f4852; border-radius: 2px; }
+        ::-webkit-scrollbar-thumb:hover { background: #98cbff; }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-lowest": "#0e0e0e",
+                        "surface-container-high": "#2a2a2a",
+                        "primary": "#98cbff",
+                        "on-primary": "#003354",
+                        "surface-container": "#201f1f",
+                        "secondary-fixed": "#e2e2e2",
+                        "on-error": "#690005",
+                        "on-tertiary-container": "#343434",
+                        "tertiary": "#c8c6c5",
+                        "inverse-surface": "#e5e2e1",
+                        "on-secondary": "#2f3131",
+                        "on-primary-container": "#00375a",
+                        "surface-variant": "#353534",
+                        "on-tertiary": "#303030",
+                        "on-primary-fixed-variant": "#004a77",
+                        "outline-variant": "#3f4852",
+                        "outline": "#88919d",
+                        "on-background": "#e5e2e1",
+                        "on-tertiary-fixed": "#1b1c1c",
+                        "on-secondary-container": "#b5b5b5",
+                        "on-surface": "#e5e2e1",
+                        "on-tertiary-fixed-variant": "#474746",
+                        "secondary-fixed-dim": "#c6c6c6",
+                        "secondary-container": "#454747",
+                        "surface-container-highest": "#353534",
+                        "error-container": "#93000a",
+                        "tertiary-fixed": "#e4e2e1",
+                        "inverse-on-surface": "#313030",
+                        "surface-container-low": "#1c1b1b",
+                        "primary-container": "#00a3ff",
+                        "surface-dim": "#131313",
+                        "background": "#131313",
+                        "primary-fixed": "#cfe5ff",
+                        "on-error-container": "#ffdad6",
+                        "tertiary-container": "#9e9c9c",
+                        "on-secondary-fixed": "#1a1c1c",
+                        "tertiary-fixed-dim": "#c8c6c5",
+                        "on-surface-variant": "#bec7d4",
+                        "on-secondary-fixed-variant": "#454747",
+                        "on-primary-fixed": "#001d33",
+                        "inverse-primary": "#00629d",
+                        "secondary": "#c6c6c6",
+                        "surface-tint": "#98cbff",
+                        "surface": "#131313",
+                        "error": "#ffb4ab",
+                        "surface-bright": "#3a3939",
+                        "primary-fixed-dim": "#98cbff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "margin-page": "64px",
+                        "unit": "8px",
+                        "stack-md": "32px",
+                        "gutter": "24px",
+                        "stack-sm": "16px",
+                        "container-max": "1440px",
+                        "stack-lg": "64px"
+                    },
+                    "fontFamily": {
+                        "headline-lg": ["Metropolis"],
+                        "headline-md": ["Metropolis"],
+                        "body-lg": ["Inter"],
+                        "label-caps": ["Metropolis"],
+                        "headline-xl": ["Metropolis"],
+                        "body-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-lg": ["32px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "headline-md": ["24px", {"lineHeight": "1.3", "letterSpacing": "0em", "fontWeight": "700"}],
+                        "body-lg": ["18px", {"lineHeight": "1.6", "letterSpacing": "0em", "fontWeight": "400"}],
+                        "label-caps": ["12px", {"lineHeight": "1.0", "letterSpacing": "0.1em", "fontWeight": "800"}],
+                        "headline-xl": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.04em", "fontWeight": "800"}],
+                        "body-md": ["16px", {"lineHeight": "1.6", "letterSpacing": "0.01em", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-surface text-on-surface font-body-md selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopNavBar Shell -->
+<header class="fixed top-0 z-50 w-full bg-surface/60 backdrop-blur-[20px] border-b border-outline-variant/30 shadow-[0_20px_50px_rgba(0,163,255,0.05)]">
+<div class="flex justify-between items-center w-full px-margin-page h-20 max-w-container-max mx-auto">
+<div class="font-headline-lg font-extrabold tracking-tighter text-on-surface text-headline-xl">PCAR</div>
+<nav class="hidden lg:flex items-center gap-stack-md font-body-md text-body-md">
+<a class="text-secondary hover:text-on-surface transition-colors" href="#">Home</a>
+<a class="text-secondary hover:text-on-surface transition-colors" href="#">Explore Cars</a>
+<a class="text-primary border-b-2 border-primary pb-1" href="#">Compare</a>
+<a class="text-secondary hover:text-on-surface transition-colors" href="#">Brands</a>
+<a class="text-secondary hover:text-on-surface transition-colors" href="#">Categories</a>
+</nav>
+<div class="flex items-center gap-4">
+<div class="relative flex items-center border-b border-outline focus-within:border-primary transition-colors py-1">
+<span class="material-symbols-outlined text-secondary mr-2">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-body-md w-48 text-on-surface" placeholder="Search Database..." type="text">
+</div>
+<button class="material-symbols-outlined text-secondary hover:text-primary transition-colors">favorite</button>
+<button class="material-symbols-outlined text-secondary hover:text-primary transition-colors">admin_panel_settings</button>
+</div>
+</div>
+</header>
+<div class="flex pt-20 min-h-screen">
+<!-- SideNavBar Shell -->
+<aside class="hidden lg:flex flex-col h-full w-64 bg-surface-container border-r border-outline-variant/20 fixed top-20 left-0 py-8">
+<div class="px-6 mb-8">
+<h2 class="font-headline-md text-headline-md font-bold text-primary">PCAR Wiki</h2>
+<p class="font-body-md text-body-md text-on-surface-variant/70">Technical Encyclopedia</p>
+</div>
+<nav class="flex flex-col gap-1">
+<a class="flex items-center gap-4 text-on-surface-variant hover:text-on-surface px-4 py-4 transition-colors" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-caps text-sm tracking-wider">Home</span>
+</a>
+<a class="flex items-center gap-4 text-on-surface-variant hover:text-on-surface px-4 py-4 transition-colors" href="#">
+<span class="material-symbols-outlined">directions_car</span>
+<span class="font-label-caps text-sm tracking-wider">Explore Cars</span>
+</a>
+<a class="flex items-center gap-4 bg-secondary-container/50 text-primary border-l-4 border-primary px-4 py-4" href="#">
+<span class="material-symbols-outlined">compare_arrows</span>
+<span class="font-label-caps text-sm tracking-wider">Compare</span>
+</a>
+<a class="flex items-center gap-4 text-on-surface-variant hover:text-on-surface px-4 py-4 transition-colors" href="#">
+<span class="material-symbols-outlined">factory</span>
+<span class="font-label-caps text-sm tracking-wider">Brands</span>
+</a>
+<a class="flex items-center gap-4 text-on-surface-variant hover:text-on-surface px-4 py-4 transition-colors" href="#">
+<span class="material-symbols-outlined">category</span>
+<span class="font-label-caps text-sm tracking-wider">Categories</span>
+</a>
+<a class="flex items-center gap-4 text-on-surface-variant hover:text-on-surface px-4 py-4 transition-colors" href="#">
+<span class="material-symbols-outlined">favorite</span>
+<span class="font-label-caps text-sm tracking-wider">Favorites</span>
+</a>
+<a class="flex items-center gap-4 text-on-surface-variant hover:text-on-surface px-4 py-4 transition-colors mt-12" href="#">
+<span class="material-symbols-outlined">lock</span>
+<span class="font-label-caps text-sm tracking-wider">Admin Login</span>
+</a>
+</nav>
+<div class="px-4 mb-8 mt-16">
+<button class="w-full bg-primary-container text-on-primary-container font-label-caps text-label-caps py-3 rounded-lg hover:brightness-110 active:scale-95 transition-all">
+                    Submit Data
+                </button>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 lg:ml-64 px-margin-page py-stack-lg max-w-container-max mx-auto w-full">
+<!-- Battle Sheet Header Section -->
+<section class="pb-12 pt-8 mb-32">
+<div class="flex flex-col md:flex-row justify-between items-end gap-gutter mb-12">
+<div>
+<span class="font-label-caps text-label-caps text-primary border-l-2 border-primary pl-2 mb-3 block uppercase">Comparison Engine v4.2</span>
+<h1 class="font-headline-xl text-on-surface text-6xl">Battle Sheet</h1>
+</div>
+<div class="flex items-center gap-6 bg-surface-container-high/40 p-3 rounded-lg border border-outline-variant/30">
+<button class="flex items-center gap-2 px-5 py-2 border border-outline-variant/50 rounded-lg text-on-surface-variant hover:border-primary hover:text-primary transition-all font-label-caps text-label-caps">
+<span class="material-symbols-outlined text-[18px]">picture_as_pdf</span>
+                            Export to PDF
+                        </button>
+<div class="flex items-center gap-3">
+<span class="font-label-caps text-label-caps text-on-surface-variant">Difference Highlight</span>
+<div class="w-12 h-6 bg-primary-container/20 relative rounded-full border border-primary/30 cursor-pointer group">
+<div class="absolute right-1 top-1 w-4 h-4 bg-primary rounded-full shadow-sm"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Sticky Comparison Selector Cards -->
+<div class="sticky top-20 z-40 grid grid-cols-1 md:grid-cols-3 gap-8 py-8 bg-surface/80 backdrop-blur-md">
+<!-- Slot 1 -->
+<div class="glass-card machined-edge p-stack-sm rounded shadow-lg group relative overflow-hidden">
+<div class="absolute inset-0 opacity-10 bg-gradient-to-br from-white to-transparent pointer-events-none"></div>
+<div class="flex justify-between items-start mb-4">
+<span class="font-label-caps text-label-caps text-primary">SLOT_01</span>
+<button class="material-symbols-outlined text-secondary hover:text-error transition-colors">close</button>
+</div>
+<img class="w-full h-32 object-cover rounded mb-4 grayscale hover:grayscale-0 transition-all duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAqUA_obchFzdGl-vhH4M29VRR8YgmOZNDY7UnDmcDenZg2JW38nJjDTHIx0KAf1-7b7yQgV7AxrjmvA3g87SaIehXMgCAdWhQQkVSfPTeuIwTIc3ZOc-2uBSOjWC86Kcr1FO8PrQu_6iU8uG0r8HYJmvGsSgCnYwN4XO_hfick0GIshwvL4TiZEFgzA_ZKuPWSG1piDzz4IfaUsuhKxGjS-f5JFDvamd1ZKX-anS9Dk2CR9s2ALCRx-4BuYuxifM216hIZEms2ZO54">
+<h3 class="font-headline-md text-headline-md text-on-surface mb-1">Aethel V-12</h3>
+<p class="font-label-caps text-label-caps text-on-surface-variant">GT-Performance Spec</p>
+<div class="flex gap-2 mt-4">
+<button class="flex-1 bg-surface-container border border-outline-variant text-on-surface-variant font-label-caps text-label-caps py-2 hover:border-primary transition-all flex items-center justify-center gap-1">
+<span class="material-symbols-outlined text-[16px]">menu_book</span> Dossier
+                            </button>
+<button class="px-3 border border-outline-variant text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">favorite</span>
+</button>
+</div>
+</div>
+<!-- Slot 2 -->
+<div class="glass-card machined-edge p-stack-sm rounded shadow-lg group relative overflow-hidden">
+<div class="absolute inset-0 opacity-10 bg-gradient-to-br from-white to-transparent pointer-events-none"></div>
+<div class="flex justify-between items-start mb-4">
+<span class="font-label-caps text-label-caps text-primary">SLOT_02</span>
+<button class="material-symbols-outlined text-secondary hover:text-error transition-colors">close</button>
+</div>
+<img class="w-full h-32 object-cover rounded mb-4 grayscale hover:grayscale-0 transition-all duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDBHr1JOgL8YqQeDfxv4H1h-amb-T74r2OAkTGjUChBE5kDN9sXhng0MxuUVMsDruSThSBNV7O_u70_QqohR5KEkl3P2S2YxIMfyfvzbchcTjTH3WWZFMaNrVjb1UTohwWeBxAtAhIpCBL4I_How7BDLv-4ELAysCAZ2ejnphl09j0Q3_YKKg7scTgQEpLzejj8IjLgaXTj2nm4NBjD7D_YO7sfTLJBWuFMkpbEbD77ZD6Z54xMoLOlONY4nzWDYkX9ZwRKPHGLpbdB">
+<h3 class="font-headline-md text-headline-md text-on-surface mb-1">KRONOS X</h3>
+<p class="font-label-caps text-label-caps text-on-surface-variant">Track Dynamics Pack</p>
+<div class="flex gap-2 mt-4">
+<button class="flex-1 bg-surface-container border border-outline-variant text-on-surface-variant font-label-caps text-label-caps py-2 hover:border-primary transition-all flex items-center justify-center gap-1">
+<span class="material-symbols-outlined text-[16px]">menu_book</span> Dossier
+                            </button>
+<button class="px-3 border border-outline-variant text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">favorite</span>
+</button>
+</div>
+</div>
+<!-- Slot 3 (Empty) -->
+<div class="border-2 border-dashed border-outline-variant/30 p-stack-sm rounded flex flex-col items-center justify-center group hover:border-primary/50 transition-all cursor-pointer bg-surface-container-low/20">
+<div class="w-12 h-12 rounded-full border border-outline-variant flex items-center justify-center mb-4 group-hover:bg-primary/10 transition-all">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary transition-colors">add</span>
+</div>
+<p class="font-label-caps text-label-caps text-on-surface-variant">Add Comparison Vehicle</p>
+</div>
+</div>
+</section>
+<!-- Technical Matrix Section -->
+<section class="pb-24 space-y-32">
+<!-- Market & Value -->
+<div class="space-y-8">
+<div class="flex items-center gap-4">
+<h2 class="font-label-caps text-label-caps text-secondary tracking-widest uppercase">Market &amp; Value</h2>
+<div class="h-px flex-1 bg-gradient-to-r from-outline-variant/50 to-transparent"></div>
+</div>
+<div class="bg-surface-container/30 rounded-lg overflow-hidden border border-outline-variant/20">
+<!-- Header Row -->
+<div class="grid grid-cols-1 md:grid-cols-4 border-b border-outline-variant/10">
+<div class="bg-surface-container-high/40 font-label-caps text-on-surface-variant text-sm p-8">Category</div>
+<div class="flex items-center justify-center font-body-md text-on-surface text-lg p-8">Aethel V-12</div>
+<div class="flex items-center justify-center font-body-md text-on-surface text-lg p-8">KRONOS X</div>
+<div class="flex items-center justify-center font-label-caps text-label-caps text-on-surface-variant/40 italic p-8">Empty</div>
+</div>
+<!-- Row: Base MSRP -->
+<div class="grid grid-cols-1 md:grid-cols-4 border-b border-outline-variant/10 hover:bg-surface-bright/5 transition-colors">
+<div class="font-label-caps text-secondary text-sm p-8">Base MSRP</div>
+<div class="flex items-center justify-center font-body-md text-primary font-bold text-lg p-8">$1.2M <span class="material-symbols-outlined ml-2 text-[14px]">bolt</span></div>
+<div class="flex items-center justify-center font-body-md text-lg p-8">$2.8M</div>
+<div class="bg-surface-container-lowest/20 p-8"></div>
+</div>
+<!-- Row: Market Value -->
+<div class="grid grid-cols-1 md:grid-cols-4 border-b border-outline-variant/10 hover:bg-surface-bright/5 transition-colors">
+<div class="font-label-caps text-secondary text-sm p-8">Est. Market Value</div>
+<div class="flex items-center justify-center font-body-md text-lg p-8">$1.1M - $1.3M</div>
+<div class="flex items-center justify-center font-body-md text-primary font-bold text-lg p-8">$3.1M - $3.4M <span class="material-symbols-outlined ml-2 text-[14px]">bolt</span></div>
+<div class="bg-surface-container-lowest/20 p-8"></div>
+</div>
+<!-- Row: Depreciation -->
+<div class="grid grid-cols-1 md:grid-cols-4 hover:bg-surface-bright/5 transition-colors">
+<div class="font-label-caps text-secondary text-sm p-8">Annual Depreciation</div>
+<div class="flex items-center justify-center font-body-md text-lg p-8">12.5%</div>
+<div class="flex items-center justify-center font-body-md text-primary font-bold text-lg p-8">4.2% <span class="material-symbols-outlined ml-2 text-[14px]">bolt</span></div>
+<div class="bg-surface-container-lowest/20 p-8"></div>
+</div>
+</div>
+</div>
+<!-- Performance Metrics -->
+<div class="space-y-8">
+<div class="flex items-center gap-4">
+<h2 class="font-label-caps text-label-caps text-secondary tracking-widest uppercase">Performance Metrics</h2>
+<div class="h-px flex-1 bg-gradient-to-r from-outline-variant/50 to-transparent"></div>
+</div>
+<div class="bg-surface-container/30 rounded-lg overflow-hidden border border-outline-variant/20">
+<div class="grid grid-cols-1 md:grid-cols-4 border-b border-outline-variant/10">
+<div class="bg-surface-container-high/40 font-label-caps text-on-surface-variant text-sm p-8">Category</div>
+<div class="flex items-center justify-center font-body-md text-on-surface text-lg p-8">Aethel V-12</div>
+<div class="flex items-center justify-center font-body-md text-on-surface text-lg p-8">KRONOS X</div>
+<div class="flex items-center justify-center font-label-caps text-label-caps text-on-surface-variant/40 italic p-8">Empty</div>
+</div>
+<!-- Row: 0-60 -->
+<div class="grid grid-cols-1 md:grid-cols-4 border-b border-outline-variant/10 hover:bg-surface-bright/5 transition-colors">
+<div class="font-label-caps text-secondary text-sm p-8">0-60 MPH</div>
+<div class="flex items-center justify-center font-body-md text-primary font-bold text-lg p-8">2.4s <span class="material-symbols-outlined ml-2 text-[14px]">bolt</span></div>
+<div class="flex items-center justify-center font-body-md text-lg p-8">2.7s</div>
+<div class="bg-surface-container-lowest/20 p-8"></div>
+</div>
+<!-- Row: Top Speed -->
+<div class="grid grid-cols-1 md:grid-cols-4 border-b border-outline-variant/10 hover:bg-surface-bright/5 transition-colors">
+<div class="font-label-caps text-secondary text-sm p-8">Top Speed</div>
+<div class="flex items-center justify-center font-body-md text-lg p-8">211 MPH</div>
+<div class="flex items-center justify-center font-body-md text-primary font-bold text-lg p-8">224 MPH <span class="material-symbols-outlined ml-2 text-[14px]">bolt</span></div>
+<div class="bg-surface-container-lowest/20 p-8"></div>
+</div>
+<!-- Row: Quarter Mile -->
+<div class="grid grid-cols-1 md:grid-cols-4 hover:bg-surface-bright/5 transition-colors">
+<div class="font-label-caps text-secondary text-sm p-8">Quarter Mile</div>
+<div class="flex items-center justify-center font-body-md text-primary font-bold text-lg p-8">9.8s @ 142</div>
+<div class="flex items-center justify-center font-body-md text-lg p-8">10.1s @ 138</div>
+<div class="bg-surface-container-lowest/20 p-8"></div>
+</div>
+</div>
+</div>
+<!-- Powerplant -->
+<div class="space-y-8">
+<div class="flex items-center gap-4">
+<h2 class="font-label-caps text-label-caps text-secondary tracking-widest uppercase">Powerplant</h2>
+<div class="h-px flex-1 bg-gradient-to-r from-outline-variant/50 to-transparent"></div>
+</div>
+<div class="bg-surface-container/30 rounded-lg overflow-hidden border border-outline-variant/20">
+<!-- Row: Configuration -->
+<div class="grid grid-cols-1 md:grid-cols-4 border-b border-outline-variant/10 hover:bg-surface-bright/5 transition-colors">
+<div class="font-label-caps text-secondary text-sm p-8">Configuration</div>
+<div class="flex items-center justify-center font-body-md text-lg p-8">V12 Natural</div>
+<div class="flex items-center justify-center font-body-md text-lg p-8">Electric Quad-Motor</div>
+<div class="bg-surface-container-lowest/20 p-8"></div>
+</div>
+<!-- Row: Displacement -->
+<div class="grid grid-cols-1 md:grid-cols-4 border-b border-outline-variant/10 hover:bg-surface-bright/5 transition-colors">
+<div class="font-label-caps text-secondary text-sm p-8">Capacity</div>
+<div class="flex items-center justify-center font-body-md text-lg p-8">6.5 L</div>
+<div class="flex items-center justify-center font-body-md text-lg p-8">120 kWh</div>
+<div class="bg-surface-container-lowest/20 p-8"></div>
+</div>
+<!-- Row: HP -->
+<div class="grid grid-cols-1 md:grid-cols-4 hover:bg-surface-bright/5 transition-colors">
+<div class="font-label-caps text-secondary text-sm p-8">Peak HP</div>
+<div class="flex items-center justify-center font-body-md text-lg p-8">812 HP</div>
+<div class="flex items-center justify-center font-body-md text-primary font-bold text-lg p-8">1,020 HP <span class="material-symbols-outlined ml-2 text-[14px]">bolt</span></div>
+<div class="bg-surface-container-lowest/20 p-8"></div>
+</div>
+</div>
+</div>
+<!-- Chassis & Dynamics -->
+<div class="space-y-8">
+<div class="flex items-center gap-4">
+<h2 class="font-label-caps text-label-caps text-secondary tracking-widest uppercase">Chassis &amp; Dynamics</h2>
+<div class="h-px flex-1 bg-gradient-to-r from-outline-variant/50 to-transparent"></div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+<div class="glass-card rounded-lg p-8 p-10">
+<div class="flex items-center justify-between mb-6">
+<h4 class="font-body-lg text-body-lg text-on-surface">Drivetrain Analysis</h4>
+<span class="material-symbols-outlined text-primary">settings_input_component</span>
+</div>
+<div class="space-y-4">
+<div class="flex justify-between border-b border-outline-variant/10 pb-2">
+<span class="font-label-caps text-label-caps text-on-surface-variant">Aethel V-12</span>
+<span class="font-body-md text-body-md">Rear-Wheel Drive</span>
+</div>
+<div class="flex justify-between border-b border-outline-variant/10 pb-2">
+<span class="font-label-caps text-label-caps text-on-surface-variant">KRONOS X</span>
+<span class="font-body-md text-body-md">All-Wheel Vectoring</span>
+</div>
+</div>
+</div>
+<div class="glass-card rounded-lg p-8 p-10">
+<div class="flex items-center justify-between mb-6">
+<h4 class="font-body-lg text-body-lg text-on-surface">Braking System</h4>
+<span class="material-symbols-outlined text-primary">panorama_fish_eye</span>
+</div>
+<div class="space-y-4">
+<div class="flex justify-between border-b border-outline-variant/10 pb-2">
+<span class="font-label-caps text-label-caps text-on-surface-variant">Aethel V-12</span>
+<span class="font-body-md text-body-md">Carbon Ceramic</span>
+</div>
+<div class="flex justify-between border-b border-outline-variant/10 pb-2">
+<span class="font-label-caps text-label-caps text-on-surface-variant">KRONOS X</span>
+<span class="font-body-md text-body-md">Regen-Enhanced CCM</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Performance Gauge Visualization -->
+<div class="bg-surface-container-high/20 p-12 rounded border border-outline-variant/30 mt-12">
+<h3 class="font-label-caps text-label-caps text-on-surface mb-10 tracking-widest">Torque Curve Comparison (Projected)</h3>
+<div class="space-y-10">
+<div class="space-y-4">
+<div class="flex justify-between font-label-caps text-[10px] text-on-surface-variant">
+<span class="">Aethel V-12: 530 lb-ft</span>
+<span class="">8,500 RPM</span>
+</div>
+<div class="h-3 w-full bg-surface-container rounded-full overflow-hidden flex gap-[2px]">
+<div class="h-full w-1/12 bg-primary-container"></div>
+<div class="h-full w-1/12 bg-primary-container"></div>
+<div class="h-full w-1/12 bg-primary-container"></div>
+<div class="h-full w-1/12 bg-primary-container"></div>
+<div class="h-full w-1/12 bg-primary-container"></div>
+<div class="h-full w-1/12 bg-primary-container"></div>
+<div class="h-full w-1/12 bg-primary-container"></div>
+<div class="h-full w-1/12 bg-primary-container opacity-50"></div>
+<div class="h-full w-1/12 bg-primary-container opacity-30"></div>
+<div class="h-full w-1/12 bg-primary-container opacity-10"></div>
+</div>
+</div>
+<div class="space-y-4">
+<div class="flex justify-between font-label-caps text-[10px] text-on-surface-variant">
+<span class="">KRONOS X: 980 lb-ft</span>
+<span class="">0 - 18,000 RPM</span>
+</div>
+<div class="h-3 w-full bg-surface-container rounded-full overflow-hidden flex gap-[2px]">
+<div class="h-full w-1/12 bg-primary"></div>
+<div class="h-full w-1/12 bg-primary"></div>
+<div class="h-full w-1/12 bg-primary"></div>
+<div class="h-full w-1/12 bg-primary"></div>
+<div class="h-full w-1/12 bg-primary"></div>
+<div class="h-full w-1/12 bg-primary"></div>
+<div class="h-full w-1/12 bg-primary"></div>
+<div class="h-full w-1/12 bg-primary"></div>
+<div class="h-full w-1/12 bg-primary"></div>
+<div class="h-full w-1/12 bg-primary"></div>
+<div class="h-full w-1/12 bg-primary"></div>
+<div class="h-full w-1/12 bg-primary"></div>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+</div>
+<!-- Footer Shell -->
+<footer class="w-full bg-surface-container-lowest border-t border-outline-variant/20">
+<div class="w-full py-stack-lg px-margin-page flex flex-col md:flex-row justify-between items-start gap-gutter max-w-container-max mx-auto">
+<div class="space-y-4 max-w-sm">
+<div class="font-headline-md text-headline-md text-on-surface-variant">PCAR</div>
+<p class="font-body-md text-body-md text-on-surface-variant/60">
+                    The ultimate technical reference for automotive engineering, performance analytics, and enthusiast-driven data.
+                </p>
+<p class="font-label-caps text-[10px] text-on-surface-variant/40">© 2024 PCAR Automotive Encyclopedia. Precision Engineered for Enthusiasts.</p>
+</div>
+<div class="grid grid-cols-2 gap-stack-lg">
+<div class="flex flex-col gap-2">
+<span class="font-label-caps text-label-caps text-primary mb-2">Technical</span>
+<a class="text-on-surface-variant hover:text-primary transition-colors font-label-caps text-label-caps" href="#">About PCAR</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors font-label-caps text-label-caps" href="#">Contribution Guidelines</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors font-label-caps text-label-caps" href="#">API Documentation</a>
+</div>
+<div class="flex flex-col gap-2">
+<span class="font-label-caps text-label-caps text-primary mb-2">Support</span>
+<a class="text-on-surface-variant hover:text-primary transition-colors font-label-caps text-label-caps" href="#">Privacy Policy</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors font-label-caps text-label-caps" href="#">Contact Support</a>
+</div>
+</div>
+</div>
+</footer>
+
+
+</body></html>

@@ -35,4 +35,9 @@ return [
         ],
     ],
 
+    'stitch' => [
+        'url' => env('STITCH_SERVER_URL'),
+        'key' => env('STITCH_API_KEY'),
+    ],
+
 ];

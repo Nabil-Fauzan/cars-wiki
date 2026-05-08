@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>PCAR Admin | Precision Engineering Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&amp;family=Metropolis:wght@700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "primary-fixed": "#cfe5ff",
+                    "on-tertiary-container": "#343434",
+                    "on-tertiary-fixed": "#1b1c1c",
+                    "on-secondary-fixed": "#1a1c1c",
+                    "background": "#131313",
+                    "tertiary-fixed-dim": "#c8c6c5",
+                    "tertiary": "#c8c6c5",
+                    "surface-tint": "#98cbff",
+                    "primary": "#98cbff",
+                    "surface-bright": "#3a3939",
+                    "on-error": "#690005",
+                    "on-background": "#e5e2e1",
+                    "surface-variant": "#353534",
+                    "on-primary": "#003354",
+                    "primary-fixed-dim": "#98cbff",
+                    "on-primary-fixed": "#001d33",
+                    "tertiary-fixed": "#e4e2e1",
+                    "surface-container-lowest": "#0e0e0e",
+                    "tertiary-container": "#9e9c9c",
+                    "inverse-primary": "#00629d",
+                    "on-primary-fixed-variant": "#004a77",
+                    "on-surface-variant": "#bec7d4",
+                    "error-container": "#93000a",
+                    "on-secondary": "#2f3131",
+                    "error": "#ffb4ab",
+                    "inverse-surface": "#e5e2e1",
+                    "on-secondary-fixed-variant": "#454747",
+                    "surface": "#131313",
+                    "on-surface": "#e5e2e1",
+                    "surface-container-low": "#1c1b1b",
+                    "inverse-on-surface": "#313030",
+                    "surface-container-highest": "#353534",
+                    "on-error-container": "#ffdad6",
+                    "primary-container": "#00a3ff",
+                    "on-tertiary": "#303030",
+                    "outline": "#88919d",
+                    "surface-dim": "#131313",
+                    "secondary-container": "#454747",
+                    "surface-container-high": "#2a2a2a"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "stack-md": "32px",
+                    "container-max": "1440px",
+                    "gutter": "24px",
+                    "margin-page": "64px",
+                    "unit": "8px",
+                    "stack-sm": "16px",
+                    "stack-lg": "64px"
+            },
+            "fontFamily": {
+                    "headline-xl": ["Metropolis"],
+                    "label-caps": ["Metropolis"],
+                    "headline-md": ["Metropolis"],
+                    "headline-lg": ["Metropolis"],
+                    "body-md": ["Inter"],
+                    "body-lg": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-xl": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.04em", "fontWeight": "800"}],
+                    "label-caps": ["12px", {"lineHeight": "1.0", "letterSpacing": "0.1em", "fontWeight": "800"}],
+                    "headline-md": ["24px", {"lineHeight": "1.3", "letterSpacing": "0em", "fontWeight": "700"}],
+                    "headline-lg": ["32px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-md": ["16px", {"lineHeight": "1.6", "letterSpacing": "0.01em", "fontWeight": "400"}],
+                    "body-lg": ["18px", {"lineHeight": "1.6", "letterSpacing": "0em", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .glass-card {
+            backdrop-filter: blur(20px);
+            background: rgba(43, 43, 43, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .inner-glow:hover {
+            box-shadow: inset 0 0 15px rgba(0, 163, 255, 0.2), 0 0 20px rgba(0, 163, 255, 0.05);
+        }
+        .machined-border {
+            border-left: 4px solid #98cbff;
+        }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #3f4852; }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md custom-scrollbar overflow-x-hidden min-h-screen flex flex-col">
+<!-- TopNavBar -->
+<header class="fixed top-0 z-50 w-full bg-surface/60 backdrop-blur-[20px] border-b border-outline-variant/30 shadow-[0_20px_50px_rgba(0,163,255,0.05)]">
+<div class="flex justify-between items-center w-full px-margin-page h-20 max-w-container-max mx-auto">
+<div class="font-headline-lg text-headline-lg font-extrabold tracking-tighter text-on-surface">PCAR</div>
+<nav class="hidden md:flex items-center gap-stack-md">
+<a class="font-body-md text-body-md text-secondary hover:text-on-surface transition-colors" href="#">Home</a>
+<a class="font-body-md text-body-md text-secondary hover:text-on-surface transition-colors" href="#">Explore Cars</a>
+<a class="font-body-md text-body-md text-secondary hover:text-on-surface transition-colors" href="#">Compare</a>
+<a class="font-body-md text-body-md text-secondary hover:text-on-surface transition-colors" href="#">Brands</a>
+<a class="font-body-md text-body-md text-secondary hover:text-on-surface transition-colors" href="#">Categories</a>
+</nav>
+<div class="flex items-center gap-stack-sm">
+<button class="material-symbols-outlined text-secondary hover:text-primary transition-colors cursor-pointer" data-icon="favorite">favorite</button>
+<button class="material-symbols-outlined text-primary transition-colors cursor-pointer" data-icon="admin_panel_settings">admin_panel_settings</button>
+</div>
+</div>
+</header>
+<div class="flex flex-1 pt-20">
+<!-- SideNavBar -->
+<aside class="hidden lg:flex flex-col h-[calc(100vh-80px)] w-64 fixed left-0 bg-surface-container border-r border-outline-variant/20 py-8 overflow-y-auto">
+<div class="px-6 mb-8">
+<h2 class="font-headline-md text-headline-md font-bold text-primary">PCAR Wiki</h2>
+<p class="font-body-md text-[12px] text-on-surface-variant uppercase tracking-widest">Technical Encyclopedia</p>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-4 text-on-surface-variant hover:text-on-surface px-4 py-3 active:translate-x-1 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-label-caps text-label-caps">Home</span>
+</a>
+<a class="flex items-center gap-4 text-on-surface-variant hover:text-on-surface px-4 py-3 active:translate-x-1 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="directions_car">directions_car</span>
+<span class="font-label-caps text-label-caps">Explore Cars</span>
+</a>
+<a class="flex items-center gap-4 text-on-surface-variant hover:text-on-surface px-4 py-3 active:translate-x-1 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="compare_arrows">compare_arrows</span>
+<span class="font-label-caps text-label-caps">Compare</span>
+</a>
+<a class="flex items-center gap-4 text-on-surface-variant hover:text-on-surface px-4 py-3 active:translate-x-1 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="factory">factory</span>
+<span class="font-label-caps text-label-caps">Brands</span>
+</a>
+<a class="flex items-center gap-4 text-on-surface-variant hover:text-on-surface px-4 py-3 active:translate-x-1 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="category">category</span>
+<span class="font-label-caps text-label-caps">Categories</span>
+</a>
+<a class="flex items-center gap-4 text-on-surface-variant hover:text-on-surface px-4 py-3 active:translate-x-1 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="favorite">favorite</span>
+<span class="font-label-caps text-label-caps">Favorites</span>
+</a>
+<a class="flex items-center gap-4 bg-secondary-container/50 text-primary border-l-4 border-primary px-4 py-3 active:translate-x-1 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="lock" style="font-variation-settings: 'FILL' 1;">lock</span>
+<span class="font-label-caps text-label-caps">Admin Login</span>
+</a>
+</nav>
+<div class="px-6 mt-auto">
+<button class="w-full bg-primary text-on-primary py-3 px-4 font-label-caps text-label-caps rounded-lg hover:opacity-90 transition-all">
+                    Submit Data
+                </button>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 lg:ml-64 px-8 py-stack-lg max-w-7xl mx-auto w-full">
+<!-- Dashboard Header -->
+<section class="mb-stack-lg">
+<h1 class="font-headline-xl text-headline-xl text-on-surface mb-2">Central Operations</h1>
+<p class="text-on-surface-variant font-body-lg">Precision data oversight for the global automotive database.</p>
+</section>
+<!-- Stats Bento Grid -->
+<section class="grid grid-cols-1 md:grid-cols-4 gap-gutter mb-stack-lg">
+<div class="glass-card p-6 rounded-lg inner-glow col-span-1 border-t-2 border-t-primary">
+<p class="font-label-caps text-label-caps text-secondary mb-2 uppercase">Total Database Entries</p>
+<div class="flex items-end gap-2">
+<span class="font-headline-lg text-headline-lg text-primary">12,482</span>
+<span class="text-primary-fixed text-sm mb-2">+12%</span>
+</div>
+</div>
+<div class="glass-card p-6 rounded-lg inner-glow col-span-1">
+<p class="font-label-caps text-label-caps text-secondary mb-2 uppercase">Active Users</p>
+<div class="flex items-end gap-2">
+<span class="font-headline-lg text-headline-lg text-on-surface">3.2k</span>
+<span class="text-on-surface-variant text-sm mb-2">/daily</span>
+</div>
+</div>
+<div class="glass-card p-6 rounded-lg inner-glow col-span-2 relative overflow-hidden">
+<div class="relative z-10">
+<p class="font-label-caps text-label-caps text-secondary mb-2 uppercase">Performance Index</p>
+<div class="h-2 w-full bg-surface-container rounded-full overflow-hidden flex gap-0.5 mt-4">
+<div class="h-full w-[20%] bg-primary"></div>
+<div class="h-full w-[15%] bg-primary opacity-80"></div>
+<div class="h-full w-[25%] bg-primary opacity-60"></div>
+<div class="h-full w-[10%] bg-primary opacity-40"></div>
+</div>
+<p class="text-[10px] text-on-surface-variant mt-2">DATABASE HEALTH: OPTIMAL</p>
+</div>
+</div>
+</section>
+<!-- Main Tables Section -->
+<div class="space-y-stack-md">
+<!-- Cars CRUD Table -->
+<div class="glass-card rounded-lg overflow-hidden border border-outline-variant/20">
+<div class="p-6 flex justify-between items-center border-b border-outline-variant/20 bg-surface-container-high">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary" data-icon="directions_car">directions_car</span>
+<h3 class="font-headline-md text-headline-md">Vehicle Inventory Management</h3>
+</div>
+<button class="bg-primary text-on-primary px-4 py-2 font-label-caps text-label-caps hover:brightness-110 transition-all flex items-center gap-2">
+<span class="material-symbols-outlined text-sm" data-icon="add">add</span>
+                            DEPLOY NEW ASSET
+                        </button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low border-b border-outline-variant/30">
+<th class="px-6 py-4 font-label-caps text-label-caps text-secondary">MODEL ID</th>
+<th class="px-6 py-4 font-label-caps text-label-caps text-secondary">MAKE / BRAND</th>
+<th class="px-6 py-4 font-label-caps text-label-caps text-secondary">STATUS</th>
+<th class="px-6 py-4 font-label-caps text-label-caps text-secondary">DATA COMPLETION</th>
+<th class="px-6 py-4 font-label-caps text-label-caps text-secondary text-right">ACTIONS</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/10">
+<tr class="hover:bg-white/5 transition-colors group">
+<td class="px-6 py-4 font-headline-md text-primary text-sm">PC-911-GTS</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-surface-bright flex items-center justify-center font-bold text-[10px]">P</div>
+<span class="font-body-md text-on-surface">Porsche</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="px-2 py-1 bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-tighter rounded">Live</span>
+</td>
+<td class="px-6 py-4">
+<div class="w-32 h-1 bg-surface-container rounded-full relative">
+<div class="absolute inset-0 bg-primary w-[95%]"></div>
+</div>
+</td>
+<td class="px-6 py-4 text-right">
+<div class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="material-symbols-outlined text-secondary-fixed hover:text-primary text-lg" data-icon="edit">edit</button>
+<button class="material-symbols-outlined text-secondary-fixed hover:text-error text-lg" data-icon="delete">delete</button>
+</div>
+</td>
+</tr>
+<tr class="hover:bg-white/5 transition-colors group">
+<td class="px-6 py-4 font-headline-md text-primary text-sm">MC-ART-24</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-surface-bright flex items-center justify-center font-bold text-[10px]">M</div>
+<span class="font-body-md text-on-surface">McLaren</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="px-2 py-1 bg-secondary-container text-on-secondary-container text-[10px] font-bold uppercase tracking-tighter rounded">Draft</span>
+</td>
+<td class="px-6 py-4">
+<div class="w-32 h-1 bg-surface-container rounded-full relative">
+<div class="absolute inset-0 bg-primary w-[40%]"></div>
+</div>
+</td>
+<td class="px-6 py-4 text-right">
+<div class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="material-symbols-outlined text-secondary-fixed hover:text-primary text-lg" data-icon="edit">edit</button>
+<button class="material-symbols-outlined text-secondary-fixed hover:text-error text-lg" data-icon="delete">delete</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Users & Comments Section (Split Layout) -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-gutter">
+<!-- User Management -->
+<div class="glass-card rounded-lg overflow-hidden border border-outline-variant/20">
+<div class="p-6 border-b border-outline-variant/20 bg-surface-container-high flex justify-between items-center">
+<h3 class="font-headline-md text-headline-md">Registry Operators</h3>
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="group">group</span>
+</div>
+<div class="p-0">
+<div class="divide-y divide-outline-variant/10">
+<div class="p-4 flex items-center justify-between hover:bg-white/5 transition-colors">
+<div class="flex items-center gap-3">
+<img class="w-10 h-10 rounded-full object-cover grayscale" data-alt="A portrait of a male automotive engineer in a high-tech dark studio setting. The lighting is dramatic with cool blue rim highlights, emphasizing the clean, technical precision of the PCAR brand. He wears a dark charcoal professional uniform with subtle silver detailing. The background is a blurred digital interface with floating data metrics." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBwVu-LgEQTMKbD1AXqAtiZm051fm_30CfHIR1QYzh7K4xJolusdyCJ79sQmoZFPQtcCqtGVU_vy5pegEFMzIxooN7EzI_IL3DdAX5fbr8MxUt27XWwpdY4ViB6G5GCN8mauhUagXH8BBr5yxJ1ce3PjHHCQWMd_cZYhj98mrkDUEhU2fCb6OsUCyZjpUw5sgbgn13EeLnWrR627yuX6AB1PKUmGznWOCO7pKEuC9HVJcOM8Ey8Mbcqpmws1o5U6wmKFrxKe8LVkLP2"/>
+<div>
+<p class="font-body-md text-on-surface font-bold">Adrian Vought</p>
+<p class="text-[12px] text-on-surface-variant">Lead Editor</p>
+</div>
+</div>
+<div class="flex gap-2">
+<button class="p-2 hover:bg-surface-bright rounded transition-colors">
+<span class="material-symbols-outlined text-sm" data-icon="shield">shield</span>
+</button>
+<button class="p-2 hover:bg-surface-bright rounded transition-colors">
+<span class="material-symbols-outlined text-sm" data-icon="more_vert">more_vert</span>
+</button>
+</div>
+</div>
+<div class="p-4 flex items-center justify-between hover:bg-white/5 transition-colors">
+<div class="flex items-center gap-3">
+<img class="w-10 h-10 rounded-full object-cover grayscale" data-alt="A portrait of a female software architect in a minimalist dark environment. The scene is illuminated by soft neon blue light coming from off-screen monitors. Her expression is focused and professional, reflecting the high-performance engineering aesthetic of the brand. Deep blacks and cool metallic silver tones dominate the image mood." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA1KHAPxxZF0ne17vBHwKAn2TWUZoVEV3r1MkfzogSMNIipDTmEnsyAWzPBjm1L9UPGGAds52bqaE7uZ9dvzg7QVH5i69y1VHQ9ZD3OvnmL-L8qOxBPIkHy-JvfdSXgri_Ad0NerVKwLWZsLRPiOtZJ3wnmpvqxZoplzspuPpiQDkwJVSKSdnd77D3VPoOJyxa5rueW0IyAF4l1Ltc9f7BUTEF8a8eR7aKIJio5NXvkI_Lpl5v_CcjYH5B7-QInQlXZQabfDFm1VJjH"/>
+<div>
+<p class="font-body-md text-on-surface font-bold">Elena Ross</p>
+<p class="text-[12px] text-on-surface-variant">Data Validator</p>
+</div>
+</div>
+<div class="flex gap-2">
+<button class="p-2 hover:bg-surface-bright rounded transition-colors">
+<span class="material-symbols-outlined text-sm" data-icon="shield">shield</span>
+</button>
+<button class="p-2 hover:bg-surface-bright rounded transition-colors">
+<span class="material-symbols-outlined text-sm" data-icon="more_vert">more_vert</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Comment Moderation -->
+<div class="glass-card rounded-lg overflow-hidden border border-outline-variant/20">
+<div class="p-6 border-b border-outline-variant/20 bg-surface-container-high flex justify-between items-center">
+<h3 class="font-headline-md text-headline-md">Moderation Queue</h3>
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="forum">forum</span>
+</div>
+<div class="divide-y divide-outline-variant/10">
+<div class="p-4 space-y-2 hover:bg-white/5 transition-colors">
+<div class="flex justify-between items-start">
+<span class="font-label-caps text-[10px] text-primary">RE: 2024 PORSCHE 911</span>
+<span class="text-[10px] text-on-surface-variant">2m ago</span>
+</div>
+<p class="text-sm text-on-surface italic">"The drag coefficient mentioned seems slightly off compared to official factory specs..."</p>
+<div class="flex gap-2 pt-2">
+<button class="px-3 py-1 bg-primary/20 text-primary text-[10px] font-bold rounded hover:bg-primary/30 transition-colors uppercase">Approve</button>
+<button class="px-3 py-1 bg-error/20 text-error text-[10px] font-bold rounded hover:bg-error/30 transition-colors uppercase">Reject</button>
+</div>
+</div>
+<div class="p-4 space-y-2 hover:bg-white/5 transition-colors">
+<div class="flex justify-between items-start">
+<span class="font-label-caps text-[10px] text-primary">RE: MCLAREN ARTURA</span>
+<span class="text-[10px] text-on-surface-variant">15m ago</span>
+</div>
+<p class="text-sm text-on-surface italic">"Are there any plans to include the Spider variant technical details soon?"</p>
+<div class="flex gap-2 pt-2">
+<button class="px-3 py-1 bg-primary/20 text-primary text-[10px] font-bold rounded hover:bg-primary/30 transition-colors uppercase">Approve</button>
+<button class="px-3 py-1 bg-error/20 text-error text-[10px] font-bold rounded hover:bg-error/30 transition-colors uppercase">Reject</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Secondary Management Tables (Brands/Categories) -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-gutter">
+<!-- Brands Management -->
+<div class="glass-card rounded-lg p-6 border border-outline-variant/20">
+<div class="flex justify-between items-center mb-6">
+<h3 class="font-headline-md text-headline-md">Manufacturers</h3>
+<button class="material-symbols-outlined text-secondary-fixed" data-icon="settings">settings</button>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="p-4 bg-surface-container-low rounded flex items-center gap-3 border border-outline-variant/10">
+<span class="material-symbols-outlined text-primary" data-icon="factory">factory</span>
+<div>
+<p class="font-bold text-sm">Ferrari</p>
+<p class="text-[10px] text-on-surface-variant">42 MODELS</p>
+</div>
+</div>
+<div class="p-4 bg-surface-container-low rounded flex items-center gap-3 border border-outline-variant/10">
+<span class="material-symbols-outlined text-primary" data-icon="factory">factory</span>
+<div>
+<p class="font-bold text-sm">Tesla</p>
+<p class="text-[10px] text-on-surface-variant">12 MODELS</p>
+</div>
+</div>
+<div class="p-4 bg-surface-container-low rounded flex items-center gap-3 border border-outline-variant/10">
+<span class="material-symbols-outlined text-primary" data-icon="factory">factory</span>
+<div>
+<p class="font-bold text-sm">BMW</p>
+<p class="text-[10px] text-on-surface-variant">108 MODELS</p>
+</div>
+</div>
+<div class="p-4 bg-surface-container-low rounded flex items-center gap-3 border border-outline-variant/10">
+<span class="material-symbols-outlined text-primary" data-icon="add">add</span>
+<div>
+<p class="font-bold text-sm text-primary">New Brand</p>
+<p class="text-[10px] text-on-surface-variant uppercase">Register</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Categories Management -->
+<div class="glass-card rounded-lg p-6 border border-outline-variant/20">
+<div class="flex justify-between items-center mb-6">
+<h3 class="font-headline-md text-headline-md">Vehicle Classes</h3>
+<button class="material-symbols-outlined text-secondary-fixed" data-icon="category">category</button>
+</div>
+<div class="space-y-3">
+<div class="flex justify-between items-center p-3 bg-surface-container-low rounded border-l-2 border-primary">
+<span class="text-sm font-bold">Hypercars</span>
+<span class="text-[10px] bg-secondary-container px-2 py-0.5 rounded">8 Active</span>
+</div>
+<div class="flex justify-between items-center p-3 bg-surface-container-low rounded">
+<span class="text-sm font-bold">EV Sedans</span>
+<span class="text-[10px] bg-secondary-container px-2 py-0.5 rounded">24 Active</span>
+</div>
+<div class="flex justify-between items-center p-3 bg-surface-container-low rounded">
+<span class="text-sm font-bold">Grand Tourers</span>
+<span class="text-[10px] bg-secondary-container px-2 py-0.5 rounded">18 Active</span>
+</div>
+<button class="w-full border-2 border-dashed border-outline-variant/30 py-2 text-[10px] font-label-caps uppercase text-on-surface-variant hover:border-primary/50 hover:text-primary transition-all">
+                                Define New Classification
+                            </button>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- Footer -->
+<footer class="w-full bg-surface-container-lowest border-t border-outline-variant/20 mt-auto">
+<div class="w-full py-stack-lg px-margin-page flex flex-col md:flex-row justify-between items-start gap-gutter max-w-container-max mx-auto">
+<div class="space-y-4 max-w-sm">
+<div class="font-headline-md text-headline-md text-on-surface-variant font-bold">PCAR</div>
+<p class="font-body-md text-sm text-on-surface-variant/70">
+                    © 2024 PCAR Automotive Encyclopedia. Precision Engineered for Enthusiasts.
+                </p>
+</div>
+<div class="grid grid-cols-2 md:grid-cols-3 gap-stack-md">
+<div class="flex flex-col gap-2">
+<p class="font-label-caps text-label-caps text-primary mb-2">SYSTEM</p>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-all" href="#">API Documentation</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-all" href="#">Contribution Guidelines</a>
+</div>
+<div class="flex flex-col gap-2">
+<p class="font-label-caps text-label-caps text-primary mb-2">LEGAL</p>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-all" href="#">Privacy Policy</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-all" href="#">Contact Support</a>
+</div>
+<div class="flex flex-col gap-2">
+<p class="font-label-caps text-label-caps text-primary mb-2">ABOUT</p>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-all" href="#">About PCAR</a>
+</div>
+</div>
+</div>
+</footer>
+</body></html>

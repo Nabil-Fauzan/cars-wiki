@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&amp;family=Metropolis:wght@700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "primary-fixed": "#cfe5ff",
+                    "on-tertiary-container": "#343434",
+                    "on-tertiary-fixed": "#1b1c1c",
+                    "on-secondary-fixed": "#1a1c1c",
+                    "background": "#131313",
+                    "tertiary-fixed-dim": "#c8c6c5",
+                    "tertiary": "#c8c6c5",
+                    "surface-tint": "#98cbff",
+                    "primary": "#98cbff",
+                    "surface-bright": "#3a3939",
+                    "on-error": "#690005",
+                    "on-background": "#e5e2e1",
+                    "surface-variant": "#353534",
+                    "on-primary": "#003354",
+                    "primary-fixed-dim": "#98cbff",
+                    "on-primary-fixed": "#001d33",
+                    "tertiary-fixed": "#e4e2e1",
+                    "surface-container-lowest": "#0e0e0e",
+                    "tertiary-container": "#9e9c9c",
+                    "inverse-primary": "#00629d",
+                    "on-primary-fixed-variant": "#004a77",
+                    "on-surface-variant": "#bec7d4",
+                    "error-container": "#93000a",
+                    "on-secondary": "#2f3131",
+                    "error": "#ffb4ab",
+                    "inverse-surface": "#e5e2e1",
+                    "on-secondary-fixed-variant": "#454747",
+                    "surface": "#131313",
+                    "on-secondary-container": "#b5b5b5",
+                    "secondary": "#c6c6c6",
+                    "outline-variant": "#3f4852",
+                    "surface-container": "#201f1f",
+                    "on-primary-container": "#00375a",
+                    "on-tertiary-fixed-variant": "#474746",
+                    "secondary-fixed": "#e2e2e2",
+                    "secondary-fixed-dim": "#c6c6c6",
+                    "on-surface": "#e5e2e1",
+                    "surface-container-low": "#1c1b1b",
+                    "inverse-on-surface": "#313030",
+                    "surface-container-highest": "#353534",
+                    "on-error-container": "#ffdad6",
+                    "primary-container": "#00a3ff",
+                    "on-tertiary": "#303030",
+                    "outline": "#88919d",
+                    "surface-dim": "#131313",
+                    "secondary-container": "#454747",
+                    "surface-container-high": "#2a2a2a"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "stack-md": "32px",
+                    "container-max": "1440px",
+                    "gutter": "24px",
+                    "margin-page": "64px",
+                    "unit": "8px",
+                    "stack-sm": "16px",
+                    "stack-lg": "64px"
+            },
+            "fontFamily": {
+                    "headline-xl": ["Metropolis"],
+                    "label-caps": ["Metropolis"],
+                    "headline-md": ["Metropolis"],
+                    "headline-lg": ["Metropolis"],
+                    "body-md": ["Inter"],
+                    "body-lg": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-xl": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.04em", "fontWeight": "800"}],
+                    "label-caps": ["12px", {"lineHeight": "1.0", "letterSpacing": "0.1em", "fontWeight": "800"}],
+                    "headline-md": ["24px", {"lineHeight": "1.3", "letterSpacing": "0em", "fontWeight": "700"}],
+                    "headline-lg": ["32px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-md": ["16px", {"lineHeight": "1.6", "letterSpacing": "0.01em", "fontWeight": "400"}],
+                    "body-lg": ["18px", {"lineHeight": "1.6", "letterSpacing": "0em", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+      .glass-card {
+        backdrop-filter: blur(20px);
+        background: rgba(43, 43, 43, 0.6);
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        border-left: 1px solid rgba(255, 255, 255, 0.1);
+      }
+      .machined-edge {
+        border: 1px solid #3f4852;
+      }
+      .inner-glow:hover {
+        box-shadow: inset 0 0 15px rgba(0, 163, 255, 0.2), 0 0 20px rgba(0, 163, 255, 0.1);
+      }
+      .gauge-segment {
+        height: 4px;
+        background: #98cbff;
+        border-radius: 2px;
+      }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md selection:bg-primary-container/30">
+<!-- Top Navigation Bar -->
+<header class="fixed top-0 left-0 right-0 z-50 bg-surface/60 backdrop-blur-[20px] border-b border-outline-variant/30 shadow-[0_20px_50px_rgba(0,163,255,0.05)] h-20">
+<nav class="flex justify-between items-center w-full px-margin-page h-full max-w-container-max mx-auto">
+<div class="font-headline-lg text-headline-lg font-extrabold tracking-tighter text-on-surface">PCAR</div>
+<div class="hidden md:flex items-center gap-8">
+<a class="font-label-caps text-label-caps text-secondary hover:text-on-surface transition-colors" href="#">Home</a>
+<a class="font-label-caps text-label-caps text-primary border-b-2 border-primary pb-1" href="#">Explore Cars</a>
+<a class="font-label-caps text-label-caps text-secondary hover:text-on-surface transition-colors" href="#">Compare</a>
+<a class="font-label-caps text-label-caps text-secondary hover:text-on-surface transition-colors" href="#">Brands</a>
+<a class="font-label-caps text-label-caps text-secondary hover:text-on-surface transition-colors" href="#">Categories</a>
+</div>
+<div class="flex items-center gap-stack-sm">
+<button class="p-2 text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="favorite">favorite</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="admin_panel_settings">admin_panel_settings</span>
+</button>
+</div>
+</nav>
+</header>
+<main class="pt-20">
+<!-- Hero Section & Gallery -->
+<section class="relative w-full h-[716px] overflow-hidden bg-surface-container-lowest">
+<img alt="Main Hero Image" class="w-full h-full object-cover opacity-80" data-alt="A high-performance luxury sports car in a sleek metallic obsidian finish parked inside a high-tech minimalist concrete garage. Cold, cinematic blue lighting highlights the aerodynamic curves and carbon fiber details. The atmosphere is quiet, professional, and sophisticated, with soft light reflecting off the polished floor. Precision engineering is conveyed through the sharp focus on the vehicle's futuristic headlight design." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCsexRMUHsK74WlEsOH-uvOiOZyrOKfs5WcA3eKd35yDiTi0qzON0G3JRyBUPRbYe-1e-BNpIM9ad5NKFWqTRGI7PWXcjKaT_ZdHy1Auxk5jWxrwdoIf2YiVWhV0G7o6hLwuZ6XYmXa-2YvXhjMF8iNhM_V8SuIuYRnTuSn7PSnsprHbJeA7FFO8Y7k29FqEW7xYQYHieRdyOfWAd-A2ZUotxQ9b9eAOcovpt2Pc8m_JGFXFSPq9qStd2SyDJL3ELNYcwASXKG-KwAG"/>
+<div class="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent"></div>
+<div class="absolute bottom-margin-page left-margin-page right-margin-page max-w-container-max mx-auto">
+<div class="flex flex-col gap-2">
+<span class="font-label-caps text-label-caps text-primary-fixed uppercase tracking-widest">Performance Series</span>
+<h1 class="font-headline-xl text-headline-xl text-on-surface">GT-800 Interceptor</h1>
+<div class="flex items-center gap-4 mt-stack-sm">
+<button class="bg-primary px-stack-md py-3 text-on-primary font-label-caps text-label-caps rounded-[4px] hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-2">
+<span class="material-symbols-outlined" data-icon="compare_arrows">compare_arrows</span> Compare with another car
+                        </button>
+<button class="border border-secondary px-stack-md py-3 text-on-surface font-label-caps text-label-caps rounded-[4px] hover:bg-white/5 transition-all flex items-center gap-2">
+<span class="material-symbols-outlined" data-icon="favorite">favorite</span> Add to Favorites
+                        </button>
+</div>
+</div>
+</div>
+</section>
+<div class="max-w-container-max mx-auto px-margin-page py-stack-lg flex flex-col lg:flex-row gap-gutter">
+<!-- Left Column: Specs & History -->
+<div class="flex-1 space-y-stack-lg">
+<!-- Performance Gauges (Modern Digital Style) -->
+<div class="grid grid-cols-2 md:grid-cols-4 gap-stack-sm">
+<div class="glass-card p-stack-sm machined-edge">
+<p class="font-label-caps text-label-caps text-secondary">0-60 MPH</p>
+<p class="font-headline-md text-headline-md text-primary mt-1">2.4s</p>
+<div class="flex gap-1 mt-2">
+<div class="gauge-segment flex-1"></div>
+<div class="gauge-segment flex-1"></div>
+<div class="gauge-segment flex-1"></div>
+<div class="gauge-segment flex-1"></div>
+<div class="gauge-segment flex-1 opacity-20"></div>
+</div>
+</div>
+<div class="glass-card p-stack-sm machined-edge">
+<p class="font-label-caps text-label-caps text-secondary">TOP SPEED</p>
+<p class="font-headline-md text-headline-md text-primary mt-1">218 MPH</p>
+<div class="flex gap-1 mt-2">
+<div class="gauge-segment flex-1"></div>
+<div class="gauge-segment flex-1"></div>
+<div class="gauge-segment flex-1"></div>
+<div class="gauge-segment flex-1 opacity-20"></div>
+<div class="gauge-segment flex-1 opacity-20"></div>
+</div>
+</div>
+<div class="glass-card p-stack-sm machined-edge">
+<p class="font-label-caps text-label-caps text-secondary">AERODYNAMICS</p>
+<p class="font-headline-md text-headline-md text-primary mt-1">0.24 CD</p>
+<div class="flex gap-1 mt-2">
+<div class="gauge-segment flex-1"></div>
+<div class="gauge-segment flex-1"></div>
+<div class="gauge-segment flex-1"></div>
+<div class="gauge-segment flex-1"></div>
+<div class="gauge-segment flex-1"></div>
+</div>
+</div>
+<div class="glass-card p-stack-sm machined-edge">
+<p class="font-label-caps text-label-caps text-secondary">BRAKING</p>
+<p class="font-headline-md text-headline-md text-primary mt-1">98 FT</p>
+<div class="flex gap-1 mt-2">
+<div class="gauge-segment flex-1"></div>
+<div class="gauge-segment flex-1"></div>
+<div class="gauge-segment flex-1"></div>
+<div class="gauge-segment flex-1"></div>
+<div class="gauge-segment flex-1 opacity-20"></div>
+</div>
+</div>
+</div>
+<!-- History Section -->
+<section class="glass-card p-stack-md machined-edge">
+<h2 class="font-headline-lg text-headline-lg mb-stack-sm">Legacy &amp; Heritage</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant leading-relaxed">
+                        The GT-800 Interceptor represents the pinnacle of four decades of endurance racing experience. Born from the secret labs of the PCAR Performance Division, this machine was initially designed as a technological demonstrator for active aerodynamics and kinetic energy recovery systems. The chassis is a monolithic carbon-fiber structure, a first for a production vehicle of this class, ensuring unparalleled rigidity and weight distribution.
+                    </p>
+</section>
+<!-- Technical Specifications Table -->
+<section class="glass-card machined-edge overflow-hidden">
+<div class="p-stack-sm bg-surface-container-highest border-b border-outline-variant/30">
+<h3 class="font-label-caps text-label-caps">Technical Specifications</h3>
+</div>
+<div class="divide-y divide-outline-variant/10">
+<div class="grid grid-cols-2 p-stack-sm hover:bg-white/5 transition-colors">
+<span class="font-label-caps text-label-caps text-secondary">Engine</span>
+<span class="font-body-md text-body-md text-on-surface">4.0L Twin-Turbo Flat-Six Hybrid</span>
+</div>
+<div class="grid grid-cols-2 p-stack-sm hover:bg-white/5 transition-colors">
+<span class="font-label-caps text-label-caps text-secondary">Horsepower</span>
+<span class="font-body-md text-body-md text-on-surface">820 HP @ 8,500 RPM</span>
+</div>
+<div class="grid grid-cols-2 p-stack-sm hover:bg-white/5 transition-colors">
+<span class="font-label-caps text-label-caps text-secondary">Torque</span>
+<span class="font-body-md text-body-md text-on-surface">650 LB-FT @ 2,100 RPM</span>
+</div>
+<div class="grid grid-cols-2 p-stack-sm hover:bg-white/5 transition-colors">
+<span class="font-label-caps text-label-caps text-secondary">Transmission</span>
+<span class="font-body-md text-body-md text-on-surface">8-Speed Dual-Clutch (PDK)</span>
+</div>
+<div class="grid grid-cols-2 p-stack-sm hover:bg-white/5 transition-colors">
+<span class="font-label-caps text-label-caps text-secondary">Drivetrain</span>
+<span class="font-body-md text-body-md text-on-surface">Intelligent All-Wheel Drive (AWD)</span>
+</div>
+<div class="grid grid-cols-2 p-stack-sm hover:bg-white/5 transition-colors">
+<span class="font-label-caps text-label-caps text-secondary">Fuel</span>
+<span class="font-body-md text-body-md text-on-surface">Premium Unleaded / Electric Assist</span>
+</div>
+<div class="grid grid-cols-2 p-stack-sm hover:bg-white/5 transition-colors">
+<span class="font-label-caps text-label-caps text-secondary">Year</span>
+<span class="font-body-md text-body-md text-on-surface">2024</span>
+</div>
+</div>
+</section>
+<!-- Pros & Cons -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-stack-sm">
+<div class="glass-card p-stack-md machined-edge border-l-4 border-l-primary">
+<h4 class="font-label-caps text-label-caps text-primary mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-sm" data-icon="add_circle">add_circle</span> Strategic Advantages
+                        </h4>
+<ul class="space-y-3 font-body-md text-on-surface-variant">
+<li class="flex items-start gap-2"><span class="material-symbols-outlined text-primary text-sm mt-1" data-icon="check">check</span> Industry-leading throttle response</li>
+<li class="flex items-start gap-2"><span class="material-symbols-outlined text-primary text-sm mt-1" data-icon="check">check</span> Exceptional downforce at high speeds</li>
+<li class="flex items-start gap-2"><span class="material-symbols-outlined text-primary text-sm mt-1" data-icon="check">check</span> Zero-emission silent mode for urban driving</li>
+</ul>
+</div>
+<div class="glass-card p-stack-md machined-edge border-l-4 border-l-error">
+<h4 class="font-label-caps text-label-caps text-error mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-sm" data-icon="remove_circle">remove_circle</span> Engineering Trade-offs
+                        </h4>
+<ul class="space-y-3 font-body-md text-on-surface-variant">
+<li class="flex items-start gap-2"><span class="material-symbols-outlined text-error text-sm mt-1" data-icon="close">close</span> Highly complex maintenance requirements</li>
+<li class="flex items-start gap-2"><span class="material-symbols-outlined text-error text-sm mt-1" data-icon="close">close</span> Limited cargo space due to battery placement</li>
+<li class="flex items-start gap-2"><span class="material-symbols-outlined text-error text-sm mt-1" data-icon="close">close</span> Aggressive seating position may be fatiguing</li>
+</ul>
+</div>
+</div>
+<!-- Community Discussion -->
+<section class="space-y-stack-sm">
+<h2 class="font-headline-lg text-headline-lg">Community Insights</h2>
+<div class="glass-card machined-edge p-stack-md">
+<div class="flex gap-4">
+<div class="w-10 h-10 rounded-full bg-surface-container-highest flex items-center justify-center text-primary font-bold">JD</div>
+<div class="flex-1">
+<textarea class="w-full bg-surface-container-low border-b border-outline text-on-surface focus:border-primary transition-all p-3 min-h-[100px] outline-none" placeholder="Share your technical analysis..."></textarea>
+<div class="flex justify-end mt-stack-sm">
+<button class="bg-primary-container text-on-primary-container px-6 py-2 font-label-caps text-label-caps rounded-[4px] hover:opacity-90 transition-all">Post Comment</button>
+</div>
+</div>
+</div>
+<!-- Sample Comment -->
+<div class="mt-stack-lg space-y-stack-md">
+<div class="flex gap-4">
+<div class="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="person">person</span>
+</div>
+<div class="flex-1 space-y-2">
+<div class="flex items-center gap-2">
+<span class="font-label-caps text-label-caps text-on-surface">Aerodynamicist_88</span>
+<span class="text-[10px] text-on-surface-variant opacity-60">2 DAYS AGO</span>
+</div>
+<p class="text-on-surface-variant leading-relaxed">The active rear wing adjustment on the Interceptor is fascinating. It seems to react within milliseconds to steering angle changes, not just speed. Does anyone have the official CFD data for the drag reduction system?</p>
+<div class="flex items-center gap-6 pt-2">
+<button class="flex items-center gap-1 text-on-surface-variant hover:text-primary transition-colors text-sm">
+<span class="material-symbols-outlined text-lg" data-icon="thumb_up">thumb_up</span> 24
+                                        </button>
+<button class="flex items-center gap-1 text-on-surface-variant hover:text-primary transition-colors text-sm">
+<span class="material-symbols-outlined text-lg" data-icon="reply">reply</span> Reply
+                                        </button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+<!-- Right Column: Gallery & Related -->
+<div class="lg:w-96 space-y-stack-lg">
+<!-- Secondary Gallery -->
+<div class="grid grid-cols-2 gap-stack-sm">
+<div class="glass-card machined-edge overflow-hidden aspect-square">
+<img alt="Interior Detail" class="w-full h-full object-cover hover:scale-110 transition-transform duration-500" data-alt="Close-up shot of a modern luxury car cockpit featuring a carbon-fiber dashboard and a large digital tachometer glowing in neon blue. The stitching on the leather steering wheel is intricate and precise. Cinematic lighting from above creates dramatic shadows, emphasizing the high-tech and performance-oriented design language of the interior." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDa6312FtMVy9kMnausBagW7-H4hoPrOpmFBl6Fn4M6crHX_lnx_u7rJx3j_FftAFPtDboTjEVeTfVQLNIubyZ6UuaMlni_Vqg8E-sa10MOwFK7IZqd2AbLViI9ROOp2ksul1oKkHCIcmac49jXMc-k7LRT6BZk2uvX8ULqIhewSuNuik5P2t3rkfeE9Dgg2W3YqIzBUW2yD2CpMpOZ3tn_-w8EdYP9QWNFNndvSccr_qE09YZ4QvwGfQlRO7wQPLTSEdTHA4MzhZMi"/>
+</div>
+<div class="glass-card machined-edge overflow-hidden aspect-square">
+<img alt="Engine Bay" class="w-full h-full object-cover hover:scale-110 transition-transform duration-500" data-alt="Highly detailed macro photograph of a twin-turbocharged high-performance engine. The components are machined aluminum and carbon fiber, sparkling under studio lighting. Vibrant blue wires and heat shields add a futuristic, technical aesthetic. The mood is industrial and powerful, highlighting the precision engineering required for such a masterpiece." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA4_UMM0LKfAcalMiJVWvwgUU__DM15x3UQQYx--_IJXXyKl2W8s1EHHF08RTjLcNlzHebVYak5jJvqI1jpLJgbTeqAvX9Pjg0xJS-ris_XsimYEapQKSPMur0Y9JD0TdBsszphY4ERnthlICHljzQ91M9HK32Y-ak0Bc_fNV7JpNAe8K7xvvYq0JunNE3HTVyPMmOWDdnoLmtgkMwEKjNbtNhH4fmCwP6fOcrevn7rVWBwXbSHLYF1dJ4oAKrNQskXhHNsmePSrQ6d"/>
+</div>
+<div class="glass-card machined-edge overflow-hidden aspect-square">
+<img alt="Wheel detail" class="w-full h-full object-cover hover:scale-110 transition-transform duration-500" data-alt="A focused shot of a massive carbon-ceramic brake assembly behind a multi-spoke lightweight forged alloy wheel. The calipers are painted in a striking neon blue with white branding. The concrete background and low-angle lighting create a cold, mechanical atmosphere that speaks to the vehicle's stopping power and high-speed stability." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAAAypkK11H50HlG_BnFP-cPpVRhdt5hrKcEnM8hTgKT0xDY27gWxZo1dY8lqWayc4qGIEK-h7OukDQ8H0OZ57004MH6Qf7bma5n-_Ij1hFT_NXx616_-nqiTLtUjCBliKhqcantod0eVD_EvvcnGQ8ss7xtAWFJfjA4b_u6A3GbfY0L6NqwVn-RJnI72pSaUiO7s0KsFW80nLcJ-1EGDQDwJWjTefhX65bhUibMZWAOksf39KnbIR2qbBognvDnsnOJoAyzUYAjAbU"/>
+</div>
+<div class="glass-card machined-edge overflow-hidden aspect-square">
+<img alt="Rear view" class="w-full h-full object-cover hover:scale-110 transition-transform duration-500" data-alt="The rear profile of a sleek supercar at night, with its wide LED taillights glowing intensely red against a dark charcoal exterior. The massive rear diffuser and quad-exit titanium exhaust pipes are visible. The scene is illuminated by neon city lights in the distance, creating a high-contrast, moody aesthetic synonymous with speed and nocturnal performance." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBifIPbiOuKOsMb1n7HVHg5QsgMatJGwd0J8HqJEHwrFVVqnH-4ilU0M0iWrpYrP7TLMdnv-ppea-Z3DR_wmIeazcZ0-owKwOTOqXC1-t2d-tu0AG4VNQaLo_8Vegafyq8lk_gGDq2W7efl6BhL8-l4BBfPtzDNWa89Jp1hzLtxCiILqLUvWD55I6cEcZC43F2BFLMMZGF4QoXqvFgjN6aamn4k_Xf9CyWiccp50TLIMPdUmgungA84QOi31i28Fu32fcgeBg9uW56t"/>
+</div>
+</div>
+<!-- Related Cars -->
+<section class="space-y-stack-sm">
+<h3 class="font-label-caps text-label-caps text-secondary">Recommended Rivals</h3>
+<div class="space-y-stack-sm">
+<!-- Related Item 1 -->
+<div class="glass-card machined-edge p-stack-sm flex gap-4 group cursor-pointer hover:border-primary transition-colors">
+<div class="w-20 h-20 bg-surface-container-low flex-shrink-0">
+<img alt="Apex Raptor" class="w-full h-full object-cover" data-alt="A minimalist side profile of an electric supercar in a matte silver finish. The car is parked on a clean white laboratory floor with soft, diffused top lighting. The aesthetic is extremely clean and futuristic, focusing on the sharp geometric silhouette of the car's body." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBLMandDGVwzWmohhj39X6drGscvFjcU9b1eIO0E6F5qU18uC5J5kh2gd8AA_P4LG83kMGAeqiZ0eSYdj_YmIouaxkZeLDruNY6NlnCh4OHdipb1hTIS6o31tAavv0xK03FJ4JOTLSOGhP8GFUVgkkRMIZpAsSTwsOyOjOgrCm3My80o8V_oiQ5hliLoIzSADxopMYmJ8QH3ogZvQ0Sf0-Dti3aPlGVAonpaFUS2tb_IeevWfK0nZcLwm8d1XzKaobi4mxTrfCbP3Jp"/>
+</div>
+<div class="flex flex-col justify-center">
+<span class="font-label-caps text-[10px] text-primary">Apex Motors</span>
+<h4 class="font-label-caps text-on-surface">Raptor E-1</h4>
+<span class="text-xs text-on-surface-variant mt-1">900 HP | 2.1s 0-60</span>
+</div>
+</div>
+<!-- Related Item 2 -->
+<div class="glass-card machined-edge p-stack-sm flex gap-4 group cursor-pointer hover:border-primary transition-colors">
+<div class="w-20 h-20 bg-surface-container-low flex-shrink-0">
+<img alt="Velox V8" class="w-full h-full object-cover" data-alt="A front-view portrait of a classic-inspired modern hypercar in racing green. The car is on a scenic mountain road at sunset, with warm golden light hitting the curved hood. The style is timeless and elegant, merging heritage design with modern aerodynamic features." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCBdAtZUcUjr2E9PV63nnIMFu23V6BFFmI9huXExiXPgZT1ATHMIzIQtfoqz2AHfwXhSPlD4cLcI_y54H-Kh2EnGpVts1Wxd-7XIkzHdbh6zf387dYY-qivkpAo1Xf62jaDCieet9Z7YksnmkjpR5ezYSjQZ3sSO0VJ8jFeh1xvUf8w3xJjSt497HAS5pdDdHc3tyQU8C2bn76TjqC1gI8mDdLZG0hHkkTbVnSBxs2xCyFX1PZLRx2nPcqNEXJP_K7pXUNZooCaGlxB"/>
+</div>
+<div class="flex flex-col justify-center">
+<span class="font-label-caps text-[10px] text-primary">Velox Automotive</span>
+<h4 class="font-label-caps text-on-surface">V8 Heritage</h4>
+<span class="text-xs text-on-surface-variant mt-1">750 HP | 2.9s 0-60</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Technical Download / API info -->
+<div class="glass-card p-stack-md machined-edge bg-primary-container/10 border-primary/30">
+<span class="material-symbols-outlined text-primary mb-2" data-icon="description">description</span>
+<h4 class="font-label-caps text-on-surface mb-2">Technical Dossier</h4>
+<p class="text-xs text-on-surface-variant mb-4">Download the full engineering whitepaper and CAD-optimized specifications.</p>
+<button class="w-full py-2 border border-primary text-primary font-label-caps text-[10px] rounded-[4px] hover:bg-primary/10 transition-all">Download PDF (12.4 MB)</button>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="bg-surface-container-lowest border-t border-outline-variant/20 mt-stack-lg">
+<div class="w-full py-stack-lg px-margin-page flex flex-col md:flex-row justify-between items-start gap-gutter max-w-container-max mx-auto">
+<div class="space-y-4">
+<div class="font-headline-md text-headline-md text-on-surface-variant">PCAR</div>
+<p class="text-on-surface-variant max-w-xs font-body-md">Precision Engineered for Enthusiasts. The global source for automotive technical data and engineering history.</p>
+</div>
+<div class="grid grid-cols-2 gap-12">
+<div class="flex flex-col gap-3">
+<span class="font-label-caps text-label-caps text-primary">Wiki</span>
+<a class="text-on-surface-variant hover:text-primary transition-colors" href="#">About PCAR</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors" href="#">Contribution Guidelines</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors" href="#">API Documentation</a>
+</div>
+<div class="flex flex-col gap-3">
+<span class="font-label-caps text-label-caps text-primary">Legal</span>
+<a class="text-on-surface-variant hover:text-primary transition-colors" href="#">Privacy Policy</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors" href="#">Contact Support</a>
+</div>
+</div>
+</div>
+<div class="w-full py-6 px-margin-page border-t border-outline-variant/10 flex justify-center">
+<p class="font-label-caps text-[10px] text-on-surface-variant tracking-widest">© 2024 PCAR AUTOMOTIVE ENCYCLOPEDIA. PRECISION ENGINEERED FOR ENTHUSIASTS.</p>
+</div>
+</footer>
+</body></html>
