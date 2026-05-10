@@ -31,6 +31,10 @@
                     <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">lock</span>
                     <span class="font-label-caps text-label-caps">Admin Panel</span>
                 </a>
+                <a class="flex items-center gap-4 {{ request()->is('admin/brands*') ? 'bg-secondary-container/50 text-primary border-l-4 border-primary' : 'text-on-surface-variant hover:text-on-surface' }} px-4 py-3 active:translate-x-1 transition-transform duration-200" href="{{ route('admin.brands.index') }}">
+                    <span class="material-symbols-outlined">factory</span>
+                    <span class="font-label-caps text-label-caps">Manage Brands</span>
+                </a>
             </nav>
             <div class="px-6 mt-auto">
                 <a href="{{ route('cars.create') }}" class="w-full bg-primary text-on-primary py-3 px-4 font-label-caps text-label-caps rounded-lg hover:opacity-90 transition-all text-center block">
@@ -122,9 +126,14 @@
                                             </span>
                                         </td>
                                         <td class="px-6 py-4">
-                                            <div class="flex items-center gap-3">
-                                                <div class="w-8 h-8 rounded bg-surface-bright flex items-center justify-center font-bold text-[10px]">{{ substr($car->make, 0, 1) }}</div>
-                                                <span class="font-body-md text-on-surface">{{ $car->make }}</span>
+                                            <div class="flex flex-wrap gap-1">
+                                                @forelse($car->brands as $brand)
+                                                    <span class="bg-surface-container px-2 py-1 rounded text-on-surface font-label-caps text-[10px]">
+                                                        {{ $brand->name }}
+                                                    </span>
+                                                @empty
+                                                    <span class="text-error italic text-[10px]">NO BRAND LINKED</span>
+                                                @endforelse
                                             </div>
                                         </td>
                                         <td class="px-6 py-4">

@@ -17,6 +17,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/cars/{car}/duplicate', [CarController::class, 'duplicate'])->name('cars.duplicate');
     Route::post('/cars/{car}/toggle-status', [CarController::class, 'toggleStatus'])->name('cars.toggle-status');
     Route::resource('cars', CarController::class)->except(['index', 'show']);
+
+    // Brand Management
+    Route::get('/admin/brands', [\App\Http\Controllers\BrandController::class, 'index'])->name('admin.brands.index');
+    Route::post('/admin/brands', [\App\Http\Controllers\BrandController::class, 'store'])->name('admin.brands.store');
+    Route::delete('/admin/brands/{brand}', [\App\Http\Controllers\BrandController::class, 'destroy'])->name('admin.brands.destroy');
+    Route::post('/admin/brands/sync', [\App\Http\Controllers\BrandController::class, 'syncFromCars'])->name('admin.brands.sync');
 });
 
 Route::middleware('auth')->group(function () {

@@ -9,10 +9,16 @@
             @forelse($categories as $cat)
                 <div class="glass-card group relative overflow-hidden transition-all duration-300 hover:border-primary">
                     <div class="aspect-square relative overflow-hidden">
-                        <img src="{{ $cat->image }}" alt="{{ $cat->category }}" class="w-full h-full object-cover opacity-40 group-hover:opacity-60 transition-opacity grayscale group-hover:grayscale-0">
+                        @if($cat->image)
+                            <img src="{{ $cat->image }}" alt="{{ $cat->category }}" class="w-full h-full object-cover opacity-40 group-hover:opacity-60 transition-opacity grayscale group-hover:grayscale-0">
+                        @else
+                            <div class="w-full h-full bg-surface-container-highest flex items-center justify-center opacity-40">
+                                <span class="material-symbols-outlined text-headline-xl">category</span>
+                            </div>
+                        @endif
                         <div class="absolute inset-0 bg-gradient-to-t from-background to-transparent"></div>
                         <div class="absolute inset-0 flex flex-col items-center justify-center p-6">
-                            <span class="font-headline-lg text-headline-lg text-on-surface text-center uppercase tracking-tighter">{{ $cat->category }}</span>
+                            <span class="font-headline-lg text-headline-lg text-on-surface text-center uppercase tracking-tighter">{{ \Illuminate\Support\Str::title(str_replace('_', ' ', $cat->category)) }}</span>
                             <span class="font-label-caps text-label-caps text-primary mt-2">{{ $cat->total }} SPECIMENS</span>
                         </div>
                     </div>

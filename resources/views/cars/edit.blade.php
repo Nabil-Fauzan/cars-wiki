@@ -20,10 +20,6 @@
             @method('PUT')
             <div class="grid grid-cols-1 md:grid-cols-2 gap-gutter">
                 <div class="space-y-2">
-                    <label class="font-label-caps text-label-caps text-secondary">MAKE / BRAND (TITLE)</label>
-                    <input type="text" name="make" value="{{ $car->make }}" class="w-full bg-surface-container border-none border-b border-outline-variant focus:ring-0 focus:border-primary text-on-surface p-3" required>
-                </div>
-                <div class="space-y-2">
                     <label class="font-label-caps text-label-caps text-secondary">ASSOCIATED BRANDS (MULTI-SELECT)</label>
                     <select name="brand_ids[]" multiple class="w-full bg-surface-container border-none border-b border-outline-variant focus:ring-0 focus:border-primary text-on-surface p-3 h-32">
                         @foreach($brands as $brand)
@@ -50,7 +46,12 @@
                 </div>
                 <div class="space-y-2">
                     <label class="font-label-caps text-label-caps text-secondary">CATEGORY</label>
-                    <input type="text" name="category" value="{{ $car->category }}" class="w-full bg-surface-container border-none border-b border-outline-variant focus:ring-0 focus:border-primary text-on-surface p-3">
+                    <input type="text" name="category" list="category_list" value="{{ $car->category }}" class="w-full bg-surface-container border-none border-b border-outline-variant focus:ring-0 focus:border-primary text-on-surface p-3">
+                    <datalist id="category_list">
+                        @foreach($categories as $category)
+                            <option value="{{ $category }}">
+                        @endforeach
+                    </datalist>
                 </div>
                 <div class="col-span-full space-y-2">
                     <label class="font-label-caps text-label-caps text-secondary">HERO IMAGE URL</label>

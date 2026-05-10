@@ -2,7 +2,7 @@
     <main class="pt-0">
         <!-- Hero Section & Gallery -->
         <section class="relative w-full h-[716px] overflow-hidden bg-surface-container-lowest">
-            <img alt="{{ $car->make }} {{ $car->model }}" class="w-full h-full object-cover opacity-80" src="{{ $car->image_url }}"/>
+            <img alt="{{ $car->brands->first()->name ?? 'Vehicle' }} {{ $car->model }}" class="w-full h-full object-cover opacity-80" src="{{ $car->image_url }}"/>
             <div class="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent"></div>
             <div class="absolute bottom-margin-page left-margin-page right-margin-page max-w-container-max mx-auto">
                 <div class="flex flex-col gap-2">

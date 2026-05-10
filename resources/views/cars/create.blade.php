@@ -23,10 +23,6 @@
                     <input type="text" name="model_id" value="{{ $duplicate->model_id ?? old('model_id') }}" placeholder="e.g. PC-911-GTS" class="w-full bg-surface-container border-none border-b border-outline-variant focus:ring-0 focus:border-primary text-on-surface p-3" required>
                 </div>
                 <div class="space-y-2">
-                    <label class="font-label-caps text-label-caps text-secondary">MAKE / BRAND (TITLE)</label>
-                    <input type="text" name="make" value="{{ $duplicate->make ?? old('make') }}" placeholder="e.g. Porsche" class="w-full bg-surface-container border-none border-b border-outline-variant focus:ring-0 focus:border-primary text-on-surface p-3" required>
-                </div>
-                <div class="space-y-2">
                     <label class="font-label-caps text-label-caps text-secondary">ASSOCIATED BRANDS (MULTI-SELECT)</label>
                     <select name="brand_ids[]" multiple class="w-full bg-surface-container border-none border-b border-outline-variant focus:ring-0 focus:border-primary text-on-surface p-3 h-32">
                         @foreach($brands as $brand)
@@ -53,7 +49,12 @@
                 </div>
                 <div class="space-y-2">
                     <label class="font-label-caps text-label-caps text-secondary">CATEGORY</label>
-                    <input type="text" name="category" value="{{ $duplicate->category ?? old('category') }}" placeholder="Supercar" class="w-full bg-surface-container border-none border-b border-outline-variant focus:ring-0 focus:border-primary text-on-surface p-3">
+                    <input type="text" name="category" list="category_list" value="{{ $duplicate->category ?? old('category') }}" placeholder="Supercar" class="w-full bg-surface-container border-none border-b border-outline-variant focus:ring-0 focus:border-primary text-on-surface p-3">
+                    <datalist id="category_list">
+                        @foreach($categories as $category)
+                            <option value="{{ $category }}">
+                        @endforeach
+                    </datalist>
                 </div>
                 <div class="space-y-2">
                     <label class="font-label-caps text-label-caps text-secondary">0-60 MPH (SECONDS)</label>

@@ -27,7 +27,7 @@
                             <select name="brand" onchange="this.form.submit()" class="bg-transparent border border-outline-variant rounded-lg text-on-surface px-3 py-2 font-body-md outline-none focus:border-primary cursor-pointer">
                                 <option value="">All Brands</option>
                                 @foreach($brands as $brand)
-                                    <option value="{{ $brand }}" {{ request('brand') == $brand ? 'selected' : '' }}>{{ $brand }}</option>
+                                    <option value="{{ $brand->slug }}" {{ request('brand') == $brand->slug ? 'selected' : '' }}>{{ $brand->name }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -84,13 +84,18 @@
                 <!-- Card -->
                 <div class="glass-card group flex flex-col transition-all duration-300">
                     <div class="relative aspect-video overflow-hidden">
-                        <img class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" alt="{{ $car->make }} {{ $car->model }}" src="{{ $car->image_url }}"/>
+                        <img class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" alt="{{ $car->brands->first()->name ?? 'Vehicle' }} {{ $car->model }}" src="{{ $car->image_url }}"/>
                         <div class="absolute top-4 right-4 bg-primary text-on-primary px-2 py-1 font-label-caps text-label-caps">{{ $car->model_id }}</div>
                     </div>
                     <div class="p-stack-sm flex flex-col gap-4">
                         <div class="flex justify-between items-start">
                             <div>
-                                <p class="font-label-caps text-label-caps text-primary">{{ strtoupper($car->make) }}</p>
+                                <p class="font-label-caps text-label-caps text-primary flex flex-wrap gap-1">
+                                    @foreach($car->brands as $brand)
+                                        <span>{{ strtoupper($brand->name) }}</span>
+                                        @if(!$loop->last) <span class="opacity-30">•</span> @endif
+                                    @endforeach
+                                </p>
                                 <h3 class="font-headline-md text-headline-md text-on-surface">{{ $car->model }}</h3>
                             </div>
                             <span class="font-headline-md text-headline-md text-on-surface">{{ $car->year }}</span>
@@ -129,15 +134,15 @@
                 <div class="flex flex-col gap-2">
                     <div class="flex justify-between items-center bg-surface-container-low/50 p-4 border-l-2 border-primary">
                         <span class="font-label-caps text-label-caps text-secondary">ACTIVE ENTRIES</span>
-                        <span class="font-headline-md text-headline-md text-primary">15,482</span>
+                        <span class="font-headline-md text-headline-md text-primary">{{ number_format($totalCars) }}</span>
                     </div>
                     <div class="flex justify-between items-center bg-surface-container-low/30 p-4 border-l-2 border-outline-variant">
                         <span class="font-label-caps text-label-caps text-secondary">DAILY CONTRIBUTIONS</span>
-                        <span class="font-headline-md text-headline-md text-on-surface">342</span>
+                        <span class="font-headline-md text-headline-md text-on-surface">{{ number_format($dailyCount) }}</span>
                     </div>
                     <div class="flex justify-between items-center bg-surface-container-low/50 p-4 border-l-2 border-outline-variant">
                         <span class="font-label-caps text-label-caps text-secondary">VERIFIED SPECS</span>
-                        <span class="font-headline-md text-headline-md text-on-surface">98.4%</span>
+                        <span class="font-headline-md text-headline-md text-on-surface">{{ number_format($averageCompletion, 1) }}%</span>
                     </div>
                 </div>
             </div>

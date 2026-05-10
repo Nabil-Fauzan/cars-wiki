@@ -2,30 +2,46 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-
 use App\Models\Car;
 use App\Models\Brand;
+use App\Http\Requests\StoreCarRequest;
+use App\Http\Requests\UpdateCarRequest;
+use App\Services\CarService;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class CarController extends Controller
 {
+    use AuthorizesRequests;
+
+    protected CarService $carService;
+
+    public function __construct(CarService $carService)
+    {
+        $this->carService = $carService;
+    }
+
     public function index(Request $request)
     {
-        $query = Car::where('status', 'Live');
+        $query = Car::with('brands')->where('status', 'Live');
         
         // Search Filter
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
-                $q->where('make', 'LIKE', "%{$search}%")
-                  ->orWhere('model', 'LIKE', "%{$search}%");
+                $q->where('model', 'LIKE', "%{$search}%")
+                  ->orWhereHas('brands', function($bq) use ($search) {
+                      $bq->where('name', 'LIKE', "%{$search}%");
+                  });
             });
         }
 
-        // Brand Filter
+        // Brand Filter (Updated for Many-to-Many)
         if ($request->filled('brand')) {
-            $query->where('make', $request->brand);
+            $query->whereHas('brands', function($q) use ($request) {
+                $q->where('slug', $request->brand);
+            });
         }
 
         // Category Filter
@@ -33,11 +49,9 @@ class CarController extends Controller
             $query->where('category', $request->category);
         }
 
-        // Horsepower Filter (e.g. 400+, 600+)
+        // Horsepower Filter (Optimized)
         if ($request->filled('hp')) {
             $minHp = (int) str_replace('+', '', $request->hp);
-            // Since hp is JSON array of strings like ["145 hp (NA)"], 
-            // we use whereRaw to extract the first number and compare.
             $query->whereRaw("CAST(REGEXP_REPLACE(JSON_UNQUOTE(JSON_EXTRACT(hp, '$[0]')), '[^0-9]', '') AS UNSIGNED) >= ?", [$minHp]);
         }
 
@@ -57,19 +71,26 @@ class CarController extends Controller
 
         $cars = $query->get();
 
-        // Fetch dynamic options for filters
-        $brands = Car::where('status', 'Live')->distinct()->pluck('make')->sort();
+        // Calculate dynamic stats for the Encyclopedia Framework
+        $totalCars = Car::where('status', 'Live')->count();
+        $dailyCount = Car::where('status', 'Live')->where('created_at', '>=', now()->subDay())->count();
+        $averageCompletion = Car::where('status', 'Live')->avg('data_completion') ?? 0;
+
+        // Use the Brand model instead of distinct column
+        $brands = Brand::has('cars')->orderBy('name')->get();
         $categories = Car::where('status', 'Live')->whereNotNull('category')->distinct()->pluck('category')->sort();
         $transmissions = ['Manual', 'Automatic', 'PDK', 'Dual-Clutch', 'Sequential'];
 
-        return view('welcome', compact('cars', 'brands', 'categories', 'transmissions'));
+        return view('welcome', compact('cars', 'brands', 'categories', 'transmissions', 'totalCars', 'dailyCount', 'averageCompletion'));
     }
 
     public function brands()
     {
-        $brands = Car::where('status', 'Live')
-            ->select('make', DB::raw('count(*) as total'), DB::raw('MAX(image_url) as image'))
-            ->groupBy('make')
+        $brands = Brand::with(['cars' => function($q) {
+                $q->where('status', 'Live')->select('cars.id', 'image_url')->limit(1);
+            }])
+            ->withCount('cars')
+            ->orderBy('name')
             ->get();
         return view('brands.index', compact('brands'));
     }
@@ -80,6 +101,7 @@ class CarController extends Controller
             ->whereNotNull('category')
             ->select('category', DB::raw('count(*) as total'), DB::raw('MAX(image_url) as image'))
             ->groupBy('category')
+            ->orderBy('category')
             ->get();
         return view('categories.index', compact('categories'));
     }
@@ -93,14 +115,18 @@ class CarController extends Controller
 
     public function dashboard(Request $request)
     {
-        $query = Car::latest();
+        $this->authorize('viewAny', Car::class);
+
+        $query = Car::with('brands')->latest();
 
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
-                $q->where('make', 'LIKE', "%{$search}%")
-                  ->orWhere('model', 'LIKE', "%{$search}%")
-                  ->orWhere('model_id', 'LIKE', "%{$search}%");
+                $q->where('model', 'LIKE', "%{$search}%")
+                  ->orWhere('model_id', 'LIKE', "%{$search}%")
+                  ->orWhereHas('brands', function($bq) use ($search) {
+                      $bq->where('name', 'LIKE', "%{$search}%");
+                  });
             });
         }
 
@@ -114,6 +140,8 @@ class CarController extends Controller
 
     public function toggleStatus(Car $car)
     {
+        $this->authorize('update', $car);
+
         $car->update([
             'status' => $car->status == 'Live' ? 'Draft' : 'Live'
         ]);
@@ -122,164 +150,71 @@ class CarController extends Controller
 
     public function compare(Request $request)
     {
-        $car1 = $request->has('car1') ? Car::where('model_id', $request->car1)->first() : null;
-        $car2 = $request->has('car2') ? Car::where('model_id', $request->car2)->first() : null;
+        $car1 = $request->has('car1') ? Car::with('brands')->where('model_id', $request->car1)->first() : null;
+        $car2 = $request->has('car2') ? Car::with('brands')->where('model_id', $request->car2)->first() : null;
 
-        // If not provided, just get the first two
         if (!$car1 && !$car2) {
-            $defaultCars = Car::where('status', 'Live')->limit(2)->get();
+            $defaultCars = Car::with('brands')->where('status', 'Live')->limit(2)->get();
             $car1 = $defaultCars[0] ?? null;
             $car2 = $defaultCars[1] ?? null;
         }
 
-        $allCars = Car::where('status', 'Live')->get();
+        $allCars = Car::with('brands')->where('status', 'Live')->orderBy('model')->get();
 
         return view('compare.index', compact('car1', 'car2', 'allCars'));
     }
 
     public function create()
     {
+        $this->authorize('create', Car::class);
         $brands = Brand::orderBy('name')->get();
-        return view('cars.create', compact('brands'));
+        $categories = Car::distinct()->pluck('category')->filter()->sort();
+        return view('cars.create', compact('brands', 'categories'));
     }
 
-    public function store(Request $request)
+    public function store(StoreCarRequest $request)
     {
-        $validated = $request->validate([
-            'model_id' => 'required|unique:cars',
-            'make' => 'required',
-            'model' => 'required',
-            'year' => 'required|string',
-            'category' => 'nullable',
-            'image_url' => 'nullable|url',
-            'zero_to_sixty' => 'nullable|numeric',
-            'top_speed' => 'nullable|integer',
-            'aerodynamics' => 'nullable|numeric',
-            'braking' => 'nullable|integer',
-            'history' => 'nullable',
-            'torque' => 'nullable',
-            'transmission' => 'nullable',
-            'drivetrain' => 'nullable',
-            'brand_ids' => 'nullable|array',
-            'brand_ids.*' => 'exists:brands,id',
-        ]);
-
-        $pros = $request->pros ? explode("\n", str_replace("\r", "", $request->pros)) : [];
-        $cons = $request->cons ? explode("\n", str_replace("\r", "", $request->cons)) : [];
-        $engine = array_filter([$request->engine_primary, $request->engine_secondary]);
-        $hp = array_filter([$request->hp_primary, $request->hp_secondary]);
-        $gallery = array_filter([$request->gallery_1, $request->gallery_2, $request->gallery_3]);
-
-        $car = Car::create($validated + [
-            'pros' => array_filter($pros),
-            'cons' => array_filter($cons),
-            'engine' => $engine,
-            'hp' => $hp,
-            'gallery' => $gallery,
-        ]);
-
-        if ($request->has('brand_ids')) {
-            $car->brands()->sync($request->brand_ids);
-        }
-
-        $car->update(['data_completion' => $this->calculateCompletion($car)]);
+        $this->authorize('create', Car::class);
+        
+        $this->carService->create($request->validated(), $request);
 
         return redirect()->route('dashboard')->with('success', 'Asset deployed successfully.');
     }
 
     public function edit(Car $car)
     {
+        $this->authorize('update', $car);
         $brands = Brand::orderBy('name')->get();
-        return view('cars.edit', compact('car', 'brands'));
+        $categories = Car::distinct()->pluck('category')->filter()->sort();
+        return view('cars.edit', compact('car', 'brands', 'categories'));
     }
 
     public function duplicate(Car $car)
     {
-        // Replicate the car but remove unique model_id
+        $this->authorize('duplicate', $car);
+
         $newCar = $car->replicate();
         $newCar->model_id = $car->model_id . '-COPY';
-        
-        // Load brands for the replicated object to use in view
         $newCar->setRelation('brands', $car->brands);
         
         $brands = Brand::orderBy('name')->get();
-        return view('cars.create', ['duplicate' => $newCar, 'brands' => $brands]);
+        $categories = Car::distinct()->pluck('category')->filter()->sort();
+        return view('cars.create', ['duplicate' => $newCar, 'brands' => $brands, 'categories' => $categories]);
     }
 
-    public function update(Request $request, Car $car)
+    public function update(UpdateCarRequest $request, Car $car)
     {
-        $validated = $request->validate([
-            'make' => 'required',
-            'model' => 'required',
-            'year' => 'required|string',
-            'status' => 'required',
-            'category' => 'nullable',
-            'image_url' => 'nullable|url',
-            'zero_to_sixty' => 'nullable|numeric',
-            'top_speed' => 'nullable|integer',
-            'aerodynamics' => 'nullable|numeric',
-            'braking' => 'nullable|integer',
-            'history' => 'nullable',
-            'torque' => 'nullable',
-            'transmission' => 'nullable',
-            'drivetrain' => 'nullable',
-            'brand_ids' => 'nullable|array',
-            'brand_ids.*' => 'exists:brands,id',
-        ]);
+        $this->authorize('update', $car);
 
-        $pros = $request->pros ? explode("\n", str_replace("\r", "", $request->pros)) : [];
-        $cons = $request->cons ? explode("\n", str_replace("\r", "", $request->cons)) : [];
-        $engine = array_filter([$request->engine_primary, $request->engine_secondary]);
-        $hp = array_filter([$request->hp_primary, $request->hp_secondary]);
-        $gallery = array_filter([$request->gallery_1, $request->gallery_2, $request->gallery_3]);
-
-        $car->update($validated + [
-            'pros' => array_filter($pros),
-            'cons' => array_filter($cons),
-            'engine' => $engine,
-            'hp' => $hp,
-            'gallery' => $gallery,
-        ]);
-
-        if ($request->has('brand_ids')) {
-            $car->brands()->sync($request->brand_ids);
-        } else {
-            $car->brands()->detach();
-        }
-
-        $car->update(['data_completion' => $this->calculateCompletion($car)]);
+        $this->carService->update($car, $request->validated(), $request);
 
         return redirect()->route('dashboard')->with('success', 'Asset synchronized successfully.');
     }
 
     public function destroy(Car $car)
     {
+        $this->authorize('delete', $car);
         $car->delete();
         return redirect()->route('dashboard')->with('success', 'Asset decommissioned.');
-    }
-
-    private function calculateCompletion(Car $car): int
-    {
-        $fields = [
-            'model_id', 'make', 'model', 'year', 'hp', 'category', 'image_url',
-            'zero_to_sixty', 'top_speed', 'aerodynamics', 'braking',
-            'history', 'engine', 'torque', 'transmission', 'drivetrain'
-        ];
-
-        $filled = 0;
-        foreach ($fields as $field) {
-            $val = $car->$field;
-            if ($val !== null && $val !== '') {
-                $filled++;
-            }
-        }
-
-        // Handle arrays (pros/cons)
-        if (is_array($car->pros) && count($car->pros) > 0) $filled++;
-        if (is_array($car->cons) && count($car->cons) > 0) $filled++;
-
-        $totalRequired = count($fields) + 2; // + pros + cons
-        
-        return (int) round(($filled / $totalRequired) * 100);
     }
 }

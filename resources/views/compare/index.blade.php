@@ -19,11 +19,11 @@
                     <span class="material-symbols-outlined">compare_arrows</span>
                     <span class="font-label-caps text-label-caps">Compare</span>
                 </a>
-                <a class="flex items-center gap-4 text-on-surface-variant hover:text-on-surface px-4 py-3 transition-colors" href="#">
+                <a class="flex items-center gap-4 {{ request()->is('brands*') ? 'bg-secondary-container/50 text-primary border-l-4 border-primary' : 'text-on-surface-variant hover:text-on-surface' }} px-4 py-3 transition-colors" href="{{ route('brands') }}">
                     <span class="material-symbols-outlined">factory</span>
                     <span class="font-label-caps text-label-caps">Brands</span>
                 </a>
-                <a class="flex items-center gap-4 text-on-surface-variant hover:text-on-surface px-4 py-3 transition-colors" href="#">
+                <a class="flex items-center gap-4 {{ request()->is('categories*') ? 'bg-secondary-container/50 text-primary border-l-4 border-primary' : 'text-on-surface-variant hover:text-on-surface' }} px-4 py-3 transition-colors" href="{{ route('categories') }}">
                     <span class="material-symbols-outlined">category</span>
                     <span class="font-label-caps text-label-caps">Categories</span>
                 </a>
@@ -31,7 +31,7 @@
         </aside>
 
         <!-- Main Content Area -->
-        <main class="flex-1 px-margin-page py-stack-lg max-w-container-max mx-auto w-full">
+        <main class="flex-1 px-margin-page py-stack-lg max-w-7xl mx-auto w-full">
             <!-- Battle Sheet Header Section -->
             <section class="mb-stack-lg">
                 <div class="flex flex-col md:flex-row justify-between items-end gap-gutter mb-stack-md">
@@ -51,11 +51,13 @@
                         <select name="car1" onchange="this.form.submit()" class="w-full bg-surface-container border-none border-b border-outline-variant focus:ring-0 focus:border-primary text-on-surface font-headline-md mb-4 p-2 appearance-none">
                             <option value="">Select Vehicle</option>
                             @foreach($allCars as $car)
-                                <option value="{{ $car->model_id }}" {{ (isset($car1) && $car1->model_id == $car->model_id) ? 'selected' : '' }}>{{ $car->make }} {{ $car->model }}</option>
+                                <option value="{{ $car->model_id }}" {{ (isset($car1) && $car1->model_id == $car->model_id) ? 'selected' : '' }}>
+                                    {{ $car->brands->pluck('name')->implode(' • ') }} {{ $car->model }}
+                                </option>
                             @endforeach
                         </select>
                         @if($car1)
-                            <img class="w-full h-32 object-cover rounded mb-4" src="{{ $car1->image_url }}"/>
+                            <img class="w-full h-32 object-cover rounded mb-4" src="{{ $car1->image_url }}" alt="{{ $car1->brands->first()->name ?? '' }} {{ $car1->model }}"/>
                         @else
                             <div class="w-full h-32 bg-surface-container-low rounded mb-4 flex items-center justify-center">
                                 <span class="material-symbols-outlined text-on-surface-variant">directions_car</span>
@@ -71,11 +73,13 @@
                         <select name="car2" onchange="this.form.submit()" class="w-full bg-surface-container border-none border-b border-outline-variant focus:ring-0 focus:border-primary text-on-surface font-headline-md mb-4 p-2 appearance-none">
                             <option value="">Select Vehicle</option>
                             @foreach($allCars as $car)
-                                <option value="{{ $car->model_id }}" {{ (isset($car2) && $car2->model_id == $car->model_id) ? 'selected' : '' }}>{{ $car->make }} {{ $car->model }}</option>
+                                <option value="{{ $car->model_id }}" {{ (isset($car2) && $car2->model_id == $car->model_id) ? 'selected' : '' }}>
+                                    {{ $car->brands->pluck('name')->implode(' • ') }} {{ $car->model }}
+                                </option>
                             @endforeach
                         </select>
                         @if($car2)
-                            <img class="w-full h-32 object-cover rounded mb-4" src="{{ $car2->image_url }}"/>
+                            <img class="w-full h-32 object-cover rounded mb-4" src="{{ $car2->image_url }}" alt="{{ $car2->brands->first()->name ?? '' }} {{ $car2->model }}"/>
                         @else
                             <div class="w-full h-32 bg-surface-container-low rounded mb-4 flex items-center justify-center">
                                 <span class="material-symbols-outlined text-on-surface-variant">directions_car</span>
@@ -95,7 +99,7 @@
                 <section class="space-y-stack-lg mt-8">
                     @php
                         $metrics = [
-                            'make' => 'Manufacturer',
+                            'brands' => 'Manufacturer',
                             'category' => 'Category',
                             'year' => 'Year',
                             'hp' => 'Horsepower',
@@ -121,9 +125,17 @@
                                     $val2 = $car2->$key;
                                     $winner = null;
 
-                                    if ($key == 'make' || $key == 'category' || $key == 'engine' || $key == 'transmission' || $key == 'drivetrain' || $key == 'year') {
+                                    if ($key == 'brands' || $key == 'category' || $key == 'engine' || $key == 'transmission' || $key == 'drivetrain') {
                                         // Non-comparable text fields
-                                    } elseif (is_numeric($val1) && is_numeric($val2)) {
+                                    } elseif ($key == 'year' && !empty($val1) && !empty($val2)) {
+                                        // Extract first 4 digits from year (e.g. 1990 from 1990-1996)
+                                        preg_match('/\d{4}/', $val1, $y1);
+                                        preg_match('/\d{4}/', $val2, $y2);
+                                        $n1 = isset($y1[0]) ? (int)$y1[0] : 0;
+                                        $n2 = isset($y2[0]) ? (int)$y2[0] : 0;
+                                        if ($n1 > $n2) $winner = 1;
+                                        elseif ($n2 > $n1) $winner = 2;
+                                    } elseif (!empty($val1) && !empty($val2) && is_numeric($val1) && is_numeric($val2)) {
                                         if ($key == 'zero_to_sixty' || $key == 'braking' || $key == 'aerodynamics') {
                                             if ($val1 < $val2) $winner = 1;
                                             elseif ($val2 < $val1) $winner = 2;
@@ -131,8 +143,7 @@
                                             if ($val1 > $val2) $winner = 1;
                                             elseif ($val2 > $val1) $winner = 2;
                                         }
-                                    } elseif ($key == 'hp' && is_array($val1) && is_array($val2)) {
-                                        // Extract first number from HP string (e.g. "145 hp (NA)" -> 145)
+                                    } elseif ($key == 'hp' && !empty($val1) && !empty($val2) && is_array($val1) && is_array($val2)) {
                                         preg_match('/\d+/', $val1[0] ?? '', $matches1);
                                         preg_match('/\d+/', $val2[0] ?? '', $matches2);
                                         $n1 = isset($matches1[0]) ? (int)$matches1[0] : 0;
@@ -144,21 +155,29 @@
                                 <div class="grid grid-cols-1 md:grid-cols-3 border-b border-outline-variant/10">
                                     <div class="p-4 bg-surface-container-high/40 font-label-caps text-label-caps text-on-surface-variant">{{ $label }}</div>
                                     <div class="p-4 flex items-center justify-center font-body-md text-center {{ $winner == 1 ? 'text-primary font-bold bg-primary/5' : 'text-on-surface' }}">
-                                        @if($key == 'zero_to_sixty') {{ $val1 }}s 
+                                        @if(empty($val1) && $key != 'brands') 
+                                            <span class="opacity-30">—</span>
+                                        @elseif($key == 'brands') {{ $car1->brands->pluck('name')->implode(' / ') }}
+                                        @elseif($key == 'zero_to_sixty') {{ $val1 }}s 
                                         @elseif($key == 'top_speed') {{ $val1 }} MPH
                                         @elseif($key == 'braking') {{ $val1 }} FT
                                         @elseif($key == 'aerodynamics') {{ $val1 }} CD
                                         @elseif($key == 'engine' && is_array($val1)) {{ implode(' / ', $val1) }}
-                                        @elseif($key == 'hp' && is_array($val1)) {{ implode(' HP / ', $val1) }} HP
+                                        @elseif($key == 'hp' && is_array($val1)) 
+                                            {{ collect($val1)->map(fn($h) => str_ireplace(' hp', '', $h))->implode(' / ') }} HP
                                         @else {{ $val1 }} @endif
                                     </div>
                                     <div class="p-4 flex items-center justify-center font-body-md text-center border-l border-outline-variant/10 {{ $winner == 2 ? 'text-primary font-bold bg-primary/5' : 'text-on-surface' }}">
-                                        @if($key == 'zero_to_sixty') {{ $val2 }}s 
+                                        @if(empty($val2) && $key != 'brands') 
+                                            <span class="opacity-30">—</span>
+                                        @elseif($key == 'brands') {{ $car2->brands->pluck('name')->implode(' / ') }}
+                                        @elseif($key == 'zero_to_sixty') {{ $val2 }}s 
                                         @elseif($key == 'top_speed') {{ $val2 }} MPH
                                         @elseif($key == 'braking') {{ $val2 }} FT
                                         @elseif($key == 'aerodynamics') {{ $val2 }} CD
                                         @elseif($key == 'engine' && is_array($val2)) {{ implode(' / ', $val2) }}
-                                        @elseif($key == 'hp' && is_array($val2)) {{ implode(' HP / ', $val2) }} HP
+                                        @elseif($key == 'hp' && is_array($val2)) 
+                                            {{ collect($val2)->map(fn($h) => str_ireplace(' hp', '', $h))->implode(' / ') }} HP
                                         @else {{ $val2 }} @endif
                                     </div>
                                 </div>
