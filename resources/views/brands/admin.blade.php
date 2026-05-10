@@ -5,12 +5,6 @@
                 <h1 class="font-headline-lg text-headline-xl text-on-surface">Brand Registry</h1>
                 <p class="text-on-surface-variant font-body-md">Manage automotive manufacturers and co-branding relations.</p>
             </div>
-            <form action="{{ route('admin.brands.sync') }}" method="POST">
-                @csrf
-                <button type="submit" class="bg-secondary/20 hover:bg-secondary/30 text-secondary px-stack-md py-3 rounded-lg font-label-caps text-label-caps transition-all flex items-center gap-2 border border-secondary/30">
-                    <span class="material-symbols-outlined">sync</span> Sync from Car Data
-                </button>
-            </form>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-gutter">

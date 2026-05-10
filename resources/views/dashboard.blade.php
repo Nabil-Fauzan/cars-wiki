@@ -137,7 +137,7 @@
                                             </div>
                                         </td>
                                         <td class="px-6 py-4">
-                                            <form action="{{ route('cars.toggle-status', $car->id) }}" method="POST">
+                                            <form action="{{ route('cars.toggle-status', $car) }}" method="POST">
                                                 @csrf
                                                 <button type="submit" title="Toggle Status" class="px-2 py-1 {{ $car->status == 'Live' ? 'bg-primary/10 text-primary' : 'bg-outline-variant/20 text-on-surface-variant' }} text-[10px] font-bold uppercase tracking-tighter rounded hover:brightness-125 transition-all">
                                                     {{ $car->status }}
@@ -157,9 +157,9 @@
                                         <td class="px-6 py-4 text-right">
                                             <div class="flex justify-end gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
                                                 <a href="{{ route('cars.show', $car->model_id) }}" class="material-symbols-outlined text-secondary-fixed hover:text-primary text-lg" title="View Public Page">visibility</a>
-                                                <a href="{{ route('cars.duplicate', $car->id) }}" class="material-symbols-outlined text-secondary-fixed hover:text-primary text-lg" title="Add Variant (Duplicate)">content_copy</a>
-                                                <a href="{{ route('cars.edit', $car->id) }}" class="material-symbols-outlined text-secondary-fixed hover:text-primary text-lg" title="Edit Spec">edit</a>
-                                                <form action="{{ route('cars.destroy', $car->id) }}" method="POST" onsubmit="return confirm('Confirm asset decommissioning?');">
+                                                <a href="{{ route('cars.duplicate', $car) }}" class="material-symbols-outlined text-secondary-fixed hover:text-primary text-lg" title="Add Variant (Duplicate)">content_copy</a>
+                                                <a href="{{ route('cars.edit', $car) }}" class="material-symbols-outlined text-secondary-fixed hover:text-primary text-lg" title="Edit Spec">edit</a>
+                                                <form action="{{ route('cars.destroy', $car) }}" method="POST" onsubmit="return confirm('Confirm asset decommissioning?');">
                                                     @csrf
                                                     @method('DELETE')
                                                     <button type="submit" class="material-symbols-outlined text-secondary-fixed hover:text-error text-lg" title="Delete Asset">delete</button>

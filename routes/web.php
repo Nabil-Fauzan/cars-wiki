@@ -33,6 +33,13 @@ Route::middleware('auth')->group(function () {
     // Comments
     Route::post('/cars/{car}/comments', [CommentController::class, 'store'])->name('comments.store');
     Route::delete('/comments/{comment}', [CommentController::class, 'destroy'])->name('comments.destroy');
+
+    // Favorites
+    Route::post('/cars/{car}/favorite', [CarController::class, 'toggleFavorite'])->name('cars.favorite');
+    Route::get('/favorites', [CarController::class, 'favorites'])->name('favorites.index');
+
+    // Ratings
+    Route::post('/cars/{car}/rate', [CarController::class, 'rate'])->name('cars.rate');
 });
 
 require __DIR__.'/auth.php';

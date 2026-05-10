@@ -9,6 +9,8 @@ use App\Http\Requests\UpdateCarRequest;
 use App\Services\CarService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class CarController extends Controller
@@ -31,6 +33,8 @@ class CarController extends Controller
             $search = $request->search;
             $query->where(function($q) use ($search) {
                 $q->where('model', 'LIKE', "%{$search}%")
+                  ->orWhere('model_id', 'LIKE', "%{$search}%")
+                  ->orWhere('year', 'LIKE', "%{$search}%")
                   ->orWhereHas('brands', function($bq) use ($search) {
                       $bq->where('name', 'LIKE', "%{$search}%");
                   });
@@ -40,7 +44,7 @@ class CarController extends Controller
         // Brand Filter (Updated for Many-to-Many)
         if ($request->filled('brand')) {
             $query->whereHas('brands', function($q) use ($request) {
-                $q->where('slug', $request->brand);
+                $q->where('name', $request->brand);
             });
         }
 
@@ -49,9 +53,18 @@ class CarController extends Controller
             $query->where('category', $request->category);
         }
 
+        // Year Range Filter (Handles ranges like 1984-1989)
+        if ($request->filled('year_min')) {
+            $query->whereRaw("CAST(SUBSTRING_INDEX(year, '-', 1) AS UNSIGNED) >= ?", [$request->year_min]);
+        }
+        if ($request->filled('year_max')) {
+            $query->whereRaw("CAST(SUBSTRING_INDEX(year, '-', 1) AS UNSIGNED) <= ?", [$request->year_max]);
+        }
+
         // Horsepower Filter (Optimized)
         if ($request->filled('hp')) {
             $minHp = (int) str_replace('+', '', $request->hp);
+            // Since hp is stored as JSON array like ["400 hp", "450 hp"], we extract the first one
             $query->whereRaw("CAST(REGEXP_REPLACE(JSON_UNQUOTE(JSON_EXTRACT(hp, '$[0]')), '[^0-9]', '') AS UNSIGNED) >= ?", [$minHp]);
         }
 
@@ -60,28 +73,43 @@ class CarController extends Controller
             $query->where('transmission', 'LIKE', '%' . $request->transmission . '%');
         }
 
+        // Performance Filters
+        if ($request->filled('top_speed_min')) {
+            $query->where('top_speed', '>=', $request->top_speed_min);
+        }
+
         $sort = $request->get('sort', 'newest');
         if ($sort == 'fastest') {
             $query->orderBy('top_speed', 'desc');
         } elseif ($sort == 'best') {
             $query->orderBy('data_completion', 'desc');
+        } elseif ($sort == 'acceleration') {
+            $query->orderBy('zero_to_sixty', 'asc');
         } else {
             $query->orderBy('year', 'desc')->latest();
         }
 
-        $cars = $query->get();
+        $cars = $query->paginate(12)->withQueryString();
 
         // Calculate dynamic stats for the Encyclopedia Framework
         $totalCars = Car::where('status', 'Live')->count();
         $dailyCount = Car::where('status', 'Live')->where('created_at', '>=', now()->subDay())->count();
         $averageCompletion = Car::where('status', 'Live')->avg('data_completion') ?? 0;
 
-        // Use the Brand model instead of distinct column
-        $brands = Brand::has('cars')->orderBy('name')->get();
-        $categories = Car::where('status', 'Live')->whereNotNull('category')->distinct()->pluck('category')->sort();
+        $brandModels = Brand::has('cars')->orderBy('name')->get();
+        
+        $categories = Cache::remember('pcar_categories_list_v2', 3600, function() {
+            return Car::where('status', 'Live')
+                ->whereNotNull('category')
+                ->distinct()
+                ->pluck('category')
+                ->filter(fn($c) => is_string($c))
+                ->sort();
+        });
+
         $transmissions = ['Manual', 'Automatic', 'PDK', 'Dual-Clutch', 'Sequential'];
 
-        return view('welcome', compact('cars', 'brands', 'categories', 'transmissions', 'totalCars', 'dailyCount', 'averageCompletion'));
+        return view('welcome', compact('cars', 'brandModels', 'categories', 'transmissions', 'totalCars', 'dailyCount', 'averageCompletion'));
     }
 
     public function brands()
@@ -109,8 +137,13 @@ class CarController extends Controller
     public function show(string $model_id)
     {
         $car = Car::where('model_id', $model_id)->firstOrFail();
+        
+        $ratingStats = $car->ratings()
+            ->selectRaw('avg(comfort) as comfort, avg(performance) as performance, avg(design) as design, avg(value) as value')
+            ->first();
+
         $rivals = Car::where('model_id', '!=', $model_id)->limit(2)->get();
-        return view('cars.show', compact('car', 'rivals'));
+        return view('cars.show', compact('car', 'rivals', 'ratingStats'));
     }
 
     public function dashboard(Request $request)
@@ -120,12 +153,13 @@ class CarController extends Controller
         $query = Car::with('brands')->latest();
 
         if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('model', 'LIKE', "%{$search}%")
-                  ->orWhere('model_id', 'LIKE', "%{$search}%")
-                  ->orWhereHas('brands', function($bq) use ($search) {
-                      $bq->where('name', 'LIKE', "%{$search}%");
+            $searchTerm = $request->search;
+            $query->where(function($q) use ($searchTerm) {
+                $q->where('model', 'like', "%{$searchTerm}%")
+                  ->orWhere('model_id', 'like', "%{$searchTerm}%")
+                  ->orWhere('year', 'like', "%{$searchTerm}%")
+                  ->orWhereHas('brands', function($bq) use ($searchTerm) {
+                      $bq->where('name', 'like', "%{$searchTerm}%");
                   });
             });
         }
@@ -161,7 +195,31 @@ class CarController extends Controller
 
         $allCars = Car::with('brands')->where('status', 'Live')->orderBy('model')->get();
 
-        return view('compare.index', compact('car1', 'car2', 'allCars'));
+        $differences = [];
+        if ($car1 && $car2) {
+            $metrics = [
+                'category', 'year', 'hp', 'torque', 'engine', 'transmission', 'drivetrain', 
+                'zero_to_sixty', 'top_speed', 'aerodynamics', 'braking', 'brands'
+            ];
+            foreach ($metrics as $metric) {
+                $v1 = $car1->$metric;
+                $v2 = $car2->$metric;
+                
+                if ($metric === 'brands') {
+                    $v1 = $v1->pluck('name')->sort()->values()->toJson();
+                    $v2 = $v2->pluck('name')->sort()->values()->toJson();
+                }
+
+                if (is_array($v1)) $v1 = json_encode($v1);
+                if (is_array($v2)) $v2 = json_encode($v2);
+                
+                if ($v1 !== $v2) {
+                    $differences[] = $metric;
+                }
+            }
+        }
+
+        return view('compare.index', compact('car1', 'car2', 'allCars', 'differences'));
     }
 
     public function create()
@@ -194,7 +252,7 @@ class CarController extends Controller
         $this->authorize('duplicate', $car);
 
         $newCar = $car->replicate();
-        $newCar->model_id = $car->model_id . '-COPY';
+        $newCar->model_id = $car->model_id . '-COPY-' . strtoupper(\Illuminate\Support\Str::random(3));
         $newCar->setRelation('brands', $car->brands);
         
         $brands = Brand::orderBy('name')->get();
@@ -216,5 +274,45 @@ class CarController extends Controller
         $this->authorize('delete', $car);
         $car->delete();
         return redirect()->route('dashboard')->with('success', 'Asset decommissioned.');
+    }
+
+    public function toggleFavorite(Car $car)
+    {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+        $user->favorites()->toggle($car->id);
+        
+        return back()->with('success', 'Wishlist updated.');
+    }
+
+    public function favorites()
+    {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+        $cars = $user->favorites()->with('brands')->paginate(12);
+        
+        // Stats for the sidebar/header
+        $totalCars = Car::where('status', 'Live')->count();
+        $dailyCount = Car::where('status', 'Live')->where('created_at', '>=', now()->subDay())->count();
+        $averageCompletion = Car::where('status', 'Live')->avg('data_completion') ?? 0;
+
+        return view('favorites.index', compact('cars', 'totalCars', 'dailyCount', 'averageCompletion'));
+    }
+
+    public function rate(Request $request, Car $car)
+    {
+        $request->validate([
+            'comfort' => 'required|integer|min:1|max:5',
+            'performance' => 'required|integer|min:1|max:5',
+            'design' => 'required|integer|min:1|max:5',
+            'value' => 'required|integer|min:1|max:5',
+        ]);
+
+        $car->ratings()->updateOrCreate(
+            ['user_id' => Auth::id()],
+            $request->only(['comfort', 'performance', 'design', 'value'])
+        );
+
+        return back()->with('success', 'Rating submitted.');
     }
 }

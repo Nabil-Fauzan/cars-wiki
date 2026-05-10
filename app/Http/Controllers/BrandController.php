@@ -35,30 +35,4 @@ class BrandController extends Controller
         return back()->with('success', 'Brand decommissioned.');
     }
 
-    /**
-     * Automatic migration from Car 'make' column
-     */
-    public function syncFromCars()
-    {
-        $makes = Car::distinct()->pluck('make');
-        $count = 0;
-
-        foreach($makes as $make) {
-            if ($make) {
-                $brand = Brand::firstOrCreate(
-                    ['name' => $make],
-                    ['slug' => Str::slug($make)]
-                );
-                
-                // Link cars that have this make to the brand if not already linked
-                $cars = Car::where('make', $make)->get();
-                foreach($cars as $car) {
-                    $car->brands()->syncWithoutDetaching([$brand->id]);
-                }
-                $count++;
-            }
-        }
-
-        return back()->with('success', "Synchronization complete. {$count} brands extracted from car data.");
-    }
 }

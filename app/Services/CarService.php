@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Car;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class CarService
 {
@@ -36,6 +37,9 @@ class CarService
             $car->brands()->sync($request->brand_ids);
         }
 
+        Cache::forget('pcar_brand_models_list');
+        Cache::forget('pcar_categories_list_v2');
+
         return $car;
     }
 
@@ -53,6 +57,9 @@ class CarService
             $car->brands()->detach();
         }
 
+        Cache::forget('pcar_brand_models_list');
+        Cache::forget('pcar_categories_list_v2');
+
         return $updated;
     }
 
@@ -66,13 +73,14 @@ class CarService
         
         $filled = 0;
         foreach ($fields as $field) {
-            if (!empty($car->$field)) $filled++;
+            $val = $car->$field;
+            if (is_numeric($val) || !empty($val)) $filled++;
         }
 
-        if (!empty($car->pros)) $filled++;
-        if (!empty($car->cons)) $filled++;
-        if (!empty($car->engine)) $filled++;
-        if (!empty($car->gallery)) $filled++;
+        if (!empty($car->pros) && count($car->pros) > 0) $filled++;
+        if (!empty($car->cons) && count($car->cons) > 0) $filled++;
+        if (!empty($car->engine) && count($car->engine) > 0) $filled++;
+        if (!empty($car->gallery) && count($car->gallery) > 0) $filled++;
 
         return round(($filled / (count($fields) + 4)) * 100);
     }

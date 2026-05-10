@@ -19,6 +19,8 @@
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
 
+        @yield('meta')
+
         <style>
             .material-symbols-outlined {
                 font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
@@ -40,13 +42,15 @@
                     </div>
                 </div>
                 <div class="flex items-center gap-stack-sm">
-                    <div class="relative hidden lg:block group">
-                        <input class="bg-surface-container-high border-none border-b border-secondary/30 focus:ring-0 focus:border-primary text-body-md font-body-md px-4 py-2 w-64 transition-all" placeholder="Search technical database..." type="text"/>
-                        <span class="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-secondary group-hover:text-primary transition-colors">search</span>
-                    </div>
-                    <button class="p-2 hover:bg-white/5 rounded-full transition-colors active:scale-95">
+                    <form action="{{ route('home') }}" method="GET" class="relative hidden lg:block group">
+                        <input name="search" value="{{ request('search') }}" class="bg-surface-container-high border-none border-b border-secondary/30 focus:ring-0 focus:border-primary text-body-md font-body-md px-4 py-2 w-64 transition-all" placeholder="Search technical database..." type="text"/>
+                        <button type="submit" class="absolute right-2 top-1/2 -translate-y-1/2">
+                            <span class="material-symbols-outlined text-secondary group-hover:text-primary transition-colors">search</span>
+                        </button>
+                    </form>
+                    <a href="{{ route('favorites.index') }}" class="p-2 hover:bg-white/5 rounded-full transition-colors active:scale-95 flex items-center justify-center">
                         <span class="material-symbols-outlined text-on-surface-variant">favorite</span>
-                    </button>
+                    </a>
                     @auth
                         <div class="relative" x-data="{ open: false }">
                             <button @click="open = !open" @click.away="open = false" class="flex items-center gap-3 pl-3 pr-1 py-1 bg-surface-container-high hover:bg-surface-container-highest rounded-full border border-outline-variant/30 transition-all active:scale-95">

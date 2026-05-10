@@ -1,4 +1,11 @@
 <x-app-layout>
+    @section('meta')
+        <meta property="og:title" content="{{ $car->brands->first()->name ?? '' }} {{ $car->model }} | PCAR Wiki">
+        <meta property="og:description" content="{{ Str::limit($car->history, 160) }}">
+        <meta property="og:image" content="{{ $car->image_url }}">
+        <meta property="og:type" content="website">
+        <meta name="twitter:card" content="summary_large_image">
+    @endsection
     <main class="pt-0">
         <!-- Hero Section & Gallery -->
         <section class="relative w-full h-[716px] overflow-hidden bg-surface-container-lowest">
@@ -16,7 +23,7 @@
                 </div>
                 <h1 class="font-headline-xl text-headline-xl text-on-surface">{{ $car->model }}</h1>
                     <div class="flex items-center gap-4 mt-stack-sm">
-                        <a href="{{ route('compare') }}" class="bg-primary px-stack-md py-3 text-on-primary font-label-caps text-label-caps rounded-[4px] hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-2">
+                        <a href="{{ route('compare', ['car1' => $car->model_id]) }}" class="bg-primary px-stack-md py-3 text-on-primary font-label-caps text-label-caps rounded-[4px] hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-2">
                             <span class="material-symbols-outlined">compare_arrows</span> Compare with another car
                         </a>
                         <button class="border border-secondary px-stack-md py-3 text-on-surface font-label-caps text-label-caps rounded-[4px] hover:bg-white/5 transition-all flex items-center gap-2">
@@ -150,6 +157,69 @@
                         </ul>
                     </div>
                 </div>
+
+                <!-- Rating System -->
+                <section class="glass-card p-stack-md machined-edge space-y-stack-md">
+                    <div class="flex justify-between items-center">
+                        <div class="flex items-center gap-3">
+                            <span class="material-symbols-outlined text-primary">analytics</span>
+                            <h3 class="font-label-caps text-label-caps text-on-surface">Community Assessment</h3>
+                        </div>
+                        @php
+                            $avgComfort = $ratingStats->comfort ?? 0;
+                            $avgPerformance = $ratingStats->performance ?? 0;
+                            $avgDesign = $ratingStats->design ?? 0;
+                            $avgValue = $ratingStats->value ?? 0;
+                            $overall = ($avgComfort + $avgPerformance + $avgDesign + $avgValue) / 4;
+                        @endphp
+                        <div class="text-right">
+                            <p class="font-label-caps text-[10px] text-secondary">OVERALL RATING</p>
+                            <p class="font-headline-md text-primary">{{ number_format($overall, 1) }} / 5.0</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-gutter">
+                        <!-- Stats View -->
+                        <div class="space-y-4">
+                            @foreach(['Comfort' => $avgComfort, 'Performance' => $avgPerformance, 'Design' => $avgDesign, 'Value' => $avgValue] as $label => $score)
+                                <div>
+                                    <div class="flex justify-between text-[10px] font-label-caps mb-1">
+                                        <span class="text-on-surface-variant">{{ $label }}</span>
+                                        <span class="text-primary">{{ number_format($score, 1) }}</span>
+                                    </div>
+                                    <div class="h-1 w-full bg-surface-container-highest rounded-full overflow-hidden">
+                                        <div class="h-full bg-primary" style="width: {{ ($score/5)*100 }}%"></div>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+
+                        <!-- Rating Form -->
+                        @auth
+                            @php $myRating = $car->ratings()->where('user_id', Auth::id())->first(); @endphp
+                            <form action="{{ route('cars.rate', $car) }}" method="POST" class="bg-surface-container-low/30 p-4 rounded space-y-4 border border-outline-variant/20">
+                                @csrf
+                                <div class="grid grid-cols-2 gap-4">
+                                    @foreach(['comfort', 'performance', 'design', 'value'] as $field)
+                                        <div class="flex flex-col gap-1">
+                                            <label class="text-[10px] font-label-caps text-secondary uppercase">{{ $field }}</label>
+                                            <input type="range" name="{{ $field }}" min="1" max="5" step="1" value="{{ $myRating ? $myRating->$field : 3 }}" class="w-full h-1 bg-surface-container-highest rounded-lg appearance-none cursor-pointer accent-primary">
+                                        </div>
+                                    @endforeach
+                                </div>
+                                <button type="submit" class="w-full py-2 bg-primary/20 text-primary border border-primary/30 font-label-caps text-xs hover:bg-primary hover:text-on-primary transition-all">
+                                    {{ $myRating ? 'UPDATE ASSESSMENT' : 'SUBMIT ASSESSMENT' }}
+                                </button>
+                            </form>
+                        @else
+                            <div class="flex flex-col items-center justify-center border border-dashed border-outline-variant/30 rounded p-6 text-center">
+                                <span class="material-symbols-outlined text-secondary mb-2">lock</span>
+                                <p class="text-xs font-body-md text-on-surface-variant mb-4">Authentication required to submit assessments.</p>
+                                <a href="{{ route('login') }}" class="text-primary font-label-caps text-[10px] border border-primary/30 px-4 py-2 hover:bg-primary/10 transition-all">LOG IN</a>
+                            </div>
+                        @endauth
+                    </div>
+                </section>
 
                 <!-- Tactical Log (Comment Section) -->
                 <section class="mt-stack-lg space-y-stack-md">

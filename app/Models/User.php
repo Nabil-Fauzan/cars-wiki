@@ -36,8 +36,13 @@ class User extends Authenticatable
         return $this->hasMany(Comment::class);
     }
 
-    public function favoriteCars()
+    public function favorites()
     {
         return $this->belongsToMany(Car::class);
+    }
+
+    public function ratings()
+    {
+        return $this->hasMany(Rating::class);
     }
 }

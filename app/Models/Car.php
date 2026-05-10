@@ -11,6 +11,11 @@ class Car extends Model implements HasMedia
     use InteractsWithMedia;
     protected $guarded = [];
 
+    public function getRouteKeyName(): string
+    {
+        return 'model_id';
+    }
+
     protected $casts = [
         'gallery' => 'array',
         'pros' => 'array',
@@ -32,5 +37,10 @@ class Car extends Model implements HasMedia
     public function favoritedBy()
     {
         return $this->belongsToMany(User::class);
+    }
+
+    public function ratings()
+    {
+        return $this->hasMany(Rating::class);
     }
 }

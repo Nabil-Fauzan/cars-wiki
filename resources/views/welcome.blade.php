@@ -21,42 +21,69 @@
                     </div>
 
                     <!-- Quick Filters -->
-                    <div class="flex flex-wrap gap-stack-sm">
-                        <div class="flex flex-col gap-1">
+                    <div class="flex flex-wrap gap-stack-sm items-end">
+                        <div class="flex flex-col gap-1 min-w-[150px]">
                             <span class="font-label-caps text-label-caps text-secondary">BRAND</span>
-                            <select name="brand" onchange="this.form.submit()" class="bg-transparent border border-outline-variant rounded-lg text-on-surface px-3 py-2 font-body-md outline-none focus:border-primary cursor-pointer">
+                            <select name="brand" onchange="this.form.submit()" class="bg-surface-container-low/50 border border-outline-variant rounded-lg text-on-surface px-3 py-2 font-body-md outline-none focus:border-primary cursor-pointer">
                                 <option value="">All Brands</option>
-                                @foreach($brands as $brand)
-                                    <option value="{{ $brand->slug }}" {{ request('brand') == $brand->slug ? 'selected' : '' }}>{{ $brand->name }}</option>
+                                @foreach($brandModels as $brand)
+                                    @if(is_object($brand) && isset($brand->name))
+                                        <option value="{{ $brand->name }}" {{ request('brand') == $brand->name ? 'selected' : '' }}>{{ $brand->name }}</option>
+                                    @endif
                                 @endforeach
                             </select>
                         </div>
-                        <div class="flex flex-col gap-1">
+                        <div class="flex flex-col gap-1 min-w-[150px]">
                             <span class="font-label-caps text-label-caps text-secondary">CATEGORY</span>
-                            <select name="category" onchange="this.form.submit()" class="bg-transparent border border-outline-variant rounded-lg text-on-surface px-3 py-2 font-body-md outline-none focus:border-primary cursor-pointer">
+                            <select name="category" onchange="this.form.submit()" class="bg-surface-container-low/50 border border-outline-variant rounded-lg text-on-surface px-3 py-2 font-body-md outline-none focus:border-primary cursor-pointer">
                                 <option value="">All Categories</option>
                                 @foreach($categories as $category)
-                                    <option value="{{ $category }}" {{ request('category') == $category ? 'selected' : '' }}>{{ $category }}</option>
+                                    @if(is_string($category))
+                                        <option value="{{ $category }}" {{ request('category') == $category ? 'selected' : '' }}>{{ $category }}</option>
+                                    @endif
                                 @endforeach
                             </select>
                         </div>
+                        
+                        <button type="button" onclick="document.getElementById('advancedFilters').classList.toggle('hidden')" class="flex items-center gap-2 text-primary font-label-caps text-label-caps py-2 px-4 hover:bg-primary/10 rounded transition-all">
+                            <span class="material-symbols-outlined">tune</span>
+                            ADVANCED FILTERS
+                        </button>
+                    </div>
+
+                    <!-- Advanced Filters Hidden by Default -->
+                    <div id="advancedFilters" class="hidden grid grid-cols-1 md:grid-cols-3 gap-gutter p-stack-sm bg-surface-container/30 backdrop-blur-md rounded-lg border border-outline-variant/20">
                         <div class="flex flex-col gap-1">
-                            <span class="font-label-caps text-label-caps text-secondary">HORSEPOWER</span>
-                            <select name="hp" onchange="this.form.submit()" class="bg-transparent border border-outline-variant rounded-lg text-on-surface px-3 py-2 font-body-md outline-none focus:border-primary cursor-pointer">
+                            <span class="font-label-caps text-label-caps text-secondary">YEAR RANGE</span>
+                            <div class="flex items-center gap-2">
+                                <input name="year_min" value="{{ request('year_min') }}" placeholder="Min" class="w-full bg-surface-container-low border border-outline-variant rounded px-2 py-1 text-on-surface focus:border-primary outline-none" type="number"/>
+                                <span class="text-secondary">—</span>
+                                <input name="year_max" value="{{ request('year_max') }}" placeholder="Max" class="w-full bg-surface-container-low border border-outline-variant rounded px-2 py-1 text-on-surface focus:border-primary outline-none" type="number"/>
+                            </div>
+                        </div>
+                        <div class="flex flex-col gap-1">
+                            <span class="font-label-caps text-label-caps text-secondary">MIN HORSEPOWER</span>
+                            <select name="hp" class="bg-surface-container-low border border-outline-variant rounded px-2 py-1 text-on-surface focus:border-primary outline-none">
                                 <option value="">Any Power</option>
-                                <option value="400+" {{ request('hp') == '400+' ? 'selected' : '' }}>400+ HP</option>
-                                <option value="600+" {{ request('hp') == '600+' ? 'selected' : '' }}>600+ HP</option>
-                                <option value="800+" {{ request('hp') == '800+' ? 'selected' : '' }}>800+ HP</option>
+                                <option value="200" {{ request('hp') == '200' ? 'selected' : '' }}>200+ HP</option>
+                                <option value="400" {{ request('hp') == '400' ? 'selected' : '' }}>400+ HP</option>
+                                <option value="600" {{ request('hp') == '600' ? 'selected' : '' }}>600+ HP</option>
+                                <option value="800" {{ request('hp') == '800' ? 'selected' : '' }}>800+ HP</option>
                             </select>
                         </div>
                         <div class="flex flex-col gap-1">
                             <span class="font-label-caps text-label-caps text-secondary">TRANSMISSION</span>
-                            <select name="transmission" onchange="this.form.submit()" class="bg-transparent border border-outline-variant rounded-lg text-on-surface px-3 py-2 font-body-md outline-none focus:border-primary cursor-pointer">
+                            <select name="transmission" class="bg-surface-container-low border border-outline-variant rounded px-2 py-1 text-on-surface focus:border-primary outline-none">
                                 <option value="">Any Trans</option>
                                 @foreach($transmissions as $trans)
                                     <option value="{{ $trans }}" {{ request('transmission') == $trans ? 'selected' : '' }}>{{ $trans }}</option>
                                 @endforeach
                             </select>
+                        </div>
+                        <div class="md:col-span-3 flex justify-end">
+                            <button type="submit" class="bg-secondary-container/50 text-on-surface px-6 py-2 rounded font-label-caps text-label-caps hover:bg-primary hover:text-on-primary transition-all">
+                                APPLY FILTERS
+                            </button>
                         </div>
                     </div>
                 </form>
@@ -71,10 +98,11 @@
                 <h2 class="font-headline-lg text-headline-lg text-on-surface mb-2">Featured Specimens</h2>
                 <p class="font-body-md text-body-md text-on-surface-variant">Precision curated data for the modern collector.</p>
             </div>
-            <div class="flex gap-stack-sm border-b border-outline-variant pb-2">
-                <a href="{{ route('home', ['sort' => 'newest']) }}" class="font-label-caps text-label-caps {{ request('sort', 'newest') == 'newest' ? 'text-primary border-b-2 border-primary' : 'text-secondary hover:text-on-surface' }} pb-1 transition-all">NEWEST</a>
-                <a href="{{ route('home', ['sort' => 'fastest']) }}" class="font-label-caps text-label-caps {{ request('sort') == 'fastest' ? 'text-primary border-b-2 border-primary' : 'text-secondary hover:text-on-surface' }} pb-1 transition-all">FASTEST</a>
-                <a href="{{ route('home', ['sort' => 'best']) }}" class="font-label-caps text-label-caps {{ request('sort') == 'best' ? 'text-primary border-b-2 border-primary' : 'text-secondary hover:text-on-surface' }} pb-1 transition-all">BEST RATED</a>
+            <div class="flex flex-wrap gap-stack-sm border-b border-outline-variant pb-2">
+                <a href="{{ route('home', array_merge(request()->query(), ['sort' => 'newest'])) }}" class="font-label-caps text-label-caps {{ request('sort', 'newest') == 'newest' ? 'text-primary border-b-2 border-primary' : 'text-secondary hover:text-on-surface' }} pb-1 transition-all">NEWEST</a>
+                <a href="{{ route('home', array_merge(request()->query(), ['sort' => 'fastest'])) }}" class="font-label-caps text-label-caps {{ request('sort') == 'fastest' ? 'text-primary border-b-2 border-primary' : 'text-secondary hover:text-on-surface' }} pb-1 transition-all">FASTEST</a>
+                <a href="{{ route('home', array_merge(request()->query(), ['sort' => 'acceleration'])) }}" class="font-label-caps text-label-caps {{ request('sort') == 'acceleration' ? 'text-primary border-b-2 border-primary' : 'text-secondary hover:text-on-surface' }} pb-1 transition-all">ACCELERATION</a>
+                <a href="{{ route('home', array_merge(request()->query(), ['sort' => 'best'])) }}" class="font-label-caps text-label-caps {{ request('sort') == 'best' ? 'text-primary border-b-2 border-primary' : 'text-secondary hover:text-on-surface' }} pb-1 transition-all">BEST RATED</a>
             </div>
         </div>
 
@@ -98,12 +126,24 @@
                                 </p>
                                 <h3 class="font-headline-md text-headline-md text-on-surface">{{ $car->model }}</h3>
                             </div>
-                            <span class="font-headline-md text-headline-md text-on-surface">{{ $car->year }}</span>
+                            <div class="flex flex-col items-end gap-2">
+                                <span class="font-headline-md text-headline-md text-on-surface">{{ $car->year }}</span>
+                                @auth
+                                    <form action="{{ route('cars.favorite', $car) }}" method="POST">
+                                        @csrf
+                                        <button type="submit" class="text-primary hover:scale-110 transition-transform">
+                                            <span class="material-symbols-outlined {{ auth()->user()->favorites->contains($car->id) ? 'fill-1' : '' }}">
+                                                {{ auth()->user()->favorites->contains($car->id) ? 'favorite' : 'favorite' }}
+                                            </span>
+                                        </button>
+                                    </form>
+                                @endauth
+                            </div>
                         </div>
                         <div class="grid grid-cols-2 gap-4 border-t border-outline-variant/30 pt-4">
                             <div>
                                 <p class="font-label-caps text-label-caps text-secondary mb-1">HORSEPOWER</p>
-                                <p class="font-body-md text-body-md text-on-surface">{{ is_array($car->hp) ? ($car->hp[0] ?? 'N/A') : $car->hp }} HP</p>
+                                <p class="font-body-md text-body-md text-on-surface">{{ str_ireplace(' hp', '', is_array($car->hp) ? ($car->hp[0] ?? 'N/A') : $car->hp) }} HP</p>
                             </div>
                             <div>
                                 <p class="font-label-caps text-label-caps text-secondary mb-1">CATEGORY</p>
@@ -122,6 +162,11 @@
                     <p class="text-on-surface-variant">The encyclopedia is currently awaiting technical data deployment.</p>
                 </div>
             @endforelse
+        </div>
+
+        <!-- Pagination -->
+        <div class="mt-stack-lg">
+            {{ $cars->links() }}
         </div>
     </section>
 

@@ -39,6 +39,12 @@
                         <span class="font-label-caps text-label-caps text-primary border-l-2 border-primary pl-2 mb-2 block uppercase">Comparison Engine v4.2</span>
                         <h1 class="font-headline-xl text-headline-xl text-on-surface">Battle Sheet</h1>
                     </div>
+                    <div class="flex items-center gap-4 bg-surface-container-low/50 p-2 rounded-lg border border-outline-variant/30">
+                        <span class="font-label-caps text-label-caps text-secondary">Highlight Differences</span>
+                        <button type="button" id="toggleDiffs" class="relative inline-flex h-6 w-11 items-center rounded-full bg-surface-variant transition-colors focus:outline-none">
+                            <span id="toggleKnob" class="inline-block h-4 w-4 transform rounded-full bg-on-surface-variant transition-transform translate-x-1"></span>
+                        </button>
+                    </div>
                 </div>
                 
                 <!-- Comparison Selectors -->
@@ -103,6 +109,7 @@
                             'category' => 'Category',
                             'year' => 'Year',
                             'hp' => 'Horsepower',
+                            'torque' => 'Torque',
                             'engine' => 'Engine',
                             'transmission' => 'Transmission',
                             'drivetrain' => 'Drivetrain',
@@ -150,10 +157,24 @@
                                         $n2 = isset($matches2[0]) ? (int)$matches2[0] : 0;
                                         if ($n1 > $n2) $winner = 1;
                                         elseif ($n2 > $n1) $winner = 2;
+                                    } elseif ($key == 'torque' && !empty($val1) && !empty($val2)) {
+                                        preg_match('/\d+/', $val1, $matches1);
+                                        preg_match('/\d+/', $val2, $matches2);
+                                        $n1 = isset($matches1[0]) ? (int)$matches1[0] : 0;
+                                        $n2 = isset($matches2[0]) ? (int)$matches2[0] : 0;
+                                        if ($n1 > $n2) $winner = 1;
+                                        elseif ($n2 > $n1) $winner = 2;
                                     }
+                                    
+                                    $isDifferent = in_array($key, $differences);
                                 @endphp
-                                <div class="grid grid-cols-1 md:grid-cols-3 border-b border-outline-variant/10">
-                                    <div class="p-4 bg-surface-container-high/40 font-label-caps text-label-caps text-on-surface-variant">{{ $label }}</div>
+                                <div class="grid grid-cols-1 md:grid-cols-3 border-b border-outline-variant/10 transition-colors duration-300 {{ $isDifferent ? 'diff-row' : '' }}">
+                                    <div class="p-4 bg-surface-container-high/40 font-label-caps text-label-caps text-on-surface-variant flex items-center gap-2">
+                                        {{ $label }}
+                                        @if($isDifferent)
+                                            <span class="material-symbols-outlined text-[14px] text-primary opacity-0 diff-indicator">priority_high</span>
+                                        @endif
+                                    </div>
                                     <div class="p-4 flex items-center justify-center font-body-md text-center {{ $winner == 1 ? 'text-primary font-bold bg-primary/5' : 'text-on-surface' }}">
                                         @if(empty($val1) && $key != 'brands') 
                                             <span class="opacity-30">—</span>
@@ -194,4 +215,35 @@
             @endif
         </main>
     </div>
+
+    <style>
+        .highlight-diffs .diff-row {
+            background-color: rgba(152, 203, 255, 0.05);
+        }
+        .highlight-diffs .diff-indicator {
+            opacity: 1;
+        }
+    </style>
+
+    <script>
+        document.getElementById('toggleDiffs').addEventListener('click', function() {
+            const body = document.querySelector('main');
+            const knob = document.getElementById('toggleKnob');
+            const bg = this;
+            
+            if (body.classList.contains('highlight-diffs')) {
+                body.classList.remove('highlight-diffs');
+                knob.classList.remove('translate-x-6', 'bg-primary');
+                knob.classList.add('translate-x-1', 'bg-on-surface-variant');
+                bg.classList.remove('bg-primary/20');
+                bg.classList.add('bg-surface-variant');
+            } else {
+                body.classList.add('highlight-diffs');
+                knob.classList.remove('translate-x-1', 'bg-on-surface-variant');
+                knob.classList.add('translate-x-6', 'bg-primary');
+                bg.classList.remove('bg-surface-variant');
+                bg.classList.add('bg-primary/20');
+            }
+        });
+    </script>
 </x-app-layout>

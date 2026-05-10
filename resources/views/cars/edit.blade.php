@@ -15,7 +15,7 @@
             </div>
         @endif
 
-        <form action="{{ route('cars.update', $car->id) }}" method="POST" class="glass-card p-stack-md rounded-lg space-y-6">
+        <form action="{{ route('cars.update', $car) }}" method="POST" class="glass-card p-stack-md rounded-lg space-y-6">
             @csrf
             @method('PUT')
             <div class="grid grid-cols-1 md:grid-cols-2 gap-gutter">

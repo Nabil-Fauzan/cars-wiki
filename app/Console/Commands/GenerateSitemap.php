@@ -16,7 +16,10 @@ class GenerateSitemap extends Command
     {
         $sitemap = Sitemap::create()
             ->add(Url::create('/')->setPriority(1.0)->setChangeFrequency(Url::CHANGE_FREQUENCY_DAILY))
-            ->add(Url::create('/cars')->setPriority(0.9)->setChangeFrequency(Url::CHANGE_FREQUENCY_DAILY));
+            ->add(Url::create('/cars')->setPriority(0.9)->setChangeFrequency(Url::CHANGE_FREQUENCY_DAILY))
+            ->add(Url::create('/brands')->setPriority(0.7)->setChangeFrequency(Url::CHANGE_FREQUENCY_WEEKLY))
+            ->add(Url::create('/categories')->setPriority(0.7)->setChangeFrequency(Url::CHANGE_FREQUENCY_WEEKLY))
+            ->add(Url::create('/compare')->setPriority(0.7)->setChangeFrequency(Url::CHANGE_FREQUENCY_MONTHLY));
 
         Car::all()->each(function (Car $car) use ($sitemap) {
             $sitemap->add(
