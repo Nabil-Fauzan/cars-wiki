@@ -47,6 +47,15 @@
                         <div class="relative aspect-video overflow-hidden">
                             <img class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" alt="{{ $car->brands->first()->name ?? 'Vehicle' }} {{ $car->model }}" src="{{ $car->image_url }}"/>
                             <div class="absolute top-4 right-4 bg-primary text-on-primary px-2 py-1 font-label-caps text-label-caps">{{ $car->model_id }}</div>
+                            
+                            <!-- Add to Compare Button Overlay -->
+                            <div class="absolute inset-0 bg-black/20 lg:bg-black/40 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                <button @click="addToCompare({ model_id: '{{ $car->model_id }}', model: '{{ $car->model }}', image: '{{ $car->image_url }}' })" 
+                                        class="p-4 lg:p-3 rounded-full backdrop-blur-md transition-all active:scale-90 shadow-lg"
+                                        :class="isInCompare('{{ $car->model_id }}') ? 'bg-primary text-on-primary' : 'bg-white/30 text-white hover:bg-white/50'">
+                                    <span class="material-symbols-outlined text-2xl lg:text-base" x-text="isInCompare('{{ $car->model_id }}') ? 'check_circle' : 'compare_arrows'"></span>
+                                </button>
+                            </div>
                         </div>
                         <div class="p-stack-sm flex flex-col gap-4">
                             <div class="flex justify-between items-start">

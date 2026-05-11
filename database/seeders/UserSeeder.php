@@ -13,7 +13,7 @@ class UserSeeder extends Seeder
         // Admin Account
         $admin = User::create([
             'name' => 'PCAR Administrator',
-            'email' => 'admin@pcar.com',
+            'email' => 'admin@gmail.com',
             'password' => Hash::make('password'),
         ]);
         $admin->assignRole('admin');
@@ -21,7 +21,7 @@ class UserSeeder extends Seeder
         // Editor Account
         $editor = User::create([
             'name' => 'Data Curator',
-            'email' => 'editor@pcar.com',
+            'email' => 'editor@gmail.com',
             'password' => Hash::make('password'),
         ]);
         $editor->assignRole('editor');
@@ -29,7 +29,7 @@ class UserSeeder extends Seeder
         // Normal User Account
         $user = User::create([
             'name' => 'Car Enthusiast',
-            'email' => 'user@pcar.com',
+            'email' => 'user@gmail.com',
             'password' => Hash::make('password'),
         ]);
         $user->assignRole('user');

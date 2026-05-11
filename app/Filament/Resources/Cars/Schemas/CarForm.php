@@ -4,9 +4,11 @@ namespace App\Filament\Resources\Cars\Schemas;
 
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TagsInput;
 use Filament\Schemas\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Schemas\Schema;
+use Filament\Actions\Action;
 
 class CarForm
 {
@@ -16,18 +18,22 @@ class CarForm
             ->components([
                 Section::make('General Information')
                     ->schema([
+                        TextInput::make('model')
+                            ->required()
+                            ->live(onBlur: true)
+                            ->afterStateUpdated(fn (callable $set, $state) => $set('model_id', \Illuminate\Support\Str::slug($state))),
                         TextInput::make('model_id')
                             ->required()
+                            ->unique(ignoreRecord: true)
                             ->label('Specimen ID (Slug)'),
-                        TextInput::make('model')
-                            ->required(),
                         Select::make('brands')
                             ->relationship('brands', 'name')
                             ->multiple()
                             ->preload()
                             ->required(),
                         TextInput::make('year')
-                            ->required(),
+                            ->required()
+                            ->numeric(),
                         Select::make('category')
                             ->options([
                                 'SUV' => 'SUV',
@@ -42,12 +48,12 @@ class CarForm
 
                 Section::make('Performance Specs')
                     ->schema([
-                        TextInput::make('hp')
-                            ->label('Horsepower Ratings (JSON)')
-                            ->helperText('Format: ["400 hp", "450 hp"]'),
-                        TextInput::make('engine')
-                            ->label('Engine Options (JSON)')
-                            ->helperText('Format: ["3.0L V6", "4.0L V8"]'),
+                        TagsInput::make('hp')
+                            ->label('Horsepower Ratings')
+                            ->placeholder('e.g. 400 hp'),
+                        TagsInput::make('engine')
+                            ->label('Engine Options')
+                            ->placeholder('e.g. 3.0L V6'),
                         TextInput::make('transmission'),
                         TextInput::make('drivetrain'),
                         TextInput::make('torque'),
@@ -67,15 +73,62 @@ class CarForm
                 Section::make('Visuals & Content')
                     ->schema([
                         TextInput::make('image_url')
-                            ->label('Main Image URL'),
-                        TextInput::make('gallery')
-                            ->label('Gallery URLs (JSON)'),
+                            ->label('Main Image URL')
+                            ->url(),
+                        TagsInput::make('gallery')
+                            ->label('Gallery URLs')
+                            ->placeholder('Paste image URLs here'),
                         Textarea::make('history')
-                            ->columnSpanFull(),
-                        TextInput::make('pros')
-                            ->label('Pros (JSON)'),
-                        TextInput::make('cons')
-                            ->label('Cons (JSON)'),
+                            ->columnSpanFull()
+                            ->hintAction(
+                                Action::make('generateHistory')
+                                    ->icon('heroicon-m-sparkles')
+                                    ->label('AI Magic')
+                                    ->action(function (callable $set, $state, $get) {
+                                        $model = $get('model');
+                                        $response = \Illuminate\Support\Facades\Http::post(route('admin.ai.generate'), [
+                                            'model' => $model,
+                                            'field' => 'history'
+                                        ]);
+                                        if ($response->successful()) {
+                                            $set('history', $response->json('content'));
+                                        }
+                                    })
+                            ),
+                        TagsInput::make('pros')
+                            ->label('Pros')
+                            ->placeholder('e.g. Fast acceleration')
+                            ->hintAction(
+                                Action::make('generatePros')
+                                    ->icon('heroicon-m-sparkles')
+                                    ->action(function (callable $set, $get) {
+                                        $model = $get('model');
+                                        $response = \Illuminate\Support\Facades\Http::post(route('admin.ai.generate'), [
+                                            'model' => $model,
+                                            'field' => 'pros'
+                                        ]);
+                                        if ($response->successful()) {
+                                            $set('pros', json_decode($response->json('content'), true));
+                                        }
+                                    })
+                            ),
+                        TagsInput::make('cons')
+                            ->label('Cons')
+                            ->placeholder('e.g. High maintenance')
+                            ->hintAction(
+                                Action::make('generateCons')
+                                    ->icon('heroicon-m-sparkles')
+                                    ->action(function (callable $set, $get) {
+                                        $model = $get('model');
+                                        $response = \Illuminate\Support\Facades\Http::post(route('admin.ai.generate'), [
+                                            'model' => $model,
+                                            'field' => 'cons'
+                                        ]);
+                                        if ($response->successful()) {
+                                            $set('cons', json_decode($response->json('content'), true));
+                                        }
+                                    })
+                            ),
                     ])->columns(2),
 
                 Section::make('System Status')
@@ -88,12 +141,20 @@ class CarForm
                             ])
                             ->required()
                             ->default('Live'),
+                        Select::make('moderation_status')
+                            ->options([
+                                'draft' => 'Drafting',
+                                'review' => 'Pending Review',
+                                'published' => 'Published',
+                            ])
+                            ->required()
+                            ->default('published'),
                         TextInput::make('data_completion')
                             ->required()
                             ->numeric()
                             ->default(0)
                             ->suffix('%'),
-                    ])->columns(2),
+                    ])->columns(3),
             ]);
     }
 }

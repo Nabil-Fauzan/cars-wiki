@@ -1,15 +1,16 @@
 <x-app-layout>
     @section('meta')
         <meta property="og:title" content="{{ $car->brands->first()->name ?? '' }} {{ $car->model }} | PCAR Wiki">
-        <meta property="og:description" content="{{ Str::limit($car->history, 160) }}">
+        <meta property="og:description" content="{{ $car->history ? Str::limit($car->history, 160) : 'Explore technical specifications, performance metrics, and tactical data for the ' . $car->model . ' on PCAR Wiki.' }}">
         <meta property="og:image" content="{{ $car->image_url }}">
         <meta property="og:type" content="website">
         <meta name="twitter:card" content="summary_large_image">
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     @endsection
     <main class="pt-0">
         <!-- Hero Section & Gallery -->
         <section class="relative w-full h-[716px] overflow-hidden bg-surface-container-lowest">
-            <img alt="{{ $car->brands->first()->name ?? 'Vehicle' }} {{ $car->model }}" class="w-full h-full object-cover opacity-80" src="{{ $car->image_url }}"/>
+            <img alt="{{ $car->brands->first()->name ?? 'Vehicle' }} {{ $car->model }}" onerror="imgError(this)" class="w-full h-full object-cover opacity-80" src="{{ $car->image_url }}"/>
             <div class="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent"></div>
             <div class="absolute bottom-margin-page left-margin-page right-margin-page max-w-container-max mx-auto">
                 <div class="flex flex-col gap-2">
@@ -23,12 +24,25 @@
                 </div>
                 <h1 class="font-headline-xl text-headline-xl text-on-surface">{{ $car->model }}</h1>
                     <div class="flex items-center gap-4 mt-stack-sm">
-                        <a href="{{ route('compare', ['car1' => $car->model_id]) }}" class="bg-primary px-stack-md py-3 text-on-primary font-label-caps text-label-caps rounded-[4px] hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-2">
-                            <span class="material-symbols-outlined">compare_arrows</span> Compare with another car
-                        </a>
-                        <button class="border border-secondary px-stack-md py-3 text-on-surface font-label-caps text-label-caps rounded-[4px] hover:bg-white/5 transition-all flex items-center gap-2">
-                            <span class="material-symbols-outlined">favorite</span> Add to Favorites
+                        <button @click="addToCompare({ model_id: '{{ $car->model_id }}', model: '{{ $car->model }}', image: '{{ $car->image_url }}' })" 
+                                class="px-stack-md py-3 font-label-caps text-label-caps rounded-[4px] hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-2"
+                                :class="isInCompare('{{ $car->model_id }}') ? 'bg-primary text-on-primary' : 'bg-surface-container-high text-on-surface border border-outline-variant/30'">
+                            <span class="material-symbols-outlined" x-text="isInCompare('{{ $car->model_id }}') ? 'check_circle' : 'compare_arrows'"></span>
+                            <span x-text="isInCompare('{{ $car->model_id }}') ? 'In Comparison Tray' : 'Compare with another car'"></span>
                         </button>
+                        @auth
+                            <form action="{{ route('cars.favorite', $car) }}" method="POST">
+                                @csrf
+                                <button type="submit" class="border border-secondary px-stack-md py-3 text-on-surface font-label-caps text-label-caps rounded-[4px] hover:bg-white/5 transition-all flex items-center gap-2">
+                                    <span class="material-symbols-outlined {{ auth()->user()->favorites->contains($car->id) ? 'fill-1 text-primary' : '' }}">favorite</span> 
+                                    {{ auth()->user()->favorites->contains($car->id) ? 'In Favorites' : 'Add to Favorites' }}
+                                </button>
+                            </form>
+                        @else
+                            <a href="{{ route('login') }}" class="border border-secondary px-stack-md py-3 text-on-surface font-label-caps text-label-caps rounded-[4px] hover:bg-white/5 transition-all flex items-center gap-2">
+                                <span class="material-symbols-outlined">favorite</span> Add to Favorites
+                            </a>
+                        @endauth
                     </div>
                 </div>
             </div>
@@ -77,6 +91,70 @@
                             @for($i=0; $i<5; $i++)
                                 <div class="gauge-segment flex-1 {{ $i < $segments ? '' : 'opacity-20' }}"></div>
                             @endfor
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Engine Sound & Market Insights -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-stack-sm">
+                    <!-- Engine Sound Library -->
+                    <div class="glass-card p-stack-md machined-edge flex flex-col justify-center gap-4">
+                        <div class="flex items-center gap-3">
+                            <span class="material-symbols-outlined text-primary">graphic_eq</span>
+                            <h3 class="font-label-caps text-label-caps text-on-surface">Engine Sound Library</h3>
+                        </div>
+                        @if($car->engine_sound_url)
+                            <div class="bg-surface-container-low/50 p-4 rounded-lg border border-outline-variant/30 flex items-center gap-4">
+                                <button onclick="toggleSound(this, '{{ $car->engine_sound_url }}')" class="w-12 h-12 rounded-full bg-primary text-on-primary flex items-center justify-center hover:scale-105 transition-transform active:scale-95 shadow-[0_0_15px_rgba(152,203,255,0.4)]">
+                                    <span class="material-symbols-outlined play-icon">play_arrow</span>
+                                    <span class="material-symbols-outlined pause-icon hidden">pause</span>
+                                </button>
+                                <div class="flex-1">
+                                    <p class="font-label-caps text-[10px] text-primary">TACTICAL AUDIO FEED</p>
+                                    <p class="font-body-md text-on-surface">Powerplant Resonance</p>
+                                </div>
+                                <div class="flex gap-0.5 items-center h-4">
+                                    @for($i=0; $i<12; $i++)
+                                        <div class="w-0.5 bg-primary/30 rounded-full h-2 wave-bar"></div>
+                                    @endfor
+                                </div>
+                            </div>
+                        @else
+                            <div class="py-6 text-center border border-dashed border-outline-variant/30 rounded">
+                                <p class="text-xs font-body-md text-on-surface-variant opacity-50">Audio specimen not yet recorded.</p>
+                            </div>
+                        @endif
+                    </div>
+
+                    <!-- Marketplace Insights -->
+                    <div class="glass-card p-stack-md machined-edge">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="flex items-center gap-3">
+                                <span class="material-symbols-outlined text-primary">payments</span>
+                                <h3 class="font-label-caps text-label-caps text-on-surface">Market Insights</h3>
+                            </div>
+                            @if($car->price_trend)
+                                <div class="flex items-center gap-1 {{ $car->price_trend == 'up' ? 'text-success' : ($car->price_trend == 'down' ? 'text-error' : 'text-secondary') }}">
+                                    <span class="material-symbols-outlined text-sm">
+                                        {{ $car->price_trend == 'up' ? 'trending_up' : ($car->price_trend == 'down' ? 'trending_down' : 'trending_flat') }}
+                                    </span>
+                                    <span class="font-label-caps text-[10px]">{{ strtoupper($car->price_trend) }}</span>
+                                </div>
+                            @endif
+                        </div>
+                        <div class="flex items-end justify-between gap-4">
+                            <div>
+                                <p class="font-label-caps text-[10px] text-secondary">FAIR MARKET VALUE</p>
+                                <p class="font-headline-md text-on-surface">${{ number_format($car->avg_price ?? 0) }}</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-label-caps text-[10px] text-secondary">RANGE</p>
+                                <p class="font-body-md text-on-surface-variant">${{ number_format($car->min_price ?? 0) }} — ${{ number_format($car->max_price ?? 0) }}</p>
+                            </div>
+                        </div>
+                        <div class="mt-4 h-1 w-full bg-surface-container-highest rounded-full overflow-hidden relative">
+                            <div class="absolute inset-y-0 bg-primary/20" style="left: 20%; right: 20%;"></div>
+                            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-primary rounded-full shadow-[0_0_10px_#98cbff]"></div>
                         </div>
                     </div>
                 </div>
@@ -178,46 +256,53 @@
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-gutter">
-                        <!-- Stats View -->
-                        <div class="space-y-4">
-                            @foreach(['Comfort' => $avgComfort, 'Performance' => $avgPerformance, 'Design' => $avgDesign, 'Value' => $avgValue] as $label => $score)
-                                <div>
-                                    <div class="flex justify-between text-[10px] font-label-caps mb-1">
-                                        <span class="text-on-surface-variant">{{ $label }}</span>
-                                        <span class="text-primary">{{ number_format($score, 1) }}</span>
-                                    </div>
-                                    <div class="h-1 w-full bg-surface-container-highest rounded-full overflow-hidden">
-                                        <div class="h-full bg-primary" style="width: {{ ($score/5)*100 }}%"></div>
-                                    </div>
-                                </div>
-                            @endforeach
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-gutter items-center">
+                        <!-- Radar Chart View -->
+                        <div class="relative aspect-square max-w-[300px] mx-auto w-full">
+                            <canvas id="specRadarChart"></canvas>
                         </div>
 
-                        <!-- Rating Form -->
-                        @auth
-                            @php $myRating = $car->ratings()->where('user_id', Auth::id())->first(); @endphp
-                            <form action="{{ route('cars.rate', $car) }}" method="POST" class="bg-surface-container-low/30 p-4 rounded space-y-4 border border-outline-variant/20">
-                                @csrf
-                                <div class="grid grid-cols-2 gap-4">
-                                    @foreach(['comfort', 'performance', 'design', 'value'] as $field)
-                                        <div class="flex flex-col gap-1">
-                                            <label class="text-[10px] font-label-caps text-secondary uppercase">{{ $field }}</label>
-                                            <input type="range" name="{{ $field }}" min="1" max="5" step="1" value="{{ $myRating ? $myRating->$field : 3 }}" class="w-full h-1 bg-surface-container-highest rounded-lg appearance-none cursor-pointer accent-primary">
+                        <div class="space-y-6">
+                            <!-- Stats List -->
+                            <div class="grid grid-cols-2 gap-4">
+                                @foreach(['Comfort' => $avgComfort, 'Performance' => $avgPerformance, 'Design' => $avgDesign, 'Value' => $avgValue] as $label => $score)
+                                    <div class="glass-card p-3 border-l-2 border-primary">
+                                        <div class="flex justify-between items-center">
+                                            <span class="text-[10px] font-label-caps text-secondary">{{ $label }}</span>
+                                            <span class="text-lg font-headline-md text-on-surface">{{ number_format($score, 1) }}</span>
                                         </div>
-                                    @endforeach
-                                </div>
-                                <button type="submit" class="w-full py-2 bg-primary/20 text-primary border border-primary/30 font-label-caps text-xs hover:bg-primary hover:text-on-primary transition-all">
-                                    {{ $myRating ? 'UPDATE ASSESSMENT' : 'SUBMIT ASSESSMENT' }}
-                                </button>
-                            </form>
-                        @else
-                            <div class="flex flex-col items-center justify-center border border-dashed border-outline-variant/30 rounded p-6 text-center">
-                                <span class="material-symbols-outlined text-secondary mb-2">lock</span>
-                                <p class="text-xs font-body-md text-on-surface-variant mb-4">Authentication required to submit assessments.</p>
-                                <a href="{{ route('login') }}" class="text-primary font-label-caps text-[10px] border border-primary/30 px-4 py-2 hover:bg-primary/10 transition-all">LOG IN</a>
+                                        <div class="h-1 w-full bg-surface-container-highest mt-2 rounded-full overflow-hidden">
+                                            <div class="h-full bg-primary" style="width: {{ ($score/5)*100 }}%"></div>
+                                        </div>
+                                    </div>
+                                @endforeach
                             </div>
-                        @endauth
+
+                            <!-- Rating Form -->
+                            @auth
+                                @php $myRating = $car->ratings()->where('user_id', Auth::id())->first(); @endphp
+                                <form action="{{ route('cars.rate', $car) }}" method="POST" class="bg-surface-container-low/30 p-4 rounded space-y-4 border border-outline-variant/20">
+                                    @csrf
+                                    <div class="grid grid-cols-2 gap-4">
+                                        @foreach(['comfort', 'performance', 'design', 'value'] as $field)
+                                            <div class="flex flex-col gap-1">
+                                                <label class="text-[10px] font-label-caps text-secondary uppercase">{{ $field }}</label>
+                                                <input type="range" name="{{ $field }}" min="1" max="5" step="1" value="{{ $myRating ? $myRating->$field : 3 }}" class="w-full h-1 bg-surface-container-highest rounded-lg appearance-none cursor-pointer accent-primary">
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                    <button type="submit" class="w-full py-2 bg-primary text-on-primary font-label-caps text-xs hover:brightness-110 transition-all shadow-[0_0_15px_rgba(152,203,255,0.2)]">
+                                        {{ $myRating ? 'UPDATE MY ASSESSMENT' : 'SUBMIT ASSESSMENT' }}
+                                    </button>
+                                </form>
+                            @else
+                                <div class="flex flex-col items-center justify-center border border-dashed border-outline-variant/30 rounded p-6 text-center">
+                                    <span class="material-symbols-outlined text-secondary mb-2">lock</span>
+                                    <p class="text-xs font-body-md text-on-surface-variant mb-4">Authentication required to submit assessments.</p>
+                                    <a href="{{ route('login') }}" class="text-primary font-label-caps text-[10px] border border-primary/30 px-4 py-2 hover:bg-primary/10 transition-all">LOG IN</a>
+                                </div>
+                            @endauth
+                        </div>
                     </div>
                 </section>
 
@@ -313,6 +398,38 @@
                         @endforeach
                     </div>
                 </section>
+
+                @auth
+                <!-- Personal Curator Notes -->
+                <section class="mt-stack-lg">
+                    <div class="flex items-center gap-4 mb-6">
+                        <h2 class="font-label-caps text-label-caps text-secondary tracking-widest uppercase">Private Curator Notes</h2>
+                        <div class="h-px flex-1 bg-gradient-to-r from-outline-variant/50 to-transparent"></div>
+                    </div>
+                    <div class="glass-card p-stack-md machined-edge">
+                        <form action="{{ route('cars.notes.save', $car) }}" method="POST" class="space-y-4">
+                            @csrf
+                            <div class="flex items-start gap-4">
+                                <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                                    <span class="material-symbols-outlined text-primary">edit_note</span>
+                                </div>
+                                <div class="flex-1">
+                                    <label for="content" class="block font-label-caps text-[10px] text-on-surface-variant mb-2">PRIVATE OBSERVATIONS (VISIBLE ONLY TO YOU)</label>
+                                    <textarea name="content" id="content" rows="3" 
+                                              class="w-full bg-surface-container-low border border-outline-variant/30 rounded p-4 text-on-surface focus:ring-1 focus:ring-primary focus:border-primary transition-all"
+                                              placeholder="Write your personal thoughts, VIN details, or restoration goals...">{{ $personalNote ? $personalNote->content : '' }}</textarea>
+                                </div>
+                            </div>
+                            <div class="flex justify-end">
+                                <button type="submit" class="bg-primary text-on-primary px-6 py-2 font-label-caps text-label-caps hover:bg-primary-container hover:text-on-primary-container transition-all flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-sm">save</span>
+                                    {{ $personalNote ? 'Update Note' : 'Save Note' }}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </section>
+                @endauth
             </div>
 
             <!-- Lightbox Modal -->
@@ -347,7 +464,106 @@
                         lb.classList.remove('flex');
                     }, 300);
                 }
+
+                const ctx = document.getElementById('specRadarChart');
+                if (ctx) {
+                    new Chart(ctx, {
+                        // ... existing chart config ...
+                        type: 'radar',
+                        data: {
+                            labels: ['Comfort', 'Performance', 'Design', 'Value'],
+                            datasets: [{
+                                label: 'Community Rating',
+                                data: [{{ $avgComfort }}, {{ $avgPerformance }}, {{ $avgDesign }}, {{ $avgValue }}],
+                                fill: true,
+                                backgroundColor: 'rgba(152, 203, 255, 0.2)',
+                                borderColor: '#98cbff',
+                                pointBackgroundColor: '#98cbff',
+                                pointBorderColor: '#fff',
+                                pointHoverBackgroundColor: '#fff',
+                                pointHoverBorderColor: '#98cbff',
+                                borderWidth: 2
+                            }]
+                        },
+                        options: {
+                            scales: {
+                                r: {
+                                    angleLines: { color: 'rgba(255, 255, 255, 0.1)' },
+                                    grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                                    pointLabels: {
+                                        color: '#94a3b8',
+                                        font: { family: 'Metropolis', size: 10 }
+                                    },
+                                    ticks: {
+                                        display: false,
+                                        stepSize: 1,
+                                        max: 5
+                                    },
+                                    suggestedMin: 0,
+                                    suggestedMax: 5
+                                }
+                            },
+                            plugins: {
+                                legend: { display: false }
+                            }
+                        }
+                    });
+                }
+
+                // Sound Player Logic
+                let currentAudio = null;
+                let currentBtn = null;
+
+                function toggleSound(btn, url) {
+                    if (currentAudio && currentAudio.src === url) {
+                        if (currentAudio.paused) {
+                            currentAudio.play();
+                            updateUI(btn, true);
+                        } else {
+                            currentAudio.pause();
+                            updateUI(btn, false);
+                        }
+                    } else {
+                        if (currentAudio) {
+                            currentAudio.pause();
+                            updateUI(currentBtn, false);
+                        }
+                        currentAudio = new Audio(url);
+                        currentBtn = btn;
+                        currentAudio.play();
+                        updateUI(btn, true);
+                        
+                        currentAudio.onended = () => updateUI(btn, false);
+                    }
+                }
+
+                function updateUI(btn, isPlaying) {
+                    const playIcon = btn.querySelector('.play-icon');
+                    const pauseIcon = btn.querySelector('.pause-icon');
+                    const bars = btn.closest('.glass-card').querySelectorAll('.wave-bar');
+                    
+                    if (isPlaying) {
+                        playIcon.classList.add('hidden');
+                        pauseIcon.classList.remove('hidden');
+                        bars.forEach((bar, i) => {
+                            bar.style.animation = `soundWave 0.5s ease-in-out infinite alternate ${i * 0.05}s`;
+                        });
+                    } else {
+                        playIcon.classList.remove('hidden');
+                        pauseIcon.classList.add('hidden');
+                        bars.forEach(bar => {
+                            bar.style.animation = 'none';
+                            bar.style.height = '8px';
+                        });
+                    }
+                }
             </script>
+            <style>
+                @keyframes soundWave {
+                    0% { height: 4px; }
+                    100% { height: 16px; }
+                }
+            </style>
         </div>
     </main>
 </x-app-layout>

@@ -45,4 +45,14 @@ class User extends Authenticatable
     {
         return $this->hasMany(Rating::class);
     }
+
+    public function comparisonSets()
+    {
+        return $this->hasMany(ComparisonSet::class);
+    }
+
+    public function personalNotes()
+    {
+        return $this->hasMany(PersonalNote::class);
+    }
 }

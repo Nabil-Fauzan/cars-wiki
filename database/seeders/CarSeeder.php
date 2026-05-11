@@ -19,6 +19,7 @@ class CarSeeder extends Seeder
         // Helper function to handle brand and car creation
         $seedCar = function ($data, $brandName) {
             $brand = Brand::firstOrCreate(['name' => $brandName]);
+            $data['moderation_status'] = 'published';
             $car = Car::create($data);
             $car->brands()->attach($brand->id);
         };
@@ -43,6 +44,11 @@ class CarSeeder extends Seeder
             'cons' => ['Aggressive ride', 'High maintenance', 'Minimal storage'],
             'status' => 'Live',
             'data_completion' => 95,
+            'engine_sound_url' => 'https://www.soundjay.com/transportation/sounds/car-racing-1.mp3',
+            'min_price' => 250000,
+            'max_price' => 380000,
+            'avg_price' => 315000,
+            'price_trend' => 'up',
         ], 'Porsche');
 
         $seedCar([
@@ -65,6 +71,11 @@ class CarSeeder extends Seeder
             'cons' => ['High cost', 'Complex infotainment', 'Loud cabin'],
             'status' => 'Live',
             'data_completion' => 88,
+            'engine_sound_url' => 'https://www.soundjay.com/transportation/sounds/car-accelerating-1.mp3',
+            'min_price' => 280000,
+            'max_price' => 340000,
+            'avg_price' => 310000,
+            'price_trend' => 'stable',
         ], 'Ferrari');
 
         $seedCar([
@@ -87,6 +98,10 @@ class CarSeeder extends Seeder
             'cons' => ['Stiff ride', 'Expensive for an M4', 'No rear seats'],
             'status' => 'Live',
             'data_completion' => 92,
+            'min_price' => 140000,
+            'max_price' => 175000,
+            'avg_price' => 158000,
+            'price_trend' => 'up',
         ], 'BMW');
 
         $seedCar([

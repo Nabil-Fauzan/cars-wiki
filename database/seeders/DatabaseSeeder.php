@@ -15,12 +15,10 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-
-        User::factory()->create([
-            'name' => 'PCAR Administrator',
-            'email' => 'admin@pcar.wiki',
-            'password' => \Illuminate\Support\Facades\Hash::make('admin123'),
+        $this->call([
+            RolesAndPermissionsSeeder::class,
+            UserSeeder::class,
+            CarSeeder::class,
         ]);
     }
 }

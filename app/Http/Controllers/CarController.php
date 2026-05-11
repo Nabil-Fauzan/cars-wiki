@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Car;
+use App\Models\User;
 use App\Models\Brand;
+use App\Models\Car;
 use App\Http\Requests\StoreCarRequest;
 use App\Http\Requests\UpdateCarRequest;
 use App\Services\CarService;
@@ -26,7 +27,7 @@ class CarController extends Controller
 
     public function index(Request $request)
     {
-        $query = Car::with('brands')->where('status', 'Live');
+        $query = Car::with('brands')->where('status', 'Live')->where('moderation_status', 'published');
         
         // Search Filter
         if ($request->filled('search')) {
@@ -99,7 +100,7 @@ class CarController extends Controller
         $brandModels = Brand::has('cars')->orderBy('name')->get();
         
         $categories = Cache::remember('pcar_categories_list_v2', 3600, function() {
-            return Car::where('status', 'Live')
+            return Car::where('status', 'Live')->where('moderation_status', 'published')
                 ->whereNotNull('category')
                 ->distinct()
                 ->pluck('category')
@@ -115,7 +116,7 @@ class CarController extends Controller
     public function brands()
     {
         $brands = Brand::with(['cars' => function($q) {
-                $q->where('status', 'Live')->select('cars.id', 'image_url')->limit(1);
+                $q->where('status', 'Live')->where('moderation_status', 'published')->select('cars.id', 'image_url')->limit(1);
             }])
             ->withCount('cars')
             ->orderBy('name')
@@ -125,7 +126,7 @@ class CarController extends Controller
 
     public function categories()
     {
-        $categories = Car::where('status', 'Live')
+        $categories = Car::where('status', 'Live')->where('moderation_status', 'published')
             ->whereNotNull('category')
             ->select('category', DB::raw('count(*) as total'), DB::raw('MAX(image_url) as image'))
             ->groupBy('category')
@@ -138,12 +139,39 @@ class CarController extends Controller
     {
         $car = Car::where('model_id', $model_id)->firstOrFail();
         
+        // Moderation Check: Only published cars are visible to the public.
+        // Admin and Editor can view drafts/pending.
+        /** @var User $user */
+        $user = Auth::user();
+        if ($car->moderation_status !== 'published' && (!$user || !$user->hasAnyRole(['admin', 'editor']))) {
+            abort(403, 'This specimen is currently under classification and not yet public.');
+        }
+
         $ratingStats = $car->ratings()
             ->selectRaw('avg(comfort) as comfort, avg(performance) as performance, avg(design) as design, avg(value) as value')
             ->first();
 
         $rivals = Car::where('model_id', '!=', $model_id)->limit(2)->get();
-        return view('cars.show', compact('car', 'rivals', 'ratingStats'));
+        
+        $personalNote = null;
+        if (Auth::check()) {
+            /** @var User $user */
+            $user = Auth::user();
+            $personalNote = $user->personalNotes()->where('car_id', $model_id)->first();
+        }
+
+        return view('cars.show', compact('car', 'rivals', 'ratingStats', 'personalNote'));
+    }
+
+    public function garage()
+    {
+        /** @var User $user */
+        $user = Auth::user();
+        $favorites = $user->favorites()->with('brands')->get();
+        $comparisonSets = $user->comparisonSets()->with(['car1.brands', 'car2.brands', 'car3.brands'])->latest()->get();
+        $personalNotes = $user->personalNotes()->with('car.brands')->latest()->get();
+
+        return view('profile.garage', compact('favorites', 'comparisonSets', 'personalNotes'));
     }
 
     public function dashboard(Request $request)
@@ -186,40 +214,64 @@ class CarController extends Controller
     {
         $car1 = $request->has('car1') ? Car::with('brands')->where('model_id', $request->car1)->first() : null;
         $car2 = $request->has('car2') ? Car::with('brands')->where('model_id', $request->car2)->first() : null;
+        $car3 = $request->has('car3') ? Car::with('brands')->where('model_id', $request->car3)->first() : null;
 
         if (!$car1 && !$car2) {
-            $defaultCars = Car::with('brands')->where('status', 'Live')->limit(2)->get();
+            $defaultCars = Car::with('brands')
+                ->where('status', 'Live')
+                ->where('moderation_status', 'published')
+                ->limit(3)
+                ->get();
             $car1 = $defaultCars[0] ?? null;
             $car2 = $defaultCars[1] ?? null;
+            $car3 = $defaultCars[2] ?? null;
+        }
+
+        // Log Comparison for Heatmap
+        if ($car1 && $car2) {
+            \App\Models\ComparisonLog::create(['car_a_id' => $car1->id, 'car_b_id' => $car2->id]);
+            $car1->increment('comparison_count');
+            $car2->increment('comparison_count');
+        }
+        if ($car2 && $car3) {
+            \App\Models\ComparisonLog::create(['car_a_id' => $car2->id, 'car_b_id' => $car3->id]);
+            $car2->increment('comparison_count');
+            $car3->increment('comparison_count');
+        }
+        if ($car1 && $car3) {
+            \App\Models\ComparisonLog::create(['car_a_id' => $car1->id, 'car_b_id' => $car3->id]);
+            $car1->increment('comparison_count');
+            $car3->increment('comparison_count');
         }
 
         $allCars = Car::with('brands')->where('status', 'Live')->orderBy('model')->get();
 
         $differences = [];
-        if ($car1 && $car2) {
+        $cars = array_filter([$car1, $car2, $car3]);
+        
+        if (count($cars) >= 2) {
             $metrics = [
                 'category', 'year', 'hp', 'torque', 'engine', 'transmission', 'drivetrain', 
                 'zero_to_sixty', 'top_speed', 'aerodynamics', 'braking', 'brands'
             ];
             foreach ($metrics as $metric) {
-                $v1 = $car1->$metric;
-                $v2 = $car2->$metric;
-                
-                if ($metric === 'brands') {
-                    $v1 = $v1->pluck('name')->sort()->values()->toJson();
-                    $v2 = $v2->pluck('name')->sort()->values()->toJson();
+                $values = [];
+                foreach ($cars as $car) {
+                    $val = $car->$metric;
+                    if ($metric === 'brands') {
+                        $val = $val->pluck('name')->sort()->values()->toJson();
+                    }
+                    if (is_array($val)) $val = json_encode($val);
+                    $values[] = $val;
                 }
-
-                if (is_array($v1)) $v1 = json_encode($v1);
-                if (is_array($v2)) $v2 = json_encode($v2);
                 
-                if ($v1 !== $v2) {
+                if (count(array_unique($values)) > 1) {
                     $differences[] = $metric;
                 }
             }
         }
 
-        return view('compare.index', compact('car1', 'car2', 'allCars', 'differences'));
+        return view('compare.index', compact('car1', 'car2', 'car3', 'allCars', 'differences'));
     }
 
     public function create()
@@ -289,12 +341,12 @@ class CarController extends Controller
     {
         /** @var \App\Models\User $user */
         $user = Auth::user();
-        $cars = $user->favorites()->with('brands')->paginate(12);
+        $cars = $user->favorites()->with('brands')->paginate(12)->withQueryString();
         
         // Stats for the sidebar/header
-        $totalCars = Car::where('status', 'Live')->count();
-        $dailyCount = Car::where('status', 'Live')->where('created_at', '>=', now()->subDay())->count();
-        $averageCompletion = Car::where('status', 'Live')->avg('data_completion') ?? 0;
+        $totalCars = Car::where('status', 'Live')->where('moderation_status', 'published')->count();
+        $dailyCount = Car::where('status', 'Live')->where('moderation_status', 'published')->where('created_at', '>=', now()->subDay())->count();
+        $averageCompletion = Car::where('status', 'Live')->where('moderation_status', 'published')->avg('data_completion') ?? 0;
 
         return view('favorites.index', compact('cars', 'totalCars', 'dailyCount', 'averageCompletion'));
     }
@@ -314,5 +366,37 @@ class CarController extends Controller
         );
 
         return back()->with('success', 'Rating submitted.');
+    }
+
+    public function saveComparisonSet(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'car1_id' => 'required|string',
+            'car2_id' => 'required|string',
+            'car3_id' => 'nullable|string',
+        ]);
+
+        /** @var User $user */
+        $user = Auth::user();
+        $user->comparisonSets()->create($request->all());
+
+        return back()->with('success', 'Battle Set saved to your Garage.');
+    }
+
+    public function savePersonalNote(Request $request, Car $car)
+    {
+        $request->validate([
+            'content' => 'required|string|max:1000',
+        ]);
+
+        /** @var User $user */
+        $user = Auth::user();
+        $user->personalNotes()->updateOrCreate(
+            ['car_id' => $car->model_id],
+            ['content' => $request->content]
+        );
+
+        return back()->with('success', 'Personal note updated.');
     }
 }

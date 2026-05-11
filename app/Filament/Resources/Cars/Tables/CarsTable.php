@@ -4,11 +4,16 @@ namespace App\Filament\Resources\Cars\Tables;
 
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\BulkAction;
-use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\EditAction;
-use Filament\Actions\ViewAction;
+use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Actions\ViewAction;
+use Filament\Tables\Actions\Action;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Http;
+use Filament\Notifications\Notification;
+use App\Models\Car;
 
 class CarsTable
 {
@@ -16,12 +21,22 @@ class CarsTable
     {
         return $table
             ->columns([
+                \Filament\Tables\Columns\ImageColumn::make('image_url')
+                    ->label('Thumbnail')
+                    ->circular(),
                 TextColumn::make('model_id')
-                    ->searchable(),
+                    ->searchable()
+                    ->copyable()
+                    ->label('ID'),
                 TextColumn::make('model')
+                    ->searchable()
+                    ->weight('bold'),
+                TextColumn::make('brands.name')
+                    ->badge()
                     ->searchable(),
                 TextColumn::make('year')
-                    ->searchable(),
+                    ->searchable()
+                    ->sortable(),
                 TextColumn::make('category')
                     ->searchable(),
                 TextColumn::make('transmission')
@@ -42,11 +57,34 @@ class CarsTable
                 TextColumn::make('braking')
                     ->numeric()
                     ->sortable(),
+                TextColumn::make('seo_score')
+                    ->label('SEO')
+                    ->numeric()
+                    ->sortable()
+                    ->color(fn (int $state): string => match (true) {
+                        $state >= 80 => 'success',
+                        $state >= 50 => 'warning',
+                        default => 'danger',
+                    })
+                    ->suffix('%'),
                 TextColumn::make('status')
-                    ->searchable(),
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'Live' => 'success',
+                        'Draft' => 'gray',
+                        'Archived' => 'danger',
+                    }),
+                TextColumn::make('moderation_status')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'published' => 'success',
+                        'review' => 'warning',
+                        'draft' => 'gray',
+                    }),
                 TextColumn::make('data_completion')
                     ->numeric()
-                    ->sortable(),
+                    ->sortable()
+                    ->suffix('%'),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
@@ -57,16 +95,77 @@ class CarsTable
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                \Filament\Tables\Filters\SelectFilter::make('category')
+                    ->options([
+                        'SUV' => 'SUV',
+                        'Sedan' => 'Sedan',
+                        'Coupe' => 'Coupe',
+                        'Supercar' => 'Supercar',
+                        'Hypercar' => 'Hypercar',
+                        'Classic' => 'Classic',
+                    ]),
+                \Filament\Tables\Filters\SelectFilter::make('status')
+                    ->options([
+                        'Live' => 'Live',
+                        'Draft' => 'Draft',
+                        'Archived' => 'Archived',
+                    ]),
+                \Filament\Tables\Filters\SelectFilter::make('moderation_status')
+                    ->options([
+                        'draft' => 'Drafting',
+                        'review' => 'Pending Review',
+                        'published' => 'Published',
+                    ]),
+            ])
+            ->headerActions([
+                \Filament\Actions\Action::make('scanLinks')
+                    ->label('Scan Broken Links')
+                    ->icon('heroicon-m-magnifying-glass')
+                    ->color('warning')
+                    ->action(function () {
+                        $cars = \App\Models\Car::all();
+                        foreach ($cars as $car) {
+                            $isBroken = false;
+                            if ($car->image_url) {
+                                try {
+                                    $response = \Illuminate\Support\Facades\Http::timeout(2)->head($car->image_url);
+                                    if ($response->failed()) $isBroken = true;
+                                } catch (\Exception $e) {
+                                    $isBroken = true;
+                                }
+                            }
+                            $car->update([
+                                'has_broken_links' => $isBroken,
+                                'last_link_check_at' => now(),
+                            ]);
+                        }
+                        \Filament\Notifications\Notification::make()
+                            ->title('Link scan completed')
+                            ->success()
+                            ->send();
+                    }),
+                \Filament\Actions\Action::make('updateSeo')
+                    ->label('Update SEO Scores')
+                    ->icon('heroicon-m-arrow-path')
+                    ->action(function () {
+                        $cars = \App\Models\Car::all();
+                        foreach ($cars as $car) {
+                            $car->update(['seo_score' => $car->calculateSeoScore()]);
+                        }
+                        \Filament\Notifications\Notification::make()
+                            ->title('SEO scores recalculated')
+                            ->success()
+                            ->send();
+                    }),
             ])
             ->recordActions([
-                ViewAction::make(),
-                EditAction::make(),
+                \Filament\Actions\ViewAction::make(),
+                \Filament\Actions\EditAction::make(),
             ])
             ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                    BulkAction::make('export_csv')
+                \Filament\Actions\BulkActionGroup::make([
+                    \Filament\Actions\DeleteBulkAction::make(),
+                    \Filament\Actions\BulkAction::make('export_csv')
                         ->label('Export to CSV')
                         ->icon('heroicon-o-document-arrow-down')
                         ->action(function (\Illuminate\Database\Eloquent\Collection $records) {

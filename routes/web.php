@@ -14,6 +14,7 @@ Route::get('/categories', [CarController::class, 'categories'])->name('categorie
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', [CarController::class, 'dashboard'])->name('dashboard');
+    Route::get('/garage', [CarController::class, 'garage'])->name('garage');
     Route::get('/cars/{car}/duplicate', [CarController::class, 'duplicate'])->name('cars.duplicate');
     Route::post('/cars/{car}/toggle-status', [CarController::class, 'toggleStatus'])->name('cars.toggle-status');
     Route::resource('cars', CarController::class)->except(['index', 'show']);
@@ -23,6 +24,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/admin/brands', [\App\Http\Controllers\BrandController::class, 'store'])->name('admin.brands.store');
     Route::delete('/admin/brands/{brand}', [\App\Http\Controllers\BrandController::class, 'destroy'])->name('admin.brands.destroy');
     Route::post('/admin/brands/sync', [\App\Http\Controllers\BrandController::class, 'syncFromCars'])->name('admin.brands.sync');
+
+    // AI Content Generation
+    Route::post('/admin/ai/generate', [\App\Http\Controllers\Admin\CarAiController::class, 'generate'])->name('admin.ai.generate');
 });
 
 Route::middleware('auth')->group(function () {
@@ -40,6 +44,12 @@ Route::middleware('auth')->group(function () {
 
     // Ratings
     Route::post('/cars/{car}/rate', [CarController::class, 'rate'])->name('cars.rate');
+
+    // Personal Notes
+    Route::post('/cars/{car}/notes', [CarController::class, 'savePersonalNote'])->name('cars.notes.save');
+
+    // Comparison Sets
+    Route::post('/compare/save', [CarController::class, 'saveComparisonSet'])->name('compare.save');
 });
 
 require __DIR__.'/auth.php';

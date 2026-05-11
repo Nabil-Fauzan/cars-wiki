@@ -39,64 +39,65 @@
                         <span class="font-label-caps text-label-caps text-primary border-l-2 border-primary pl-2 mb-2 block uppercase">Comparison Engine v4.2</span>
                         <h1 class="font-headline-xl text-headline-xl text-on-surface">Battle Sheet</h1>
                     </div>
-                    <div class="flex items-center gap-4 bg-surface-container-low/50 p-2 rounded-lg border border-outline-variant/30">
-                        <span class="font-label-caps text-label-caps text-secondary">Highlight Differences</span>
-                        <button type="button" id="toggleDiffs" class="relative inline-flex h-6 w-11 items-center rounded-full bg-surface-variant transition-colors focus:outline-none">
-                            <span id="toggleKnob" class="inline-block h-4 w-4 transform rounded-full bg-on-surface-variant transition-transform translate-x-1"></span>
-                        </button>
+                    <div class="flex flex-wrap items-center gap-4">
+                        @auth
+                            @if($car1 && $car2)
+                                <form action="{{ route('compare.save') }}" method="POST" class="flex items-center gap-2 bg-primary/10 p-1 pl-3 rounded-lg border border-primary/30">
+                                    @csrf
+                                    <input type="hidden" name="car1_id" value="{{ $car1->model_id }}">
+                                    <input type="hidden" name="car2_id" value="{{ $car2->model_id }}">
+                                    <input type="hidden" name="car3_id" value="{{ $car3 ? $car3->model_id : '' }}">
+                                    <input type="text" name="name" placeholder="Name this set..." class="bg-transparent border-none focus:ring-0 text-xs font-label-caps text-on-surface w-32 placeholder:opacity-50" required>
+                                    <button type="submit" class="bg-primary text-on-primary px-3 py-1 rounded text-[10px] font-label-caps hover:bg-primary-container transition-colors">SAVE BATTLE</button>
+                                </form>
+                            @endif
+                        @endauth
+
+                        <div class="flex items-center gap-4 bg-surface-container-low/50 p-2 rounded-lg border border-outline-variant/30 h-[42px]">
+                            <span class="font-label-caps text-label-caps text-secondary">Highlight Differences</span>
+                            <button type="button" id="toggleDiffs" class="relative inline-flex h-6 w-11 items-center rounded-full bg-surface-variant transition-colors focus:outline-none">
+                                <span id="toggleKnob" class="inline-block h-4 w-4 transform rounded-full bg-on-surface-variant transition-transform translate-x-1"></span>
+                            </button>
+                        </div>
                     </div>
                 </div>
                 
                 <!-- Comparison Selectors -->
-                <form action="{{ route('compare') }}" method="GET" class="sticky top-20 z-40 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter py-4 bg-background/80 backdrop-blur-md">
-                    <!-- Slot 1 -->
-                    <div class="glass-card p-stack-sm rounded shadow-lg group relative overflow-hidden">
-                        <div class="flex justify-between items-start mb-4">
-                            <span class="font-label-caps text-label-caps text-primary">SLOT_01</span>
-                        </div>
-                        <select name="car1" onchange="this.form.submit()" class="w-full bg-surface-container border-none border-b border-outline-variant focus:ring-0 focus:border-primary text-on-surface font-headline-md mb-4 p-2 appearance-none">
-                            <option value="">Select Vehicle</option>
-                            @foreach($allCars as $car)
-                                <option value="{{ $car->model_id }}" {{ (isset($car1) && $car1->model_id == $car->model_id) ? 'selected' : '' }}>
-                                    {{ $car->brands->pluck('name')->implode(' • ') }} {{ $car->model }}
-                                </option>
-                            @endforeach
-                        </select>
-                        @if($car1)
-                            <img class="w-full h-32 object-cover rounded mb-4" src="{{ $car1->image_url }}" alt="{{ $car1->brands->first()->name ?? '' }} {{ $car1->model }}"/>
-                        @else
-                            <div class="w-full h-32 bg-surface-container-low rounded mb-4 flex items-center justify-center">
-                                <span class="material-symbols-outlined text-on-surface-variant">directions_car</span>
+                <form action="{{ route('compare') }}" method="GET" class="sticky top-[64px] md:top-20 z-40 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter py-2 md:py-4 bg-background/90 backdrop-blur-xl border-b border-outline-variant/10">
+                    @foreach([1, 2, 3] as $idx)
+                        @php $car = ${"car$idx"}; @endphp
+                        <div class="glass-card p-2 md:p-stack-sm rounded shadow-lg group relative overflow-hidden flex md:flex-col items-center md:items-stretch gap-3 md:gap-0">
+                            <div class="flex-shrink-0 md:mb-4">
+                                @if($car)
+                                    <img class="w-16 h-12 md:w-full md:h-32 object-cover rounded" src="{{ $car->image_url }}" alt="{{ $car->model }}"/>
+                                @else
+                                    <div class="w-16 h-12 md:w-full md:h-32 bg-surface-container-low rounded flex items-center justify-center border-2 border-dashed border-outline-variant/30">
+                                        <span class="material-symbols-outlined text-on-surface-variant text-sm">add</span>
+                                    </div>
+                                @endif
                             </div>
-                        @endif
-                    </div>
-                    
-                    <!-- Slot 2 -->
-                    <div class="glass-card p-stack-sm rounded shadow-lg group relative overflow-hidden">
-                        <div class="flex justify-between items-start mb-4">
-                            <span class="font-label-caps text-label-caps text-primary">SLOT_02</span>
-                        </div>
-                        <select name="car2" onchange="this.form.submit()" class="w-full bg-surface-container border-none border-b border-outline-variant focus:ring-0 focus:border-primary text-on-surface font-headline-md mb-4 p-2 appearance-none">
-                            <option value="">Select Vehicle</option>
-                            @foreach($allCars as $car)
-                                <option value="{{ $car->model_id }}" {{ (isset($car2) && $car2->model_id == $car->model_id) ? 'selected' : '' }}>
-                                    {{ $car->brands->pluck('name')->implode(' • ') }} {{ $car->model }}
-                                </option>
-                            @endforeach
-                        </select>
-                        @if($car2)
-                            <img class="w-full h-32 object-cover rounded mb-4" src="{{ $car2->image_url }}" alt="{{ $car2->brands->first()->name ?? '' }} {{ $car2->model }}"/>
-                        @else
-                            <div class="w-full h-32 bg-surface-container-low rounded mb-4 flex items-center justify-center">
-                                <span class="material-symbols-outlined text-on-surface-variant">directions_car</span>
+                            
+                            <div class="flex-1 min-w-0">
+                                <div class="flex justify-between items-center mb-1 md:mb-4">
+                                    <span class="font-label-caps text-[8px] md:text-label-caps text-primary">SLOT_0{{ $idx }}</span>
+                                    @if($car)
+                                        <button type="button" @click="addToCompare({ model_id: '{{ $car->model_id }}', model: '{{ $car->model }}', image: '{{ $car->image_url }}' })" 
+                                                class="text-xs font-label-caps" :class="isInCompare('{{ $car->model_id }}') ? 'text-primary' : 'text-secondary hover:text-on-surface'">
+                                            <span class="material-symbols-outlined text-sm" x-text="isInCompare('{{ $car->model_id }}') ? 'check_circle' : 'add_circle'"></span>
+                                        </button>
+                                    @endif
+                                </div>
+                                <select name="car{{ $idx }}" onchange="this.form.submit()" class="w-full bg-transparent border-none border-b border-outline-variant/30 focus:ring-0 focus:border-primary text-on-surface font-headline-sm md:font-headline-md p-1 appearance-none text-sm md:text-base truncate">
+                                    <option value="">{{ $idx == 3 ? 'Optional' : 'Select Vehicle' }}</option>
+                                    @foreach($allCars as $c)
+                                        <option value="{{ $c->model_id }}" {{ ($car && $car->model_id == $c->model_id) ? 'selected' : '' }}>
+                                            {{ $c->model }}
+                                        </option>
+                                    @endforeach
+                                </select>
                             </div>
-                        @endif
-                    </div>
-
-                    <div class="hidden lg:flex border-2 border-dashed border-outline-variant/30 p-stack-sm rounded flex-col items-center justify-center bg-surface-container-low/20">
-                        <span class="material-symbols-outlined text-on-surface-variant">analytics</span>
-                        <p class="font-label-caps text-label-caps text-on-surface-variant">Analysis Active</p>
-                    </div>
+                        </div>
+                    @endforeach
                 </form>
             </section>
 
@@ -128,79 +129,85 @@
                         <div class="bg-surface-container/30 rounded-lg overflow-hidden border border-outline-variant/20">
                             @foreach($metrics as $key => $label)
                                 @php
-                                    $val1 = $car1->$key;
-                                    $val2 = $car2->$key;
+                                    $val1 = $car1 ? $car1->$key : null;
+                                    $val2 = $car2 ? $car2->$key : null;
+                                    $val3 = $car3 ? $car3->$key : null;
+                                    
+                                    $allValues = [];
+                                    if ($car1) $allValues[1] = $val1;
+                                    if ($car2) $allValues[2] = $val2;
+                                    if ($car3) $allValues[3] = $val3;
+
                                     $winner = null;
+                                    $winnerVal = null;
 
                                     if ($key == 'brands' || $key == 'category' || $key == 'engine' || $key == 'transmission' || $key == 'drivetrain') {
-                                        // Non-comparable text fields
-                                    } elseif ($key == 'year' && !empty($val1) && !empty($val2)) {
-                                        // Extract first 4 digits from year (e.g. 1990 from 1990-1996)
-                                        preg_match('/\d{4}/', $val1, $y1);
-                                        preg_match('/\d{4}/', $val2, $y2);
-                                        $n1 = isset($y1[0]) ? (int)$y1[0] : 0;
-                                        $n2 = isset($y2[0]) ? (int)$y2[0] : 0;
-                                        if ($n1 > $n2) $winner = 1;
-                                        elseif ($n2 > $n1) $winner = 2;
-                                    } elseif (!empty($val1) && !empty($val2) && is_numeric($val1) && is_numeric($val2)) {
-                                        if ($key == 'zero_to_sixty' || $key == 'braking' || $key == 'aerodynamics') {
-                                            if ($val1 < $val2) $winner = 1;
-                                            elseif ($val2 < $val1) $winner = 2;
-                                        } else {
-                                            if ($val1 > $val2) $winner = 1;
-                                            elseif ($val2 > $val1) $winner = 2;
+                                        // Non-comparable
+                                    } else {
+                                        // Numeric comparison logic
+                                        $numericValues = [];
+                                        foreach ($allValues as $idx => $v) {
+                                            if (empty($v)) continue;
+                                            $n = 0;
+                                            if ($key == 'hp' && is_array($v)) preg_match('/\d+/', $v[0] ?? '', $m);
+                                            elseif ($key == 'year') preg_match('/\d{4}/', $v, $m);
+                                            else preg_match('/\d+/', (string)$v, $m);
+                                            
+                                            if (isset($m[0])) $numericValues[$idx] = (float)$m[0];
                                         }
-                                    } elseif ($key == 'hp' && !empty($val1) && !empty($val2) && is_array($val1) && is_array($val2)) {
-                                        preg_match('/\d+/', $val1[0] ?? '', $matches1);
-                                        preg_match('/\d+/', $val2[0] ?? '', $matches2);
-                                        $n1 = isset($matches1[0]) ? (int)$matches1[0] : 0;
-                                        $n2 = isset($matches2[0]) ? (int)$matches2[0] : 0;
-                                        if ($n1 > $n2) $winner = 1;
-                                        elseif ($n2 > $n1) $winner = 2;
-                                    } elseif ($key == 'torque' && !empty($val1) && !empty($val2)) {
-                                        preg_match('/\d+/', $val1, $matches1);
-                                        preg_match('/\d+/', $val2, $matches2);
-                                        $n1 = isset($matches1[0]) ? (int)$matches1[0] : 0;
-                                        $n2 = isset($matches2[0]) ? (int)$matches2[0] : 0;
-                                        if ($n1 > $n2) $winner = 1;
-                                        elseif ($n2 > $n1) $winner = 2;
+
+                                        if (count($numericValues) >= 2) {
+                                            if ($key == 'zero_to_sixty' || $key == 'braking' || $key == 'aerodynamics') {
+                                                $winnerVal = min($numericValues);
+                                            } else {
+                                                $winnerVal = max($numericValues);
+                                            }
+                                            // Check if only one has this value (to avoid highlighting all if they are same)
+                                            if (count(array_keys($numericValues, $winnerVal)) < count($numericValues)) {
+                                                // Find the index
+                                                $winner = array_search($winnerVal, $numericValues);
+                                            }
+                                        }
                                     }
                                     
                                     $isDifferent = in_array($key, $differences);
                                 @endphp
-                                <div class="grid grid-cols-1 md:grid-cols-3 border-b border-outline-variant/10 transition-colors duration-300 {{ $isDifferent ? 'diff-row' : '' }}">
-                                    <div class="p-4 bg-surface-container-high/40 font-label-caps text-label-caps text-on-surface-variant flex items-center gap-2">
+                                <div class="grid grid-cols-4 md:grid-cols-4 border-b border-outline-variant/10 transition-colors duration-300 {{ $isDifferent ? 'diff-row' : '' }}">
+                                    <div class="p-2 md:p-4 bg-surface-container-high/40 font-label-caps text-[8px] md:text-[10px] text-on-surface-variant flex items-center gap-1 md:gap-2 leading-tight">
                                         {{ $label }}
                                         @if($isDifferent)
-                                            <span class="material-symbols-outlined text-[14px] text-primary opacity-0 diff-indicator">priority_high</span>
+                                            <span class="material-symbols-outlined text-[10px] md:text-[12px] text-primary opacity-0 diff-indicator">priority_high</span>
                                         @endif
                                     </div>
-                                    <div class="p-4 flex items-center justify-center font-body-md text-center {{ $winner == 1 ? 'text-primary font-bold bg-primary/5' : 'text-on-surface' }}">
-                                        @if(empty($val1) && $key != 'brands') 
-                                            <span class="opacity-30">—</span>
-                                        @elseif($key == 'brands') {{ $car1->brands->pluck('name')->implode(' / ') }}
-                                        @elseif($key == 'zero_to_sixty') {{ $val1 }}s 
-                                        @elseif($key == 'top_speed') {{ $val1 }} MPH
-                                        @elseif($key == 'braking') {{ $val1 }} FT
-                                        @elseif($key == 'aerodynamics') {{ $val1 }} CD
-                                        @elseif($key == 'engine' && is_array($val1)) {{ implode(' / ', $val1) }}
-                                        @elseif($key == 'hp' && is_array($val1)) 
-                                            {{ collect($val1)->map(fn($h) => str_ireplace(' hp', '', $h))->implode(' / ') }} HP
-                                        @else {{ $val1 }} @endif
-                                    </div>
-                                    <div class="p-4 flex items-center justify-center font-body-md text-center border-l border-outline-variant/10 {{ $winner == 2 ? 'text-primary font-bold bg-primary/5' : 'text-on-surface' }}">
-                                        @if(empty($val2) && $key != 'brands') 
-                                            <span class="opacity-30">—</span>
-                                        @elseif($key == 'brands') {{ $car2->brands->pluck('name')->implode(' / ') }}
-                                        @elseif($key == 'zero_to_sixty') {{ $val2 }}s 
-                                        @elseif($key == 'top_speed') {{ $val2 }} MPH
-                                        @elseif($key == 'braking') {{ $val2 }} FT
-                                        @elseif($key == 'aerodynamics') {{ $val2 }} CD
-                                        @elseif($key == 'engine' && is_array($val2)) {{ implode(' / ', $val2) }}
-                                        @elseif($key == 'hp' && is_array($val2)) 
-                                            {{ collect($val2)->map(fn($h) => str_ireplace(' hp', '', $h))->implode(' / ') }} HP
-                                        @else {{ $val2 }} @endif
-                                    </div>
+                                    
+                                    @foreach([1, 2, 3] as $idx)
+                                        @php 
+                                            $car = ${"car$idx"}; 
+                                            $val = ${"val$idx"};
+                                            $isWinner = ($winner == $idx);
+                                        @endphp
+                                        <div class="p-2 md:p-4 flex flex-col items-center justify-center font-body-sm md:font-body-md text-center border-l border-outline-variant/10 transition-all {{ $isWinner ? 'bg-primary/[0.03] text-primary font-bold' : 'text-on-surface' }}">
+                                            @if(!$car)
+                                                <span class="opacity-10 material-symbols-outlined text-xs md:text-base">hide_source</span>
+                                            @elseif(empty($val) && $key != 'brands') 
+                                                <span class="opacity-30">—</span>
+                                            @elseif($key == 'brands') <span class="text-[9px] md:text-sm leading-tight">{{ $car->brands->pluck('name')->implode('/') }}</span>
+                                            @elseif($key == 'zero_to_sixty') {{ $val }}s 
+                                            @elseif($key == 'top_speed') {{ $val }}<span class="hidden md:inline"> MPH</span>
+                                            @elseif($key == 'braking') {{ $val }}<span class="hidden md:inline"> FT</span>
+                                            @elseif($key == 'aerodynamics') {{ $val }}
+                                            @elseif($key == 'engine' && is_array($val)) <span class="text-[9px] md:text-sm leading-tight">{{ $val[0] ?? '—' }}</span>
+                                            @elseif($key == 'hp' && is_array($val)) 
+                                                <span class="text-[9px] md:text-sm leading-tight">{{ collect($val)->map(fn($h) => str_ireplace(' hp', '', $h))->first() }}<span class="hidden md:inline"> HP</span></span>
+                                            @else <span class="truncate w-full">{{ $val }}</span> @endif
+
+                                            @if($isWinner)
+                                                <span class="text-[7px] md:text-[8px] font-label-caps text-primary mt-0.5 md:mt-1 flex items-center gap-0.5 md:gap-1">
+                                                    <span class="material-symbols-outlined text-[8px] md:text-[10px]">workspace_premium</span> <span class="hidden md:inline">WINNER</span>
+                                                </span>
+                                            @endif
+                                        </div>
+                                    @endforeach
                                 </div>
                             @endforeach
                         </div>
