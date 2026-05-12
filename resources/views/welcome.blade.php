@@ -6,10 +6,10 @@
             <img class="w-full h-full object-cover grayscale opacity-60" alt="Sleek sports car hero" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBnaNRTGVkrVQtkTHk0fEYHRgycwyI6hoSTtd8nXT1acn17y-Hu97z7R0JTUobYQQL1nHKiN9k4qknpCR1tlQjMLKzScXwN4lav9kZ29Wu5rI9drIpwx7hXAm6hx3mJ3E7Ot4cRNUGbpM4quk7_Cpi36bNAtrypyVSLGr0Kim2-j5A9lIV19-3jTjdyVG9Cnw-I0jD2BCn1qjrcTIhuWZjIIndbNGbrXp8N5B0sy95y5V4tSJfUUOFy7n_1r1UG6ITNxtBVPHlc-eUr"/>
         </div>
         <div class="relative z-20 px-margin-page max-w-container-max mx-auto w-full">
-            <div class="max-w-2xl" x-data="{ loaded: false }" x-init="setTimeout(() => loaded = true, 100)">
-                <h1 class="font-headline-xl text-headline-xl text-on-surface mb-2 transition-all duration-1000 transform" :class="loaded ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'">PCAR</h1>
-                <p class="font-body-lg text-body-lg text-secondary mb-stack-md transition-all duration-1000 delay-300 transform" :class="loaded ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'">Smart Automotive Wiki for Enthusiasts</p>
-                <form action="{{ route('home') }}" method="GET" id="filterForm" class="space-y-stack-md transition-all duration-1000 delay-500 transform" :class="loaded ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'">
+            <div class="max-w-2xl">
+                <h1 class="font-headline-xl text-headline-xl text-on-surface mb-2 opacity-0 gsap-hero-title">PCAR</h1>
+                <p class="font-body-lg text-body-lg text-secondary mb-stack-md opacity-0 gsap-hero-text">Smart Automotive Wiki for Enthusiasts</p>
+                <form action="{{ route('home') }}" method="GET" id="filterForm" class="space-y-stack-md opacity-0 gsap-hero-form">
                     <input type="hidden" name="sort" value="{{ request('sort', 'newest') }}">
                     
                     <!-- Search Bar Integrated -->
@@ -110,7 +110,7 @@
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter">
             @forelse($cars as $car)
                 <!-- Card -->
-                <div class="glass-card group flex flex-col transition-all duration-300">
+                <div class="glass-card group flex flex-col transition-all duration-300 opacity-0 gsap-card">
                         <div class="relative aspect-video overflow-hidden">
                             <img class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" alt="{{ $car->brands->first()->name ?? 'Vehicle' }} {{ $car->model }}" onerror="imgError(this)" src="{{ $car->image_url }}"/>
                             <div class="absolute top-4 right-4 bg-primary text-on-primary px-2 py-1 font-label-caps text-label-caps">{{ $car->model_id }}</div>
@@ -214,4 +214,56 @@
             </div>
         </div>
     </section>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (window.gsap) {
+                const tl = gsap.timeline();
+                
+                // Hero Animations
+                tl.fromTo('.gsap-hero-title', 
+                    { y: 50, opacity: 0 }, 
+                    { y: 0, opacity: 1, duration: 1, ease: 'power4.out' }
+                )
+                .fromTo('.gsap-hero-text', 
+                    { y: 30, opacity: 0 }, 
+                    { y: 0, opacity: 1, duration: 0.8, ease: 'power3.out' },
+                    '-=0.6'
+                )
+                .fromTo('.gsap-hero-form', 
+                    { y: 20, opacity: 0 }, 
+                    { y: 0, opacity: 1, duration: 0.8, ease: 'power3.out' },
+                    '-=0.4'
+                );
+
+                // Card Staggered Entrance
+                gsap.fromTo('.gsap-card', 
+                    { y: 60, opacity: 0 }, 
+                    { 
+                        y: 0, 
+                        opacity: 1, 
+                        duration: 0.8, 
+                        stagger: 0.1, 
+                        ease: 'back.out(1.2)',
+                        scrollTrigger: {
+                            trigger: '.gsap-card',
+                            start: 'top 85%',
+                        }
+                    }
+                );
+
+                // Section Reveal
+                gsap.from('.font-headline-lg', {
+                    scrollTrigger: {
+                        trigger: '.font-headline-lg',
+                        start: 'top 90%',
+                    },
+                    y: 30,
+                    opacity: 0,
+                    duration: 1,
+                    ease: 'power2.out'
+                });
+            }
+        });
+    </script>
 </x-app-layout>

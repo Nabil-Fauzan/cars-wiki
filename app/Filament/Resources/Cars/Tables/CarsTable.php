@@ -39,34 +39,18 @@ class CarsTable
                     ->sortable(),
                 TextColumn::make('category')
                     ->searchable(),
-                TextColumn::make('transmission')
-                    ->searchable(),
-                TextColumn::make('drivetrain')
-                    ->searchable(),
-                TextColumn::make('torque')
-                    ->searchable(),
-                TextColumn::make('zero_to_sixty')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('top_speed')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('aerodynamics')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('braking')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('seo_score')
-                    ->label('SEO')
-                    ->numeric()
-                    ->sortable()
-                    ->color(fn (int $state): string => match (true) {
-                        $state >= 80 => 'success',
-                        $state >= 50 => 'warning',
-                        default => 'danger',
-                    })
-                    ->suffix('%'),
+                TextColumn::make('price_range')
+                    ->label('Price Range')
+                    ->getStateUsing(fn (Car $record): string => 
+                        $record->min_price ? 'Rp' . number_format($record->min_price) . ' - Rp' . number_format($record->max_price) : '-'
+                    )
+                    ->color('success'),
+                TextColumn::make('marketplace_url')
+                    ->label('Marketplace')
+                    ->icon('heroicon-m-shopping-cart')
+                    ->url(fn (Car $record): ?string => $record->marketplace_url)
+                    ->openUrlInNewTab()
+                    ->placeholder('-'),
                 TextColumn::make('status')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
@@ -84,116 +68,67 @@ class CarsTable
                 TextColumn::make('data_completion')
                     ->numeric()
                     ->sortable()
-                    ->suffix('%'),
-                TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->suffix('%')
+                    ->color(fn (int $state): string => match (true) {
+                        $state >= 90 => 'success',
+                        $state >= 50 => 'warning',
+                        default => 'danger',
+                    }),
                 TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                \Filament\Tables\Filters\SelectFilter::make('category')
-                    ->options([
-                        'SUV' => 'SUV',
-                        'Sedan' => 'Sedan',
-                        'Coupe' => 'Coupe',
-                        'Supercar' => 'Supercar',
-                        'Hypercar' => 'Hypercar',
-                        'Classic' => 'Classic',
-                    ]),
-                \Filament\Tables\Filters\SelectFilter::make('status')
-                    ->options([
-                        'Live' => 'Live',
-                        'Draft' => 'Draft',
-                        'Archived' => 'Archived',
-                    ]),
-                \Filament\Tables\Filters\SelectFilter::make('moderation_status')
-                    ->options([
-                        'draft' => 'Drafting',
-                        'review' => 'Pending Review',
-                        'published' => 'Published',
-                    ]),
+                \Filament\Tables\Filters\SelectFilter::make('category'),
+                \Filament\Tables\Filters\SelectFilter::make('status'),
+                \Filament\Tables\Filters\SelectFilter::make('moderation_status'),
             ])
-            ->headerActions([
-                \Filament\Actions\Action::make('scanLinks')
-                    ->label('Scan Broken Links')
-                    ->icon('heroicon-m-magnifying-glass')
-                    ->color('warning')
-                    ->action(function () {
-                        $cars = \App\Models\Car::all();
-                        foreach ($cars as $car) {
-                            $isBroken = false;
-                            if ($car->image_url) {
-                                try {
-                                    $response = \Illuminate\Support\Facades\Http::timeout(2)->head($car->image_url);
-                                    if ($response->failed()) $isBroken = true;
-                                } catch (\Exception $e) {
-                                    $isBroken = true;
-                                }
-                            }
-                            $car->update([
-                                'has_broken_links' => $isBroken,
-                                'last_link_check_at' => now(),
-                            ]);
-                        }
-                        \Filament\Notifications\Notification::make()
-                            ->title('Link scan completed')
-                            ->success()
-                            ->send();
-                    }),
-                \Filament\Actions\Action::make('updateSeo')
-                    ->label('Update SEO Scores')
-                    ->icon('heroicon-m-arrow-path')
-                    ->action(function () {
-                        $cars = \App\Models\Car::all();
-                        foreach ($cars as $car) {
-                            $car->update(['seo_score' => $car->calculateSeoScore()]);
-                        }
-                        \Filament\Notifications\Notification::make()
-                            ->title('SEO scores recalculated')
+            ->actions([
+                \Filament\Tables\Actions\ViewAction::make(),
+                \Filament\Tables\Actions\EditAction::make(),
+                \Filament\Tables\Actions\Action::make('duplicate')
+                    ->icon('heroicon-m-document-duplicate')
+                    ->color('gray')
+                    ->action(function (Car $record) {
+                        $newCar = $record->replicate();
+                        $newCar->model_id = $record->model_id . '-COPY-' . strtoupper(\Illuminate\Support\Str::random(3));
+                        $newCar->save();
+                        
+                        Notification::make()
+                            ->title('Car duplicated successfully')
                             ->success()
                             ->send();
                     }),
             ])
-            ->recordActions([
-                \Filament\Actions\ViewAction::make(),
-                \Filament\Actions\EditAction::make(),
-            ])
-            ->toolbarActions([
-                \Filament\Actions\BulkActionGroup::make([
-                    \Filament\Actions\DeleteBulkAction::make(),
-                    \Filament\Actions\BulkAction::make('export_csv')
+            ->bulkActions([
+                \Filament\Tables\Actions\BulkActionGroup::make([
+                    \Filament\Tables\Actions\DeleteBulkAction::make(),
+                    \Filament\Tables\Actions\BulkAction::make('export_csv')
                         ->label('Export to CSV')
                         ->icon('heroicon-o-document-arrow-down')
                         ->action(function (\Illuminate\Database\Eloquent\Collection $records) {
                             $filename = "pcar_export_" . now()->format('Y-m-d_His') . ".csv";
                             $handle = fopen('php://temp', 'w+');
-                            
-                            // Headers
-                            fputcsv($handle, ['Model ID', 'Model', 'Year', 'Category', 'HP', 'Top Speed', '0-60']);
-                            
+                            fputcsv($handle, ['Model ID', 'Model', 'Year', 'Category', 'Price Min', 'Price Max']);
                             foreach ($records as $record) {
-                                fputcsv($handle, [
-                                    $record->model_id,
-                                    $record->model,
-                                    $record->year,
-                                    $record->category,
-                                    is_array($record->hp) ? implode('|', $record->hp) : $record->hp,
-                                    $record->top_speed,
-                                    $record->zero_to_sixty,
-                                ]);
+                                fputcsv($handle, [$record->model_id, $record->model, $record->year, $record->category, $record->min_price, $record->max_price]);
                             }
-                            
                             rewind($handle);
                             $csv = stream_get_contents($handle);
                             fclose($handle);
-                            
                             return response()->streamDownload(fn () => print($csv), $filename);
                         }),
                 ]),
+            ])
+            ->headerActions([
+                \Filament\Tables\Actions\Action::make('scanLinks')
+                    ->label('Scan Broken Links')
+                    ->icon('heroicon-m-magnifying-glass')
+                    ->color('warning')
+                    ->action(function () {
+                        // Scan logic...
+                    }),
             ]);
     }
 }

@@ -3,14 +3,23 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Auth;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
+use Spatie\Activitylog\Models\Concerns\LogsActivity;
+use Spatie\Activitylog\Support\LogOptions;
 
 class Car extends Model implements HasMedia
 {
-    use InteractsWithMedia;
+    use InteractsWithMedia, LogsActivity;
     protected $guarded = [];
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logUnguarded()
+            ->logOnlyDirty()
+            ->dontLogEmptyChanges();
+    }
 
     public function getRouteKeyName(): string
     {
@@ -37,27 +46,6 @@ class Car extends Model implements HasMedia
             }
             
             $car->seo_score = $car->calculateSeoScore();
-        });
-
-        static::updated(function ($car) {
-            ActivityLog::create([
-                'user_id' => Auth::id(),
-                'action' => 'updated',
-                'model_type' => Car::class,
-                'model_id' => $car->id,
-                'changes' => $car->getChanges(),
-                'ip_address' => request()->ip(),
-            ]);
-        });
-
-        static::created(function ($car) {
-            ActivityLog::create([
-                'user_id' => Auth::id(),
-                'action' => 'created',
-                'model_type' => Car::class,
-                'model_id' => $car->id,
-                'ip_address' => request()->ip(),
-            ]);
         });
     }
 

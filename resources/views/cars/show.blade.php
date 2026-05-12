@@ -53,7 +53,7 @@
             <div class="flex-1 space-y-stack-lg">
                 <!-- Performance Gauges (Modern Digital Style) -->
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-stack-sm">
-                    <div class="glass-card p-stack-sm machined-edge">
+                    <div class="glass-card p-stack-sm machined-edge opacity-0 gsap-gauge">
                         <p class="font-label-caps text-label-caps text-secondary">0-60 MPH</p>
                         <p class="font-headline-md text-headline-md text-primary mt-1">{{ $car->zero_to_sixty }}s</p>
                         <div class="flex gap-1 mt-2">
@@ -63,7 +63,7 @@
                             @endfor
                         </div>
                     </div>
-                    <div class="glass-card p-stack-sm machined-edge">
+                    <div class="glass-card p-stack-sm machined-edge opacity-0 gsap-gauge">
                         <p class="font-label-caps text-label-caps text-secondary">TOP SPEED</p>
                         <p class="font-headline-md text-headline-md text-primary mt-1">{{ $car->top_speed }} MPH</p>
                         <div class="flex gap-1 mt-2">
@@ -73,7 +73,7 @@
                             @endfor
                         </div>
                     </div>
-                    <div class="glass-card p-stack-sm machined-edge">
+                    <div class="glass-card p-stack-sm machined-edge opacity-0 gsap-gauge">
                         <p class="font-label-caps text-label-caps text-secondary">AERODYNAMICS</p>
                         <p class="font-headline-md text-headline-md text-primary mt-1">{{ $car->aerodynamics }} CD</p>
                         <div class="flex gap-1 mt-2">
@@ -83,7 +83,7 @@
                             @endfor
                         </div>
                     </div>
-                    <div class="glass-card p-stack-sm machined-edge">
+                    <div class="glass-card p-stack-sm machined-edge opacity-0 gsap-gauge">
                         <p class="font-label-caps text-label-caps text-secondary">BRAKING</p>
                         <p class="font-headline-md text-headline-md text-primary mt-1">{{ $car->braking }} FT</p>
                         <div class="flex gap-1 mt-2">
@@ -173,7 +173,7 @@
                         <h3 class="font-label-caps text-label-caps">Technical Specifications</h3>
                     </div>
                     <div class="divide-y divide-outline-variant/10">
-                        <div class="grid grid-cols-2 p-stack-sm hover:bg-white/5 transition-colors">
+                        <div class="grid grid-cols-2 p-stack-sm hover:bg-white/5 transition-colors opacity-0 gsap-spec-row">
                             <span class="font-label-caps text-label-caps text-secondary">Engine Configuration</span>
                             <div class="flex flex-col gap-1">
                                 @if(is_array($car->engine))
@@ -205,7 +205,7 @@
                             <span class="font-label-caps text-label-caps text-secondary">Transmission</span>
                             <span class="font-body-md text-body-md text-on-surface">{{ $car->transmission }}</span>
                         </div>
-                        <div class="grid grid-cols-2 p-stack-sm hover:bg-white/5 transition-colors">
+                        <div class="grid grid-cols-2 p-stack-sm hover:bg-white/5 transition-colors opacity-0 gsap-spec-row">
                             <span class="font-label-caps text-label-caps text-secondary">Drivetrain</span>
                             <span class="font-body-md text-body-md text-on-surface">{{ $car->drivetrain }}</span>
                         </div>
@@ -564,6 +564,43 @@
                     100% { height: 16px; }
                 }
             </style>
+            <script>
+                document.addEventListener('DOMContentLoaded', () => {
+                    if (window.gsap) {
+                        // Gauges Entrance
+                        gsap.fromTo('.gsap-gauge', 
+                            { scale: 0.8, opacity: 0 }, 
+                            { 
+                                scale: 1, 
+                                opacity: 1, 
+                                duration: 0.6, 
+                                stagger: 0.1, 
+                                ease: 'back.out(1.7)',
+                                scrollTrigger: {
+                                    trigger: '.gsap-gauge',
+                                    start: 'top 90%'
+                                }
+                            }
+                        );
+
+                        // Spec Rows Entrance
+                        gsap.fromTo('.gsap-spec-row', 
+                            { x: -20, opacity: 0 }, 
+                            { 
+                                x: 0, 
+                                opacity: 1, 
+                                duration: 0.5, 
+                                stagger: 0.05, 
+                                ease: 'power2.out',
+                                scrollTrigger: {
+                                    trigger: '.gsap-spec-row',
+                                    start: 'top 95%'
+                                }
+                            }
+                        );
+                    }
+                });
+            </script>
         </div>
     </main>
 </x-app-layout>

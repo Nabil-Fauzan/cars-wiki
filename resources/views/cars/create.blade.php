@@ -22,11 +22,12 @@
                     <label class="font-label-caps text-label-caps text-secondary">MODEL ID (UNIQUE)</label>
                     <input type="text" name="model_id" value="{{ $duplicate->model_id ?? old('model_id') }}" placeholder="e.g. PC-911-GTS" class="w-full bg-surface-container border-none border-b border-outline-variant focus:ring-0 focus:border-primary text-on-surface p-3" required>
                 </div>
+                <input type="hidden" name="make" value="{{ $duplicate->make ?? old('make') }}">
                 <div class="space-y-2">
                     <label class="font-label-caps text-label-caps text-secondary">ASSOCIATED BRANDS (MULTI-SELECT)</label>
-                    <select name="brand_ids[]" multiple class="w-full bg-surface-container border-none border-b border-outline-variant focus:ring-0 focus:border-primary text-on-surface p-3 h-32">
+                    <select name="brand_ids[]" id="brand_selector" multiple class="w-full bg-surface-container border-none border-b border-outline-variant focus:ring-0 focus:border-primary text-on-surface p-3 h-32">
                         @foreach($brands as $brand)
-                            <option value="{{ $brand->id }}" {{ (isset($duplicate) && $duplicate->brands->contains($brand->id)) ? 'selected' : '' }}>{{ $brand->name }}</option>
+                            <option value="{{ $brand->id }}" data-name="{{ $brand->name }}" {{ (isset($duplicate) && $duplicate->brands->contains($brand->id)) ? 'selected' : '' }}>{{ $brand->name }}</option>
                         @endforeach
                     </select>
                     <p class="text-[10px] text-on-surface-variant italic">Hold Ctrl/Cmd to select multiple (e.g. Acura & Honda)</p>
@@ -111,6 +112,30 @@
                         <img src="{{ $duplicate->image_url ?? '' }}" class="w-full h-full object-cover">
                     </div>
                 </div>
+
+                <!-- Premium Features Section -->
+                <div class="col-span-full grid grid-cols-1 md:grid-cols-2 gap-gutter border-t border-outline-variant/20 pt-6">
+                    <div class="space-y-2">
+                        <label class="font-label-caps text-label-caps text-primary">ENGINE SOUND URL</label>
+                        <input type="url" name="engine_sound_url" value="{{ $duplicate->engine_sound_url ?? old('engine_sound_url') }}" placeholder="https://..." class="w-full bg-surface-container border-none border-b border-outline-variant focus:ring-0 focus:border-primary text-on-surface p-3">
+                    </div>
+                    <div class="space-y-2">
+                        <label class="font-label-caps text-label-caps text-primary">PRICE TREND</label>
+                        <select name="price_trend" class="w-full bg-surface-container border-none border-b border-outline-variant focus:ring-0 focus:border-primary text-on-surface p-3">
+                            <option value="stable" {{ (old('price_trend') == 'stable' || (isset($duplicate) && $duplicate->price_trend == 'stable')) ? 'selected' : '' }}>Stable</option>
+                            <option value="up" {{ (old('price_trend') == 'up' || (isset($duplicate) && $duplicate->price_trend == 'up')) ? 'selected' : '' }}>Trending Up</option>
+                            <option value="down" {{ (old('price_trend') == 'down' || (isset($duplicate) && $duplicate->price_trend == 'down')) ? 'selected' : '' }}>Trending Down</option>
+                        </select>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="font-label-caps text-label-caps text-secondary">MIN PRICE ($)</label>
+                        <input type="number" name="min_price" value="{{ $duplicate->min_price ?? old('min_price') }}" class="w-full bg-surface-container border-none border-b border-outline-variant focus:ring-0 focus:border-primary text-on-surface p-3">
+                    </div>
+                    <div class="space-y-2">
+                        <label class="font-label-caps text-label-caps text-secondary">MAX PRICE ($)</label>
+                        <input type="number" name="max_price" value="{{ $duplicate->max_price ?? old('max_price') }}" class="w-full bg-surface-container border-none border-b border-outline-variant focus:ring-0 focus:border-primary text-on-surface p-3">
+                    </div>
+                </div>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-gutter">
                 <div class="space-y-2">
@@ -143,23 +168,37 @@
         </form>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            const brandSelector = document.getElementById('brand_selector');
             const makeInput = document.querySelector('input[name="make"]');
             const modelInput = document.querySelector('input[name="model"]');
             const idInput = document.querySelector('input[name="model_id"]');
+            const yearInput = document.querySelector('input[name="year"]');
 
             function suggestId() {
                 if (!idInput.value || idInput.dataset.auto === 'true') {
-                    const make = makeInput.value.substring(0, 3).toUpperCase();
+                    const make = makeInput.value ? makeInput.value.substring(0, 3).toUpperCase() : 'PC';
                     const model = modelInput.value.replace(/\s+/g, '-').toUpperCase();
-                    if (make && model) {
-                        idInput.value = `${make}-${model}`;
+                    const year = yearInput.value ? yearInput.value.split('-')[0] : '';
+                    
+                    if (model) {
+                        let slug = `${make}-${model}`;
+                        if (year) slug += `-${year}`;
+                        idInput.value = slug;
                         idInput.dataset.auto = 'true';
                     }
                 }
             }
 
-            makeInput.addEventListener('input', suggestId);
+            brandSelector.addEventListener('change', function() {
+                const selectedOption = this.options[this.selectedIndex];
+                if (selectedOption && selectedOption.dataset.name) {
+                    makeInput.value = selectedOption.dataset.name;
+                    suggestId();
+                }
+            });
+
             modelInput.addEventListener('input', suggestId);
+            yearInput.addEventListener('input', suggestId);
             idInput.addEventListener('input', () => idInput.dataset.auto = 'false');
 
             // Image Preview logic

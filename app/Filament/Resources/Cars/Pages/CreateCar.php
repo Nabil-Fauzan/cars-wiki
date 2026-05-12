@@ -8,4 +8,12 @@ use Filament\Resources\Pages\CreateRecord;
 class CreateCar extends CreateRecord
 {
     protected static string $resource = CarResource::class;
+
+    protected function afterCreate(): void
+    {
+        $car = $this->getRecord();
+        $car->update([
+            'data_completion' => app(\App\Services\CarService::class)->calculateCompletion($car)
+        ]);
+    }
 }

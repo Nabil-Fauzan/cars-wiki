@@ -7,17 +7,21 @@
     "license": "MIT",
     "require": {
         "php": "^8.3",
+        "bezhansalleh/filament-shield": "*",
         "cviebrock/eloquent-sluggable": "^13.0",
         "filament/filament": "^5.6",
         "intervention/image": "^4.0",
         "laravel/framework": "^13.7",
+        "laravel/socialite": "^5.27",
         "laravel/tinker": "^3.0",
+        "spatie/laravel-activitylog": "*",
         "spatie/laravel-backup": "^10.2",
         "spatie/laravel-medialibrary": "^11.22",
         "spatie/laravel-permission": "^7.4",
         "spatie/laravel-sitemap": "^8.1"
     },
     "require-dev": {
+        "barryvdh/laravel-debugbar": "^4.2",
         "fakerphp/faker": "^1.23",
         "laravel/breeze": "^2.4",
         "laravel/pail": "^1.2.5",

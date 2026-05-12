@@ -18,4 +18,12 @@ class EditCar extends EditRecord
             DeleteAction::make(),
         ];
     }
+
+    protected function afterSave(): void
+    {
+        $car = $this->getRecord();
+        $car->update([
+            'data_completion' => app(\App\Services\CarService::class)->calculateCompletion($car)
+        ]);
+    }
 }

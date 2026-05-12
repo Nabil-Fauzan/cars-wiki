@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Cars\Schemas;
 
 use Filament\Infolists\Components\ImageEntry;
 use Filament\Infolists\Components\TextEntry;
+use App\Models\Car;
 use Filament\Schemas\Schema;
 
 class CarInfolist
@@ -35,6 +36,22 @@ class CarInfolist
                 TextEntry::make('braking')
                     ->numeric()
                     ->placeholder('-'),
+                TextEntry::make('price_range')
+                    ->label('Price Range')
+                    ->getStateUsing(fn (Car $record): string => 
+                        $record->min_price ? 'Rp' . number_format($record->min_price) . ' - Rp' . number_format($record->max_price) : '-'
+                    )
+                    ->color('success'),
+                TextEntry::make('marketplace_url')
+                    ->label('Marketplace')
+                    ->icon('heroicon-m-shopping-cart')
+                    ->url(fn (Car $record): ?string => $record->marketplace_url)
+                    ->openUrlInNewTab(),
+                TextEntry::make('engine_sound_url')
+                    ->label('Engine Audio')
+                    ->icon('heroicon-m-speaker-wave')
+                    ->url(fn (Car $record): ?string => $record->engine_sound_url)
+                    ->openUrlInNewTab(),
                 TextEntry::make('history')
                     ->placeholder('-')
                     ->columnSpanFull(),

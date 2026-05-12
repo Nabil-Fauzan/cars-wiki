@@ -9,6 +9,9 @@ use Filament\Schemas\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Schemas\Schema;
 use Filament\Actions\Action;
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Schemas\Components\Utilities\Get;
+use Illuminate\Support\Str;
 
 class CarForm
 {
@@ -21,7 +24,14 @@ class CarForm
                         TextInput::make('model')
                             ->required()
                             ->live(onBlur: true)
-                            ->afterStateUpdated(fn (callable $set, $state) => $set('model_id', \Illuminate\Support\Str::slug($state))),
+                            ->afterStateUpdated(function (Set $set, Get $get, $state) {
+                                if (empty($get('model_id'))) {
+                                    $year = $get('year');
+                                    $slug = Str::slug($state);
+                                    if ($year) $slug .= '-' . $year;
+                                    $set('model_id', $slug);
+                                }
+                            }),
                         TextInput::make('model_id')
                             ->required()
                             ->unique(ignoreRecord: true)
@@ -30,10 +40,27 @@ class CarForm
                             ->relationship('brands', 'name')
                             ->multiple()
                             ->preload()
-                            ->required(),
+                            ->required()
+                            ->live()
+                            ->afterStateUpdated(function (Set $set, Get $get, $state) {
+                                // Auto-fill 'make' from the first selected brand
+                                if (!empty($state)) {
+                                    $brandId = is_array($state) ? $state[0] : $state;
+                                    $brand = \App\Models\Brand::find($brandId);
+                                    if ($brand) $set('make', $brand->name);
+                                }
+                            }),
                         TextInput::make('year')
                             ->required()
-                            ->numeric(),
+                            ->numeric()
+                            ->live(onBlur: true)
+                            ->afterStateUpdated(function (Set $set, Get $get, $state) {
+                                $model = $get('model');
+                                if ($model) {
+                                    $slug = Str::slug($model) . '-' . $state;
+                                    $set('model_id', $slug);
+                                }
+                            }),
                         Select::make('category')
                             ->options([
                                 'SUV' => 'SUV',
@@ -44,6 +71,9 @@ class CarForm
                                 'Classic' => 'Classic',
                             ])
                             ->required(),
+                        TextInput::make('make')
+                            ->hidden() // Keeping it for DB integrity but hidden from user as they select via 'brands'
+                            ->dehydrated(true),
                     ])->columns(2),
 
                 Section::make('Performance Specs')
@@ -84,7 +114,7 @@ class CarForm
                                 Action::make('generateHistory')
                                     ->icon('heroicon-m-sparkles')
                                     ->label('AI Magic')
-                                    ->action(function (callable $set, $state, $get) {
+                                    ->action(function (Set $set, Get $get, $state) {
                                         $model = $get('model');
                                         $response = \Illuminate\Support\Facades\Http::post(route('admin.ai.generate'), [
                                             'model' => $model,
@@ -101,7 +131,7 @@ class CarForm
                             ->hintAction(
                                 Action::make('generatePros')
                                     ->icon('heroicon-m-sparkles')
-                                    ->action(function (callable $set, $get) {
+                                    ->action(function (Set $set, Get $get) {
                                         $model = $get('model');
                                         $response = \Illuminate\Support\Facades\Http::post(route('admin.ai.generate'), [
                                             'model' => $model,
@@ -118,7 +148,7 @@ class CarForm
                             ->hintAction(
                                 Action::make('generateCons')
                                     ->icon('heroicon-m-sparkles')
-                                    ->action(function (callable $set, $get) {
+                                    ->action(function (Set $set, Get $get) {
                                         $model = $get('model');
                                         $response = \Illuminate\Support\Facades\Http::post(route('admin.ai.generate'), [
                                             'model' => $model,
@@ -129,6 +159,31 @@ class CarForm
                                         }
                                     })
                             ),
+                    ])->columns(2),
+
+                Section::make('Marketplace & Audio')
+                    ->schema([
+                        TextInput::make('marketplace_url')
+                            ->label('Marketplace URL')
+                            ->url()
+                            ->columnSpanFull(),
+                        TextInput::make('engine_sound_url')
+                            ->label('Engine Sound URL')
+                            ->url(),
+                        TextInput::make('min_price')
+                            ->numeric()
+                            ->prefix('Rp')
+                            ->step(1000000),
+                        TextInput::make('max_price')
+                            ->numeric()
+                            ->prefix('Rp')
+                            ->step(1000000),
+                        Select::make('price_trend')
+                            ->options([
+                                'up' => 'Trending Up',
+                                'down' => 'Trending Down',
+                                'stable' => 'Stable',
+                            ]),
                     ])->columns(2),
 
                 Section::make('System Status')
