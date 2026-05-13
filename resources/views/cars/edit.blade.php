@@ -19,6 +19,11 @@
             @csrf
             @method('PUT')
             <div class="grid grid-cols-1 md:grid-cols-2 gap-gutter">
+                <div class="space-y-2 opacity-60">
+                    <label class="font-label-caps text-label-caps text-secondary">MODEL ID (IDENTITY)</label>
+                    <input type="text" value="{{ $car->model_id }}" class="w-full bg-surface-container border-none border-b border-outline-variant text-on-surface p-3 cursor-not-allowed" readonly>
+                    <p class="text-[9px] text-on-surface-variant italic">Asset identity is locked after deployment.</p>
+                </div>
                 <div class="space-y-2">
                     <label class="font-label-caps text-label-caps text-secondary">ASSOCIATED BRANDS (MULTI-SELECT)</label>
                     <select name="brand_ids[]" multiple class="w-full bg-surface-container border-none border-b border-outline-variant focus:ring-0 focus:border-primary text-on-surface p-3 h-32">
@@ -102,21 +107,50 @@
                 </div>
                 <div class="space-y-2">
                     <label class="font-label-caps text-label-caps text-secondary">STRATEGIC ADVANTAGES (ONE PER LINE)</label>
-                    <textarea name="pros" rows="4" class="w-full bg-surface-container border-none border-b border-outline-variant focus:ring-0 focus:border-primary text-on-surface p-3">{{ implode("\n", $car->pros) }}</textarea>
+                    <textarea name="pros" rows="4" class="w-full bg-surface-container border-none border-b border-outline-variant focus:ring-0 focus:border-primary text-on-surface p-3">{{ implode("\n", $car->pros ?? []) }}</textarea>
                 </div>
                 <div class="space-y-2">
                     <label class="font-label-caps text-label-caps text-secondary">ENGINEERING TRADE-OFFS (ONE PER LINE)</label>
-                    <textarea name="cons" rows="4" class="w-full bg-surface-container border-none border-b border-outline-variant focus:ring-0 focus:border-primary text-on-surface p-3">{{ implode("\n", $car->cons) }}</textarea>
+                    <textarea name="cons" rows="4" class="w-full bg-surface-container border-none border-b border-outline-variant focus:ring-0 focus:border-primary text-on-surface p-3">{{ implode("\n", $car->cons ?? []) }}</textarea>
                 </div>
-                <div class="space-y-2">
-                    <label class="font-label-caps text-label-caps text-secondary">STATUS</label>
-                    <select name="status" class="w-full bg-surface-container border-none border-b border-outline-variant focus:ring-0 focus:border-primary text-on-surface p-3 appearance-none">
-                        <option value="Live" {{ $car->status == 'Live' ? 'selected' : '' }}>Live</option>
-                        <option value="Draft" {{ $car->status == 'Draft' ? 'selected' : '' }}>Draft</option>
-                        <option value="Archived" {{ $car->status == 'Archived' ? 'selected' : '' }}>Archived</option>
-                    </select>
+                    <div class="space-y-2">
+                        <label class="font-label-caps text-label-caps text-secondary">STATUS</label>
+                        <select name="status" class="w-full bg-surface-container border-none border-b border-outline-variant focus:ring-0 focus:border-primary text-on-surface p-3 appearance-none">
+                            <option value="Live" {{ $car->status == 'Live' ? 'selected' : '' }}>Live</option>
+                            <option value="Draft" {{ $car->status == 'Draft' ? 'selected' : '' }}>Draft</option>
+                            <option value="Archived" {{ $car->status == 'Archived' ? 'selected' : '' }}>Archived</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Premium Features Section -->
+                <div class="col-span-full grid grid-cols-1 md:grid-cols-2 gap-gutter border-t border-outline-variant/20 pt-6">
+                    <div class="space-y-2">
+                        <label class="font-label-caps text-label-caps text-primary">ENGINE SOUND URL</label>
+                        <input type="url" name="engine_sound_url" value="{{ $car->engine_sound_url }}" placeholder="https://..." class="w-full bg-surface-container border-none border-b border-outline-variant focus:ring-0 focus:border-primary text-on-surface p-3">
+                        <p class="text-[9px] text-on-surface-variant italic mt-1">Use direct MP3/WAV links for in-app playback. YouTube links will open in a new tab.</p>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="font-label-caps text-label-caps text-primary">PRICE TREND</label>
+                        <select name="price_trend" class="w-full bg-surface-container border-none border-b border-outline-variant focus:ring-0 focus:border-primary text-on-surface p-3">
+                            <option value="stable" {{ $car->price_trend == 'stable' ? 'selected' : '' }}>Stable</option>
+                            <option value="up" {{ $car->price_trend == 'up' ? 'selected' : '' }}>Trending Up</option>
+                            <option value="down" {{ $car->price_trend == 'down' ? 'selected' : '' }}>Trending Down</option>
+                        </select>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="font-label-caps text-label-caps text-secondary">MIN PRICE ($)</label>
+                        <input type="text" name="min_price" value="{{ $car->min_price }}" placeholder="55,000" class="w-full bg-surface-container border-none border-b border-outline-variant focus:ring-0 focus:border-primary text-on-surface p-3">
+                        <p class="text-[9px] text-on-surface-variant italic mt-1">Accepts formats like 55k or 55,000</p>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="font-label-caps text-label-caps text-secondary">MAX PRICE ($)</label>
+                        <input type="text" name="max_price" value="{{ $car->max_price }}" placeholder="180,000+" class="w-full bg-surface-container border-none border-b border-outline-variant focus:ring-0 focus:border-primary text-on-surface p-3">
+                        <p class="text-[9px] text-on-surface-variant italic mt-1">Accepts formats like 180k+ or 180,000+</p>
+                    </div>
                 </div>
             </div>
+            
             <div class="grid grid-cols-1 md:grid-cols-3 gap-gutter">
                 <div class="space-y-2">
                     <label class="font-label-caps text-label-caps text-secondary">GALLERY IMAGE 1 (URL)</label>

@@ -227,21 +227,24 @@ class CarController extends Controller
             $car3 = $defaultCars[2] ?? null;
         }
 
-        // Log Comparison for Heatmap
-        if ($car1 && $car2) {
-            \App\Models\ComparisonLog::create(['car_a_id' => $car1->id, 'car_b_id' => $car2->id]);
-            $car1->increment('comparison_count');
-            $car2->increment('comparison_count');
+        // Log Comparison for Heatmap (Optimized)
+        $uniquePairs = [];
+        $ids = array_filter([$car1?->id, $car2?->id, $car3?->id]);
+        sort($ids);
+        
+        for ($i = 0; $i < count($ids); $i++) {
+            for ($j = $i + 1; $j < count($ids); $j++) {
+                $pair = $ids[$i] . '-' . $ids[$j];
+                if (!in_array($pair, $uniquePairs)) {
+                    \App\Models\ComparisonLog::create(['car_a_id' => $ids[$i], 'car_b_id' => $ids[$j]]);
+                    $uniquePairs[] = $pair;
+                }
+            }
         }
-        if ($car2 && $car3) {
-            \App\Models\ComparisonLog::create(['car_a_id' => $car2->id, 'car_b_id' => $car3->id]);
-            $car2->increment('comparison_count');
-            $car3->increment('comparison_count');
-        }
-        if ($car1 && $car3) {
-            \App\Models\ComparisonLog::create(['car_a_id' => $car1->id, 'car_b_id' => $car3->id]);
-            $car1->increment('comparison_count');
-            $car3->increment('comparison_count');
+        
+        // Increment counts
+        foreach ($ids as $id) {
+            Car::where('id', $id)->increment('comparison_count');
         }
 
         $allCars = Car::with('brands')->where('status', 'Live')->orderBy('model')->get();
@@ -252,7 +255,8 @@ class CarController extends Controller
         if (count($cars) >= 2) {
             $metrics = [
                 'category', 'year', 'hp', 'torque', 'engine', 'transmission', 'drivetrain', 
-                'zero_to_sixty', 'top_speed', 'aerodynamics', 'braking', 'brands'
+                'zero_to_sixty', 'top_speed', 'aerodynamics', 'braking', 'brands',
+                'min_price', 'max_price', 'data_completion'
             ];
             foreach ($metrics as $metric) {
                 $values = [];

@@ -20,6 +20,6 @@ class CarObserver
      */
     public function saving(Car $car): void
     {
-        $car->data_completion = $this->carService->calculateCompletion($car);
+        $car->data_completion = $car->calculateDataCompletion();
     }
 }

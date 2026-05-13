@@ -118,6 +118,7 @@
                     <div class="space-y-2">
                         <label class="font-label-caps text-label-caps text-primary">ENGINE SOUND URL</label>
                         <input type="url" name="engine_sound_url" value="{{ $duplicate->engine_sound_url ?? old('engine_sound_url') }}" placeholder="https://..." class="w-full bg-surface-container border-none border-b border-outline-variant focus:ring-0 focus:border-primary text-on-surface p-3">
+                        <p class="text-[9px] text-on-surface-variant italic mt-1">Use direct MP3/WAV links for in-app playback. YouTube links will open in a new tab.</p>
                     </div>
                     <div class="space-y-2">
                         <label class="font-label-caps text-label-caps text-primary">PRICE TREND</label>
@@ -129,11 +130,11 @@
                     </div>
                     <div class="space-y-2">
                         <label class="font-label-caps text-label-caps text-secondary">MIN PRICE ($)</label>
-                        <input type="number" name="min_price" value="{{ $duplicate->min_price ?? old('min_price') }}" class="w-full bg-surface-container border-none border-b border-outline-variant focus:ring-0 focus:border-primary text-on-surface p-3">
+                        <input type="text" name="min_price" value="{{ $duplicate->min_price ?? old('min_price') }}" placeholder="55,000" class="w-full bg-surface-container border-none border-b border-outline-variant focus:ring-0 focus:border-primary text-on-surface p-3">
                     </div>
                     <div class="space-y-2">
                         <label class="font-label-caps text-label-caps text-secondary">MAX PRICE ($)</label>
-                        <input type="number" name="max_price" value="{{ $duplicate->max_price ?? old('max_price') }}" class="w-full bg-surface-container border-none border-b border-outline-variant focus:ring-0 focus:border-primary text-on-surface p-3">
+                        <input type="text" name="max_price" value="{{ $duplicate->max_price ?? old('max_price') }}" placeholder="180,000+" class="w-full bg-surface-container border-none border-b border-outline-variant focus:ring-0 focus:border-primary text-on-surface p-3">
                     </div>
                 </div>
             </div>

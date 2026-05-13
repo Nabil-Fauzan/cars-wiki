@@ -4,10 +4,11 @@ namespace App\Filament\Resources\Cars\Tables;
 
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\BulkAction;
-use Filament\Tables\Actions\DeleteAction;
-use Filament\Tables\Actions\EditAction;
-use Filament\Tables\Actions\ViewAction;
-use Filament\Tables\Actions\Action;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
+use Filament\Actions\Action;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Collection;
@@ -41,39 +42,52 @@ class CarsTable
                     ->searchable(),
                 TextColumn::make('price_range')
                     ->label('Price Range')
-                    ->getStateUsing(fn (Car $record): string => 
-                        $record->min_price ? 'Rp' . number_format($record->min_price) . ' - Rp' . number_format($record->max_price) : '-'
+                    ->getStateUsing(
+                        fn(Car $record): string =>
+                        $record->min_price ? '$' . number_format($record->min_price) . ($record->max_price ? ' - $' . number_format($record->max_price) : '+') : '-'
                     )
-                    ->color('success'),
-                TextColumn::make('marketplace_url')
-                    ->label('Marketplace')
-                    ->icon('heroicon-m-shopping-cart')
-                    ->url(fn (Car $record): ?string => $record->marketplace_url)
-                    ->openUrlInNewTab()
-                    ->placeholder('-'),
+                    ->color('success')
+                    ->sortable(['min_price']),
                 TextColumn::make('status')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
+                    ->color(fn(string $state): string => match ($state) {
                         'Live' => 'success',
                         'Draft' => 'gray',
                         'Archived' => 'danger',
                     }),
                 TextColumn::make('moderation_status')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
+                    ->color(fn(string $state): string => match ($state) {
                         'published' => 'success',
                         'review' => 'warning',
                         'draft' => 'gray',
                     }),
                 TextColumn::make('data_completion')
-                    ->numeric()
-                    ->sortable()
-                    ->suffix('%')
-                    ->color(fn (int $state): string => match (true) {
-                        $state >= 90 => 'success',
-                        $state >= 50 => 'warning',
-                        default => 'danger',
-                    }),
+                    ->label('Data Completion')
+                    ->html()
+                    ->formatStateUsing(function ($state): string {
+                        $percentage = (int) ($state ?? 0);
+                        $color = match (true) {
+                            $percentage >= 90 => '#22c55e',
+                            $percentage >= 70 => '#3b82f6',
+                            $percentage >= 40 => '#f59e0b',
+                            default => '#ef4444',
+                        };
+
+                        return "
+                            <div style='display: flex; align-items: center; gap: 8px; width: 100px;'>
+                                <div style='flex-grow: 1; height: 6px; background-color: rgba(0,0,0,0.1); border-radius: 3px; overflow: hidden;'>
+                                    <div style='width: {$percentage}%; height: 100%; background-color: {$color};'></div>
+                                </div>
+                                <span style='font-size: 10px; font-weight: 700;'>{$percentage}%</span>
+                            </div>
+                        ";
+                    })
+                    ->sortable(),
+                TextColumn::make('history')
+                    ->limit(20)
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
@@ -83,28 +97,44 @@ class CarsTable
                 \Filament\Tables\Filters\SelectFilter::make('category'),
                 \Filament\Tables\Filters\SelectFilter::make('status'),
                 \Filament\Tables\Filters\SelectFilter::make('moderation_status'),
+                \Filament\Tables\Filters\TernaryFilter::make('has_sound')
+                    ->label('Has Engine Sound')
+                    ->queries(
+                        true: fn($query) => $query->whereNotNull('engine_sound_url'),
+                        false: fn($query) => $query->whereNull('engine_sound_url'),
+                    ),
             ])
             ->actions([
-                \Filament\Tables\Actions\ViewAction::make(),
-                \Filament\Tables\Actions\EditAction::make(),
-                \Filament\Tables\Actions\Action::make('duplicate')
+                ViewAction::make(),
+                EditAction::make(),
+                Action::make('duplicate')
                     ->icon('heroicon-m-document-duplicate')
                     ->color('gray')
                     ->action(function (Car $record) {
                         $newCar = $record->replicate();
                         $newCar->model_id = $record->model_id . '-COPY-' . strtoupper(\Illuminate\Support\Str::random(3));
+
+                        // Reset stats for new entry
+                        $newCar->comparison_count = 0;
+                        $newCar->seo_score = 0;
+                        $newCar->status = 'Draft';
+                        $newCar->moderation_status = 'draft';
+
                         $newCar->save();
-                        
+
+                        // Copy many-to-many brands
+                        $newCar->brands()->sync($record->brands->pluck('id'));
+
                         Notification::make()
-                            ->title('Car duplicated successfully')
+                            ->title('Asset duplicated as Draft')
                             ->success()
                             ->send();
                     }),
             ])
             ->bulkActions([
-                \Filament\Tables\Actions\BulkActionGroup::make([
-                    \Filament\Tables\Actions\DeleteBulkAction::make(),
-                    \Filament\Tables\Actions\BulkAction::make('export_csv')
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
+                    BulkAction::make('export_csv')
                         ->label('Export to CSV')
                         ->icon('heroicon-o-document-arrow-down')
                         ->action(function (\Illuminate\Database\Eloquent\Collection $records) {
@@ -117,17 +147,36 @@ class CarsTable
                             rewind($handle);
                             $csv = stream_get_contents($handle);
                             fclose($handle);
-                            return response()->streamDownload(fn () => print($csv), $filename);
+                            return response()->streamDownload(fn() => print($csv), $filename);
                         }),
                 ]),
             ])
             ->headerActions([
-                \Filament\Tables\Actions\Action::make('scanLinks')
+                Action::make('scanLinks')
                     ->label('Scan Broken Links')
                     ->icon('heroicon-m-magnifying-glass')
                     ->color('warning')
                     ->action(function () {
-                        // Scan logic...
+                        $cars = Car::whereNotNull('image_url')->get();
+                        $brokenCount = 0;
+
+                        foreach ($cars as $car) {
+                            try {
+                                $response = Http::timeout(2)->head($car->image_url);
+                                if ($response->failed()) {
+                                    $brokenCount++;
+                                    // Log or flag the record if needed
+                                }
+                            } catch (\Exception $e) {
+                                $brokenCount++;
+                            }
+                        }
+
+                        Notification::make()
+                            ->title('Scan Completed')
+                            ->body("Scanned {$cars->count()} cars. Found approximately {$brokenCount} potentially broken image links.")
+                            ->warning()
+                            ->send();
                     }),
             ]);
     }

@@ -13,7 +13,7 @@ class CreateCar extends CreateRecord
     {
         $car = $this->getRecord();
         $car->update([
-            'data_completion' => app(\App\Services\CarService::class)->calculateCompletion($car)
+            'data_completion' => $car->calculateDataCompletion()
         ]);
     }
 }

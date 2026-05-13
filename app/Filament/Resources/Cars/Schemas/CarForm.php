@@ -25,17 +25,15 @@ class CarForm
                             ->required()
                             ->live(onBlur: true)
                             ->afterStateUpdated(function (Set $set, Get $get, $state) {
-                                if (empty($get('model_id'))) {
-                                    $year = $get('year');
-                                    $slug = Str::slug($state);
-                                    if ($year) $slug .= '-' . $year;
-                                    $set('model_id', $slug);
-                                }
+                                $year = $get('year');
+                                $slug = Str::slug($state);
+                                if ($year) $slug .= '-' . $year;
+                                $set('model_id', $slug);
                             }),
                         TextInput::make('model_id')
                             ->required()
                             ->unique(ignoreRecord: true)
-                            ->label('Specimen ID (Slug)'),
+                            ->label('Vehicle Slug ID'),
                         Select::make('brands')
                             ->relationship('brands', 'name')
                             ->multiple()
@@ -43,11 +41,13 @@ class CarForm
                             ->required()
                             ->live()
                             ->afterStateUpdated(function (Set $set, Get $get, $state) {
-                                // Auto-fill 'make' from the first selected brand
+                                // Auto-sync 'make' from the first selected brand
                                 if (!empty($state)) {
                                     $brandId = is_array($state) ? $state[0] : $state;
                                     $brand = \App\Models\Brand::find($brandId);
                                     if ($brand) $set('make', $brand->name);
+                                } else {
+                                    $set('make', null);
                                 }
                             }),
                         TextInput::make('year')
@@ -112,18 +112,21 @@ class CarForm
                             ->columnSpanFull()
                             ->hintAction(
                                 Action::make('generateHistory')
-                                    ->icon('heroicon-m-sparkles')
-                                    ->label('AI Magic')
-                                    ->action(function (Set $set, Get $get, $state) {
-                                        $model = $get('model');
-                                        $response = \Illuminate\Support\Facades\Http::post(route('admin.ai.generate'), [
-                                            'model' => $model,
-                                            'field' => 'history'
-                                        ]);
-                                        if ($response->successful()) {
-                                            $set('history', $response->json('content'));
-                                        }
-                                    })
+                                     ->icon('heroicon-m-sparkles')
+                                     ->label('AI Magic')
+                                     ->action(function (Set $set, Get $get) {
+                                         $model = $get('model');
+                                         if (!$model) return;
+                                         
+                                         $response = \Illuminate\Support\Facades\Http::post(route('admin.ai.generate'), [
+                                             'model' => $model,
+                                             'field' => 'history'
+                                         ]);
+                                         
+                                         if ($response->successful()) {
+                                             $set('history', $response->json('content'));
+                                         }
+                                     })
                             ),
                         TagsInput::make('pros')
                             ->label('Pros')
@@ -133,12 +136,17 @@ class CarForm
                                     ->icon('heroicon-m-sparkles')
                                     ->action(function (Set $set, Get $get) {
                                         $model = $get('model');
+                                        if (!$model) return;
+
                                         $response = \Illuminate\Support\Facades\Http::post(route('admin.ai.generate'), [
                                             'model' => $model,
                                             'field' => 'pros'
                                         ]);
+                                        
                                         if ($response->successful()) {
-                                            $set('pros', json_decode($response->json('content'), true));
+                                            $content = $response->json('content');
+                                            $data = is_string($content) ? json_decode($content, true) : $content;
+                                            if (is_array($data)) $set('pros', $data);
                                         }
                                     })
                             ),
@@ -150,12 +158,17 @@ class CarForm
                                     ->icon('heroicon-m-sparkles')
                                     ->action(function (Set $set, Get $get) {
                                         $model = $get('model');
+                                        if (!$model) return;
+
                                         $response = \Illuminate\Support\Facades\Http::post(route('admin.ai.generate'), [
                                             'model' => $model,
                                             'field' => 'cons'
                                         ]);
+                                        
                                         if ($response->successful()) {
-                                            $set('cons', json_decode($response->json('content'), true));
+                                            $content = $response->json('content');
+                                            $data = is_string($content) ? json_decode($content, true) : $content;
+                                            if (is_array($data)) $set('cons', $data);
                                         }
                                     })
                             ),
@@ -171,13 +184,18 @@ class CarForm
                             ->label('Engine Sound URL')
                             ->url(),
                         TextInput::make('min_price')
-                            ->numeric()
-                            ->prefix('Rp')
-                            ->step(1000000),
+                            ->label('Entry Price')
+                            ->prefix('$')
+                            ->placeholder('e.g. 55000')
+                            ->helperText('Accepts numeric values. Formatting applied in frontend.'),
                         TextInput::make('max_price')
-                            ->numeric()
-                            ->prefix('Rp')
-                            ->step(1000000),
+                            ->label('Peak Price')
+                            ->prefix('$')
+                            ->placeholder('e.g. 180000'),
+                        TextInput::make('avg_price')
+                            ->label('Market Average')
+                            ->prefix('$')
+                            ->helperText('Auto-calculated if left blank.'),
                         Select::make('price_trend')
                             ->options([
                                 'up' => 'Trending Up',
@@ -186,7 +204,7 @@ class CarForm
                             ]),
                     ])->columns(2),
 
-                Section::make('System Status')
+                Section::make('System Metrics')
                     ->schema([
                         Select::make('status')
                             ->options([
@@ -204,12 +222,18 @@ class CarForm
                             ])
                             ->required()
                             ->default('published'),
-                        TextInput::make('data_completion')
-                            ->required()
+                        TextInput::make('seo_score')
                             ->numeric()
-                            ->default(0)
-                            ->suffix('%'),
-                    ])->columns(3),
+                            ->label('SEO Score')
+                            ->default(0),
+                        TextInput::make('data_completion')
+                            ->label('Data Quality')
+                            ->disabled()
+                            ->dehydrated(false)
+                            ->numeric()
+                            ->suffix('%')
+                            ->helperText('Calculated based on field density.'),
+                    ])->columns(2),
             ]);
     }
 }

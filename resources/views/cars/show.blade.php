@@ -145,11 +145,29 @@
                         <div class="flex items-end justify-between gap-4">
                             <div>
                                 <p class="font-label-caps text-[10px] text-secondary">FAIR MARKET VALUE</p>
-                                <p class="font-headline-md text-on-surface">${{ number_format($car->avg_price ?? 0) }}</p>
+                                <p class="font-headline-md text-on-surface">
+                                    @if($car->avg_price >= 1000)
+                                        ${{ number_format($car->avg_price / 1000, 0) }}k
+                                    @else
+                                        ${{ number_format($car->avg_price ?? 0) }}
+                                    @endif
+                                </p>
                             </div>
                             <div class="text-right">
                                 <p class="font-label-caps text-[10px] text-secondary">RANGE</p>
-                                <p class="font-body-md text-on-surface-variant">${{ number_format($car->min_price ?? 0) }} — ${{ number_format($car->max_price ?? 0) }}</p>
+                                <p class="font-body-md text-on-surface-variant">
+                                    @if($car->min_price >= 1000)
+                                        ${{ number_format($car->min_price / 1000, 0) }}k
+                                    @else
+                                        ${{ number_format($car->min_price ?? 0) }}
+                                    @endif
+                                    — 
+                                    @if($car->max_price >= 1000)
+                                        ${{ number_format($car->max_price / 1000, 0) }}k
+                                    @else
+                                        ${{ number_format($car->max_price ?? 0) }}
+                                    @endif
+                                </p>
                             </div>
                         </div>
                         <div class="mt-4 h-1 w-full bg-surface-container-highest rounded-full overflow-hidden relative">
@@ -391,7 +409,7 @@
                                     <img alt="{{ $rival->model }}" class="w-full h-full object-cover" src="{{ $rival->image_url }}"/>
                                 </div>
                                 <div class="flex flex-col justify-center">
-                                    <span class="font-label-caps text-[10px] text-primary">{{ $rival->make }}</span>
+                                    <span class="font-label-caps text-[10px] text-primary">{{ $rival->brands->first()->name ?? '' }}</span>
                                     <h4 class="font-label-caps text-on-surface">{{ $rival->model }}</h4>
                                 </div>
                             </a>
@@ -433,6 +451,7 @@
             </div>
 
             <!-- Lightbox Modal -->
+            <div id="yt-player" class="hidden"></div>
             <div id="lightbox" class="fixed inset-0 z-[100] bg-background/95 backdrop-blur-xl hidden flex items-center justify-center p-8 transition-all duration-300 opacity-0" onclick="closeLightbox()">
                 <img id="lightbox-img" src="" class="max-w-full max-h-full object-contain shadow-2xl scale-95 transition-transform duration-300">
                 <button class="absolute top-8 right-8 text-on-surface hover:text-primary transition-colors">
@@ -513,10 +532,70 @@
                 // Sound Player Logic
                 let currentAudio = null;
                 let currentBtn = null;
+                let ytPlayer = null;
+                let isYTReady = false;
+
+                // Load YT API
+                const tag = document.createElement('script');
+                tag.src = "https://www.youtube.com/iframe_api";
+                const firstScriptTag = document.getElementsByTagName('script')[0];
+                firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+                window.onYouTubeIframeAPIReady = function() {
+                    isYTReady = true;
+                };
+
+                function getYoutubeID(url) {
+                    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+                    const match = url.match(regExp);
+                    return (match && match[2].length === 11) ? match[2] : null;
+                }
 
                 function toggleSound(btn, url) {
+                    const ytId = getYoutubeID(url);
+
+                    if (ytId) {
+                        if (!isYTReady) return;
+                        
+                        if (ytPlayer && ytPlayer.getVideoData().video_id === ytId) {
+                            const state = ytPlayer.getPlayerState();
+                            if (state === 1) { // playing
+                                ytPlayer.pauseVideo();
+                                updateUI(btn, false);
+                            } else {
+                                ytPlayer.playVideo();
+                                updateUI(btn, true);
+                            }
+                        } else {
+                            if (ytPlayer) ytPlayer.destroy();
+                            if (currentAudio) {
+                                currentAudio.pause();
+                                updateUI(currentBtn, false);
+                            }
+
+                            ytPlayer = new YT.Player('yt-player', {
+                                height: '0',
+                                width: '0',
+                                videoId: ytId,
+                                playerVars: { 'autoplay': 1, 'controls': 0 },
+                                events: {
+                                    'onReady': (e) => {
+                                        e.target.playVideo();
+                                        updateUI(btn, true);
+                                        currentBtn = btn;
+                                    },
+                                    'onStateChange': (e) => {
+                                        if (e.data === 0) updateUI(btn, false); // ended
+                                    }
+                                }
+                            });
+                        }
+                        return;
+                    }
+
                     if (currentAudio && currentAudio.src === url) {
                         if (currentAudio.paused) {
+                            if (ytPlayer) ytPlayer.pauseVideo();
                             currentAudio.play();
                             updateUI(btn, true);
                         } else {
@@ -528,6 +607,8 @@
                             currentAudio.pause();
                             updateUI(currentBtn, false);
                         }
+                        if (ytPlayer) ytPlayer.pauseVideo();
+                        
                         currentAudio = new Audio(url);
                         currentBtn = btn;
                         currentAudio.play();

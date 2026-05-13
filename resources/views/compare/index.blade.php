@@ -118,6 +118,9 @@
                             'top_speed' => 'Top Speed',
                             'aerodynamics' => 'Aerodynamics',
                             'braking' => 'Braking',
+                            'min_price' => 'Entry Price',
+                            'max_price' => 'Peak Price',
+                            'data_completion' => 'Data Quality',
                         ];
                     @endphp
 
@@ -147,24 +150,24 @@
                                         // Numeric comparison logic
                                         $numericValues = [];
                                         foreach ($allValues as $idx => $v) {
-                                            if (empty($v)) continue;
+                                            if ($v === null || $v === '') continue;
                                             $n = 0;
                                             if ($key == 'hp' && is_array($v)) preg_match('/\d+/', $v[0] ?? '', $m);
                                             elseif ($key == 'year') preg_match('/\d{4}/', $v, $m);
                                             else preg_match('/\d+/', (string)$v, $m);
                                             
                                             if (isset($m[0])) $numericValues[$idx] = (float)$m[0];
+                                            elseif (is_numeric($v)) $numericValues[$idx] = (float)$v;
                                         }
 
                                         if (count($numericValues) >= 2) {
-                                            if ($key == 'zero_to_sixty' || $key == 'braking' || $key == 'aerodynamics') {
+                                            if ($key == 'zero_to_sixty' || $key == 'braking' || $key == 'aerodynamics' || $key == 'min_price' || $key == 'max_price') {
                                                 $winnerVal = min($numericValues);
                                             } else {
                                                 $winnerVal = max($numericValues);
                                             }
                                             // Check if only one has this value (to avoid highlighting all if they are same)
                                             if (count(array_keys($numericValues, $winnerVal)) < count($numericValues)) {
-                                                // Find the index
                                                 $winner = array_search($winnerVal, $numericValues);
                                             }
                                         }
@@ -189,6 +192,11 @@
                                         <div class="p-2 md:p-4 flex flex-col items-center justify-center font-body-sm md:font-body-md text-center border-l border-outline-variant/10 transition-all {{ $isWinner ? 'bg-primary/[0.03] text-primary font-bold' : 'text-on-surface' }}">
                                             @if(!$car)
                                                 <span class="opacity-10 material-symbols-outlined text-xs md:text-base">hide_source</span>
+                                            @elseif($key == 'data_completion')
+                                                <div class="w-full max-w-[80px] bg-surface-container-highest h-1.5 rounded-full overflow-hidden mb-1">
+                                                    <div class="h-full {{ $val > 80 ? 'bg-success' : ($val > 50 ? 'bg-primary' : 'bg-warning') }}" style="width: {{ $val }}%"></div>
+                                                </div>
+                                                <span class="text-[9px] md:text-[10px] font-mono">{{ $val }}%</span>
                                             @elseif(empty($val) && $key != 'brands') 
                                                 <span class="opacity-30">—</span>
                                             @elseif($key == 'brands') <span class="text-[9px] md:text-sm leading-tight">{{ $car->brands->pluck('name')->implode('/') }}</span>
@@ -196,14 +204,25 @@
                                             @elseif($key == 'top_speed') {{ $val }}<span class="hidden md:inline"> MPH</span>
                                             @elseif($key == 'braking') {{ $val }}<span class="hidden md:inline"> FT</span>
                                             @elseif($key == 'aerodynamics') {{ $val }}
-                                            @elseif($key == 'engine' && is_array($val)) <span class="text-[9px] md:text-sm leading-tight">{{ $val[0] ?? '—' }}</span>
+                                            @elseif($key == 'min_price' || $key == 'max_price') 
+                                                ${{ $val >= 1000 ? number_format($val/1000, 0).'k' : number_format($val) }}
+                                            @elseif($key == 'engine' && is_array($val)) 
+                                                <div class="flex flex-col gap-0.5">
+                                                    @foreach($val as $v)
+                                                        <span class="text-[9px] md:text-xs leading-tight">{{ $v }}</span>
+                                                    @endforeach
+                                                </div>
                                             @elseif($key == 'hp' && is_array($val)) 
-                                                <span class="text-[9px] md:text-sm leading-tight">{{ collect($val)->map(fn($h) => str_ireplace(' hp', '', $h))->first() }}<span class="hidden md:inline"> HP</span></span>
+                                                <div class="flex flex-col gap-0.5">
+                                                    @foreach($val as $v)
+                                                        <span class="text-[9px] md:text-xs leading-tight">{{ str_ireplace(' hp', '', $v) }}<span class="hidden md:inline"> HP</span></span>
+                                                    @endforeach
+                                                </div>
                                             @else <span class="truncate w-full">{{ $val }}</span> @endif
 
                                             @if($isWinner)
                                                 <span class="text-[7px] md:text-[8px] font-label-caps text-primary mt-0.5 md:mt-1 flex items-center gap-0.5 md:gap-1">
-                                                    <span class="material-symbols-outlined text-[8px] md:text-[10px]">workspace_premium</span> <span class="hidden md:inline">WINNER</span>
+                                                    <span class="material-symbols-outlined text-[8px] md:text-[10px]">workspace_premium</span> <span class="hidden md:inline">BEST</span>
                                                 </span>
                                             @endif
                                         </div>

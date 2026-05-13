@@ -15,7 +15,7 @@ class StoreCarRequest extends FormRequest
     {
         return [
             'model_id' => 'required|unique:cars,model_id',
-            'make' => 'required|string',
+            'make' => 'nullable|string',
             'model' => 'required|string',
             'year' => 'required|string',
             'category' => 'nullable|string',

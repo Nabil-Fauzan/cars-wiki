@@ -141,6 +141,11 @@
                                     <p class="font-body-md text-on-surface truncate">{{ Auth::user()->email }}</p>
                                 </div>
 
+                                <a href="{{ route('profile.show', Auth::user()) }}" class="flex items-center gap-3 px-4 py-2 text-on-surface hover:bg-primary/10 hover:text-primary transition-colors">
+                                    <span class="material-symbols-outlined text-sm">person</span>
+                                    <span class="font-label-caps text-xs">Tactical Profile</span>
+                                </a>
+
                                 <a href="{{ route('dashboard') }}" class="flex items-center gap-3 px-4 py-2 text-on-surface hover:bg-primary/10 hover:text-primary transition-colors">
                                     <span class="material-symbols-outlined text-sm">dashboard</span>
                                     <span class="font-label-caps text-xs">Admin Dashboard</span>
@@ -215,13 +220,13 @@
                 <div class="grid grid-cols-2 gap-stack-lg">
                     <div class="flex flex-col gap-3">
                         <span class="font-label-caps text-label-caps text-primary">RESOURCES</span>
-                        <a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors duration-300" href="#">About PCAR</a>
-                        <a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors duration-300" href="#">Contribution Guidelines</a>
+                        <a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors duration-300" href="{{ route('about') }}">About PCAR</a>
+                        <a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors duration-300" href="{{ route('contribution') }}">Contribution Guidelines</a>
                         <a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors duration-300" href="#">API Documentation</a>
                     </div>
                     <div class="flex flex-col gap-3">
                         <span class="font-label-caps text-label-caps text-primary">LEGAL</span>
-                        <a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors duration-300" href="#">Privacy Policy</a>
+                        <a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors duration-300" href="{{ route('privacy') }}">Privacy Policy</a>
                         <a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors duration-300" href="#">Contact Support</a>
                     </div>
                 </div>

@@ -15,6 +15,19 @@ Route::get('/cars', [CarController::class, 'index'])->name('cars.index');
 Route::get('/compare', [CarController::class, 'compare'])->name('compare');
 Route::get('/brands', [CarController::class, 'brands'])->name('brands');
 Route::get('/categories', [CarController::class, 'categories'])->name('categories');
+Route::get('/about', function () {
+    return view('about', [
+        'carCount' => \App\Models\Car::count()
+    ]);
+})->name('about');
+
+Route::get('/privacy-policy', function () {
+    return view('privacy');
+})->name('privacy');
+
+Route::get('/contribution-guidelines', function () {
+    return view('contribution');
+})->name('contribution');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', [CarController::class, 'dashboard'])->name('dashboard');
@@ -35,6 +48,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::get('/profile/{user}', [ProfileController::class, 'show'])->name('profile.show');
+    Route::post('/profile/{user}/follow', [ProfileController::class, 'follow'])->name('profile.follow');
+    Route::post('/profile/{user}/unfollow', [ProfileController::class, 'unfollow'])->name('profile.unfollow');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     
