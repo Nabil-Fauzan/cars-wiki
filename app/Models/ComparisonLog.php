@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class ComparisonLog extends Model
 {
     public $timestamps = false;
+    protected $primaryKey = 'car_a_id';
+    public $incrementing = false;
     protected $fillable = ['car_a_id', 'car_b_id', 'created_at'];
 
     public function carA(): BelongsTo

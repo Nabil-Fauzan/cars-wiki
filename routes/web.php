@@ -70,6 +70,9 @@ Route::middleware('auth')->group(function () {
 
     // Comparison Sets
     Route::post('/compare/save', [CarController::class, 'saveComparisonSet'])->name('compare.save');
+
+    // Contribution Suggestions
+    Route::post('/cars/{car}/suggest', [CarController::class, 'suggestRevision'])->name('cars.suggest');
 });
 
 require __DIR__.'/auth.php';

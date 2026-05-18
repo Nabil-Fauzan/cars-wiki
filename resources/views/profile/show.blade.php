@@ -204,7 +204,7 @@
                                     <span class="material-symbols-outlined text-primary">swords</span>
                                     <span class="text-xs font-bold text-on-surface uppercase">{{ $set->name }}</span>
                                 </div>
-                                <a href="{{ route('compare', ['ids' => implode(',', $set->car_ids)]) }}" class="text-[10px] font-bold text-primary hover:underline">RE-ENGAGE BATTLE</a>
+                                <a href="{{ route('compare', ['car1' => $set->car1_id, 'car2' => $set->car2_id, 'car3' => $set->car3_id]) }}" class="text-[10px] font-bold text-primary hover:underline">RE-ENGAGE BATTLE</a>
                             </div>
                         @empty
                              <p class="text-center text-on-surface-variant/40 italic text-xs py-4">No battles recorded in history.</p>

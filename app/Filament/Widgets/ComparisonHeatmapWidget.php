@@ -23,6 +23,7 @@ class ComparisonHeatmapWidget extends BaseWidget
                     ->orderBy('total', 'desc')
                     ->limit(5)
             )
+            ->paginated(false)
             ->columns([
                 Tables\Columns\TextColumn::make('carA.model')
                     ->label('Specimen A')

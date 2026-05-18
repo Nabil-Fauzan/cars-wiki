@@ -233,17 +233,37 @@
             </div>
         </footer>
 
-        <!-- Floating Comparison Tray (Adjusted for Bottom Nav) -->
-        <div x-show="compareList.length > 0" 
-             x-transition:enter="transition ease-out duration-500"
-             x-transition:enter-start="translate-y-full opacity-0"
-             x-transition:enter-end="translate-y-0 opacity-100"
-             x-transition:leave="transition ease-in duration-300"
-             x-transition:leave-start="translate-y-0 opacity-100"
-             x-transition:leave-end="translate-y-full opacity-0"
-             class="fixed bottom-[72px] lg:bottom-6 left-1/2 -translate-x-1/2 z-[100] w-[95%] max-w-4xl"
-             style="display: none;">
-            <div class="glass-card machined-edge p-3 md:p-4 flex items-center justify-between gap-4 md:gap-6 shadow-[0_30px_60px_rgba(0,0,0,0.5)] border-primary/20 backdrop-blur-2xl">
+    <div id="floating-exhaust-player" class="fixed bottom-[72px] lg:bottom-6 right-6 z-[120] w-[calc(100%-48px)] sm:w-[380px] transition-all duration-500 transform translate-y-32 opacity-0">
+        <div class="glass-card machined-edge p-4 flex items-center justify-between gap-4 shadow-[0_20px_50px_rgba(0,0,0,0.5)] border-primary/20 backdrop-blur-2xl">
+            <div class="flex items-center gap-3 min-w-0">
+                <button id="floating-play-btn" class="w-10 h-10 rounded-full bg-primary text-on-primary flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-[0_0_15px_rgba(152,203,255,0.4)]">
+                    <span class="material-symbols-outlined text-sm">pause</span>
+                </button>
+                <div class="min-w-0">
+                    <p class="font-label-caps text-[8px] text-primary tracking-widest uppercase">EXHAUST RESONANCE SPECIMEN</p>
+                    <p id="floating-exhaust-title" class="font-body-md font-bold text-on-surface truncate pr-2">Vehicle Model</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-1.5 h-4 shrink-0 pr-1" id="floating-visualizer">
+                @for($i=0; $i<8; $i++)
+                    <div class="w-[3px] bg-primary/40 rounded-full h-1.5 floating-wave-bar"></div>
+                @endfor
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Comparison Tray (Adjusted for Bottom Nav) -->
+    <div x-show="compareList.length > 0" 
+         x-transition:enter="transition ease-out duration-500"
+         x-transition:enter-start="translate-y-full opacity-0"
+         x-transition:enter-end="translate-y-0 opacity-100"
+         x-transition:leave="transition ease-in duration-300"
+         x-transition:leave-start="translate-y-0 opacity-100"
+         x-transition:leave-end="translate-y-full opacity-0"
+         class="fixed bottom-[72px] lg:bottom-6 left-1/2 -translate-x-1/2 z-[100] w-[95%] max-w-4xl"
+         style="display: none;">
+        <div class="glass-card machined-edge p-3 md:p-4 flex items-center justify-between gap-4 md:gap-6 shadow-[0_30px_60px_rgba(0,0,0,0.5)] border-primary/20 backdrop-blur-2xl">
                 <div class="flex items-center gap-4 overflow-x-auto pb-1 scrollbar-none">
                     <template x-for="car in compareList" :key="car.model_id">
                         <div class="relative flex-shrink-0 group">
@@ -335,6 +355,102 @@
                 image.src = "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&q=80&w=800";
                 return true;
             }
+
+            // Global Floating Exhaust Player Controller
+            window.globalExhaustPlayer = {
+                activeAudio: null,
+                activeYtPlayer: null,
+                activeBtn: null,
+                currentTitle: '',
+                isPlaying: false,
+
+                show(title, isPlaying) {
+                    const el = document.getElementById('floating-exhaust-player');
+                    document.getElementById('floating-exhaust-title').innerText = title;
+                    el.classList.remove('translate-y-32', 'opacity-0');
+                    el.classList.add('translate-y-0', 'opacity-100');
+                    this.updateUI(isPlaying);
+                },
+
+                hide() {
+                    const el = document.getElementById('floating-exhaust-player');
+                    el.classList.add('translate-y-32', 'opacity-0');
+                    el.classList.remove('translate-y-0', 'opacity-100');
+                },
+
+                updateUI(isPlaying) {
+                    this.isPlaying = isPlaying;
+                    const btnIcon = document.querySelector('#floating-play-btn span');
+                    const bars = document.querySelectorAll('.floating-wave-bar');
+                    
+                    if (btnIcon) {
+                        btnIcon.innerText = isPlaying ? 'pause' : 'play_arrow';
+                    }
+                    
+                    bars.forEach((bar, i) => {
+                        if (isPlaying) {
+                            bar.style.animation = `soundWave 0.5s ease-in-out infinite alternate ${i * 0.05}s`;
+                        } else {
+                            bar.style.animation = 'none';
+                            bar.style.height = '6px';
+                        }
+                    });
+                }
+            };
+
+            // Global floating play button click event
+            document.getElementById('floating-play-btn').addEventListener('click', () => {
+                if (window.globalExhaustPlayer.activeAudio) {
+                    const audio = window.globalExhaustPlayer.activeAudio;
+                    if (audio.paused) {
+                        audio.play();
+                        window.globalExhaustPlayer.updateUI(true);
+                        if (window.globalExhaustPlayer.activeBtn) {
+                            window.globalExhaustPlayer.activeBtn.querySelector('.play-icon').classList.add('hidden');
+                            window.globalExhaustPlayer.activeBtn.querySelector('.pause-icon').classList.remove('hidden');
+                            window.globalExhaustPlayer.activeBtn.closest('.glass-card').querySelectorAll('.wave-bar').forEach((bar, i) => {
+                                bar.style.animation = `soundWave 0.5s ease-in-out infinite alternate ${i * 0.05}s`;
+                            });
+                        }
+                    } else {
+                        audio.pause();
+                        window.globalExhaustPlayer.updateUI(false);
+                        if (window.globalExhaustPlayer.activeBtn) {
+                            window.globalExhaustPlayer.activeBtn.querySelector('.play-icon').classList.remove('hidden');
+                            window.globalExhaustPlayer.activeBtn.querySelector('.pause-icon').classList.add('hidden');
+                            window.globalExhaustPlayer.activeBtn.closest('.glass-card').querySelectorAll('.wave-bar').forEach(bar => {
+                                bar.style.animation = 'none';
+                                bar.style.height = '8px';
+                            });
+                        }
+                    }
+                } else if (window.globalExhaustPlayer.activeYtPlayer) {
+                    const yt = window.globalExhaustPlayer.activeYtPlayer;
+                    const state = yt.getPlayerState();
+                    if (state === 1) { // playing
+                        yt.pauseVideo();
+                        window.globalExhaustPlayer.updateUI(false);
+                        if (window.globalExhaustPlayer.activeBtn) {
+                            window.globalExhaustPlayer.activeBtn.querySelector('.play-icon').classList.remove('hidden');
+                            window.globalExhaustPlayer.activeBtn.querySelector('.pause-icon').classList.add('hidden');
+                            window.globalExhaustPlayer.activeBtn.closest('.glass-card').querySelectorAll('.wave-bar').forEach(bar => {
+                                bar.style.animation = 'none';
+                                bar.style.height = '8px';
+                            });
+                        }
+                    } else {
+                        yt.playVideo();
+                        window.globalExhaustPlayer.updateUI(true);
+                        if (window.globalExhaustPlayer.activeBtn) {
+                            window.globalExhaustPlayer.activeBtn.querySelector('.play-icon').classList.add('hidden');
+                            window.globalExhaustPlayer.activeBtn.querySelector('.pause-icon').classList.remove('hidden');
+                            window.globalExhaustPlayer.activeBtn.closest('.glass-card').querySelectorAll('.wave-bar').forEach((bar, i) => {
+                                bar.style.animation = `soundWave 0.5s ease-in-out infinite alternate ${i * 0.05}s`;
+                            });
+                        }
+                    }
+                }
+            });
         </script>
     </body>
 </html>

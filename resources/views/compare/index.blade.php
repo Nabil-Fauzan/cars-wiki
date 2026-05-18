@@ -129,7 +129,8 @@
                             <h2 class="font-label-caps text-label-caps text-secondary tracking-widest uppercase">Technical Specifications</h2>
                             <div class="h-px flex-1 bg-gradient-to-r from-outline-variant/50 to-transparent"></div>
                         </div>
-                        <div class="bg-surface-container/30 rounded-lg overflow-hidden border border-outline-variant/20">
+                        <div class="overflow-x-auto scrollbar-thin">
+                            <div class="bg-surface-container/30 rounded-lg overflow-hidden border border-outline-variant/20 min-w-[700px] md:min-w-0">
                             @foreach($metrics as $key => $label)
                                 @php
                                     $val1 = $car1 ? $car1->$key : null;
@@ -175,8 +176,8 @@
                                     
                                     $isDifferent = in_array($key, $differences);
                                 @endphp
-                                <div class="grid grid-cols-4 md:grid-cols-4 border-b border-outline-variant/10 transition-colors duration-300 {{ $isDifferent ? 'diff-row' : '' }}">
-                                    <div class="p-2 md:p-4 bg-surface-container-high/40 font-label-caps text-[8px] md:text-[10px] text-on-surface-variant flex items-center gap-1 md:gap-2 leading-tight">
+                                <div class="grid grid-cols-4 border-b border-outline-variant/10 transition-colors duration-300 {{ $isDifferent ? 'diff-row' : '' }}">
+                                    <div class="p-2 md:p-4 bg-surface-container-high/40 font-label-caps text-[8px] md:text-[10px] text-on-surface-variant flex items-center gap-1 md:gap-2 leading-tight sticky left-0 z-10 backdrop-blur-md">
                                         {{ $label }}
                                         @if($isDifferent)
                                             <span class="material-symbols-outlined text-[10px] md:text-[12px] text-primary opacity-0 diff-indicator">priority_high</span>
@@ -229,6 +230,7 @@
                                     @endforeach
                                 </div>
                             @endforeach
+                            </div>
                         </div>
                     </div>
                 </section>

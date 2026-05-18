@@ -51,13 +51,26 @@
         <div class="max-w-container-max mx-auto px-margin-page py-stack-lg flex flex-col lg:flex-row gap-gutter">
             <!-- Left Column: Specs & History -->
             <div class="flex-1 space-y-stack-lg">
+                @php
+                    $extractNumeric = function ($val) {
+                        if (is_numeric($val)) return (float) $val;
+                        if (empty($val)) return 0.0;
+                        preg_match('/[\d\.]+/', $val, $matches);
+                        return isset($matches[0]) ? (float) $matches[0] : 0.0;
+                    };
+                @endphp
                 <!-- Performance Gauges (Modern Digital Style) -->
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-stack-sm">
                     <div class="glass-card p-stack-sm machined-edge opacity-0 gsap-gauge">
                         <p class="font-label-caps text-label-caps text-secondary">0-60 MPH</p>
-                        <p class="font-headline-md text-headline-md text-primary mt-1">{{ $car->zero_to_sixty }}s</p>
+                        <p class="font-headline-md text-headline-md text-primary mt-1">
+                            {{ is_numeric($car->zero_to_sixty) ? $car->zero_to_sixty . 's' : $car->zero_to_sixty }}
+                        </p>
                         <div class="flex gap-1 mt-2">
-                            @php $segments = floor(($car->zero_to_sixty / 5) * 5); @endphp
+                            @php
+                                $val = $extractNumeric($car->zero_to_sixty);
+                                $segments = max(0, min(5, floor(($val / 5) * 5)));
+                            @endphp
                             @for($i=0; $i<5; $i++)
                                 <div class="gauge-segment flex-1 {{ $i < (5 - $segments) ? '' : 'opacity-20' }}"></div>
                             @endfor
@@ -65,9 +78,14 @@
                     </div>
                     <div class="glass-card p-stack-sm machined-edge opacity-0 gsap-gauge">
                         <p class="font-label-caps text-label-caps text-secondary">TOP SPEED</p>
-                        <p class="font-headline-md text-headline-md text-primary mt-1">{{ $car->top_speed }} MPH</p>
+                        <p class="font-headline-md text-headline-md text-primary mt-1">
+                            {{ (is_numeric($car->top_speed) || !str_contains(strtolower($car->top_speed), 'mph')) ? $car->top_speed . ' MPH' : $car->top_speed }}
+                        </p>
                         <div class="flex gap-1 mt-2">
-                            @php $segments = floor(($car->top_speed / 250) * 5); @endphp
+                            @php
+                                $val = $extractNumeric($car->top_speed);
+                                $segments = max(0, min(5, floor(($val / 250) * 5)));
+                            @endphp
                             @for($i=0; $i<5; $i++)
                                 <div class="gauge-segment flex-1 {{ $i < $segments ? '' : 'opacity-20' }}"></div>
                             @endfor
@@ -75,9 +93,14 @@
                     </div>
                     <div class="glass-card p-stack-sm machined-edge opacity-0 gsap-gauge">
                         <p class="font-label-caps text-label-caps text-secondary">AERODYNAMICS</p>
-                        <p class="font-headline-md text-headline-md text-primary mt-1">{{ $car->aerodynamics }} CD</p>
+                        <p class="font-headline-md text-headline-md text-primary mt-1">
+                            {{ (is_numeric($car->aerodynamics) || !str_contains(strtolower($car->aerodynamics), 'cd')) ? $car->aerodynamics . ' CD' : $car->aerodynamics }}
+                        </p>
                         <div class="flex gap-1 mt-2">
-                            @php $segments = floor((1 - $car->aerodynamics) * 5); @endphp
+                            @php
+                                $val = $extractNumeric($car->aerodynamics);
+                                $segments = max(0, min(5, floor((1 - $val) * 5)));
+                            @endphp
                             @for($i=0; $i<5; $i++)
                                 <div class="gauge-segment flex-1 {{ $i < $segments ? '' : 'opacity-20' }}"></div>
                             @endfor
@@ -85,9 +108,14 @@
                     </div>
                     <div class="glass-card p-stack-sm machined-edge opacity-0 gsap-gauge">
                         <p class="font-label-caps text-label-caps text-secondary">BRAKING</p>
-                        <p class="font-headline-md text-headline-md text-primary mt-1">{{ $car->braking }} FT</p>
+                        <p class="font-headline-md text-headline-md text-primary mt-1">
+                            {{ (is_numeric($car->braking) || !str_contains(strtolower($car->braking), 'ft')) ? $car->braking . ' FT' : $car->braking }}
+                        </p>
                         <div class="flex gap-1 mt-2">
-                            @php $segments = floor((150 - $car->braking) / 10); @endphp
+                            @php
+                                $val = $extractNumeric($car->braking);
+                                $segments = max(0, min(5, floor((150 - $val) / 10)));
+                            @endphp
                             @for($i=0; $i<5; $i++)
                                 <div class="gauge-segment flex-1 {{ $i < $segments ? '' : 'opacity-20' }}"></div>
                             @endfor
@@ -184,51 +212,140 @@
                         {{ $car->history }}
                     </p>
                 </section>
-
                 <!-- Technical Specifications Table -->
-                <section class="glass-card machined-edge overflow-hidden">
-                    <div class="p-stack-sm bg-surface-container-highest border-b border-outline-variant/30">
-                        <h3 class="font-label-caps text-label-caps">Technical Specifications</h3>
-                    </div>
-                    <div class="divide-y divide-outline-variant/10">
-                        <div class="grid grid-cols-2 p-stack-sm hover:bg-white/5 transition-colors opacity-0 gsap-spec-row">
-                            <span class="font-label-caps text-label-caps text-secondary">Engine Configuration</span>
-                            <div class="flex flex-col gap-1">
-                                @if(is_array($car->engine))
-                                    @foreach($car->engine as $variant)
-                                        <span class="font-body-md text-body-md text-on-surface">{{ $variant }}</span>
-                                    @endforeach
-                                @else
-                                    <span class="font-body-md text-body-md text-on-surface">{{ $car->engine }}</span>
-                                @endif
+                <div x-data="{ correctionModalOpen: false }">
+                    <section class="glass-card machined-edge overflow-hidden">
+                        <div class="p-stack-sm bg-surface-container-highest border-b border-outline-variant/30 flex justify-between items-center">
+                            <h3 class="font-label-caps text-label-caps">Technical Specifications</h3>
+                            @auth
+                                <button type="button" @click="correctionModalOpen = true" class="text-xs text-primary font-semibold flex items-center gap-1 hover:underline">
+                                    <span class="material-symbols-outlined text-[14px]">edit_note</span> Propose Correction
+                                </button>
+                            @else
+                                <a href="{{ route('login') }}" class="text-xs text-secondary/70 flex items-center gap-1 hover:underline">
+                                    <span class="material-symbols-outlined text-[14px]">edit_note</span> Login to Propose Correction
+                                </a>
+                            @endauth
+                        </div>
+                        <div class="divide-y divide-outline-variant/10">
+                            <div class="grid grid-cols-2 p-stack-sm hover:bg-white/5 transition-colors opacity-0 gsap-spec-row">
+                                <span class="font-label-caps text-label-caps text-secondary">Engine Configuration</span>
+                                <div class="flex flex-col gap-1">
+                                    @if(is_array($car->engine))
+                                        @foreach($car->engine as $variant)
+                                            <span class="font-body-md text-body-md text-on-surface">{{ $variant }}</span>
+                                        @endforeach
+                                    @else
+                                        <span class="font-body-md text-body-md text-on-surface">{{ $car->engine }}</span>
+                                    @endif
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 p-stack-sm hover:bg-white/5 transition-colors">
+                                <span class="font-label-caps text-label-caps text-secondary">Horsepower Output</span>
+                                <div class="flex flex-col gap-1">
+                                    @if(is_array($car->hp))
+                                        @foreach($car->hp as $rating)
+                                            <span class="font-body-md text-body-md text-on-surface">{{ $rating }} HP</span>
+                                        @endforeach
+                                    @else
+                                        <span class="font-body-md text-body-md text-on-surface">{{ $car->hp }} HP</span>
+                                    @endif
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 p-stack-sm hover:bg-white/5 transition-colors">
+                                <span class="font-label-caps text-label-caps text-secondary">Torque</span>
+                                <div class="flex flex-col gap-1">
+                                    @if(is_array($car->torque))
+                                        @foreach($car->torque as $rating)
+                                            <span class="font-body-md text-body-md text-on-surface">{{ $rating }}</span>
+                                        @endforeach
+                                    @else
+                                        <span class="font-body-md text-body-md text-on-surface">{{ $car->torque }}</span>
+                                    @endif
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 p-stack-sm hover:bg-white/5 transition-colors">
+                                <span class="font-label-caps text-label-caps text-secondary">Transmission</span>
+                                <span class="font-body-md text-body-md text-on-surface">{{ $car->transmission }}</span>
+                            </div>
+                            <div class="grid grid-cols-2 p-stack-sm hover:bg-white/5 transition-colors opacity-0 gsap-spec-row">
+                                <span class="font-label-caps text-label-caps text-secondary">Drivetrain</span>
+                                <span class="font-body-md text-body-md text-on-surface">{{ $car->drivetrain }}</span>
                             </div>
                         </div>
-                        <div class="grid grid-cols-2 p-stack-sm hover:bg-white/5 transition-colors">
-                            <span class="font-label-caps text-label-caps text-secondary">Horsepower Output</span>
-                            <div class="flex flex-col gap-1">
-                                @if(is_array($car->hp))
-                                    @foreach($car->hp as $rating)
-                                        <span class="font-body-md text-body-md text-on-surface">{{ $rating }} HP</span>
-                                    @endforeach
-                                @else
-                                    <span class="font-body-md text-body-md text-on-surface">{{ $car->hp }} HP</span>
-                                @endif
+                    </section>
+
+                    <!-- Correction Modal -->
+                    <div x-show="correctionModalOpen" 
+                         style="display: none;" 
+                         class="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-background/80 backdrop-blur-md"
+                         @keydown.escape.window="correctionModalOpen = false">
+                        <div class="glass-card w-full max-w-2xl machined-edge overflow-hidden shadow-2xl relative" @click.away="correctionModalOpen = false">
+                            <div class="p-stack-md border-b border-outline-variant/30 flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <span class="material-symbols-outlined text-primary">edit_note</span>
+                                    <h3 class="font-headline-sm text-headline-sm text-on-surface">Propose Spec Correction</h3>
+                                </div>
+                                <button type="button" @click="correctionModalOpen = false" class="text-secondary hover:text-on-surface">
+                                    <span class="material-symbols-outlined">close</span>
+                                </button>
                             </div>
-                        </div>
-                        <div class="grid grid-cols-2 p-stack-sm hover:bg-white/5 transition-colors">
-                            <span class="font-label-caps text-label-caps text-secondary">Torque</span>
-                            <span class="font-body-md text-body-md text-on-surface">{{ $car->torque }}</span>
-                        </div>
-                        <div class="grid grid-cols-2 p-stack-sm hover:bg-white/5 transition-colors">
-                            <span class="font-label-caps text-label-caps text-secondary">Transmission</span>
-                            <span class="font-body-md text-body-md text-on-surface">{{ $car->transmission }}</span>
-                        </div>
-                        <div class="grid grid-cols-2 p-stack-sm hover:bg-white/5 transition-colors opacity-0 gsap-spec-row">
-                            <span class="font-label-caps text-label-caps text-secondary">Drivetrain</span>
-                            <span class="font-body-md text-body-md text-on-surface">{{ $car->drivetrain }}</span>
+                            
+                            <form action="{{ route('cars.suggest', $car) }}" method="POST" class="p-stack-md space-y-4">
+                                @csrf
+                                <p class="text-xs font-body-md text-on-surface-variant">
+                                    Help keep the PCAR Wiki database absolute and perfect. Diffs are compared side-by-side by the moderation queue. Leaving fields blank will preserve the current values.
+                                </p>
+                                
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block font-label-caps text-[10px] text-secondary mb-1">Horsepower Rating</label>
+                                        <input type="text" name="hp" placeholder="e.g. 400 hp" value="{{ is_array($car->hp) ? implode(', ', $car->hp) : $car->hp }}" class="w-full bg-surface-container-low border border-outline-variant/30 rounded px-3 py-2 text-on-surface focus:outline-none focus:border-primary text-xs font-mono">
+                                    </div>
+                                    <div>
+                                        <label class="block font-label-caps text-[10px] text-secondary mb-1">Torque</label>
+                                        <input type="text" name="torque" placeholder="e.g. 369 lb-ft" value="{{ is_array($car->torque) ? implode(', ', $car->torque) : $car->torque }}" class="w-full bg-surface-container-low border border-outline-variant/30 rounded px-3 py-2 text-on-surface focus:outline-none focus:border-primary text-xs font-mono">
+                                    </div>
+                                    <div>
+                                        <label class="block font-label-caps text-[10px] text-secondary mb-1">0-60 MPH</label>
+                                        <input type="text" name="zero_to_sixty" placeholder="e.g. 7.0 detik (NA)" value="{{ $car->zero_to_sixty }}" class="w-full bg-surface-container-low border border-outline-variant/30 rounded px-3 py-2 text-on-surface focus:outline-none focus:border-primary text-xs font-mono">
+                                    </div>
+                                    <div>
+                                        <label class="block font-label-caps text-[10px] text-secondary mb-1">Top Speed</label>
+                                        <input type="text" name="top_speed" placeholder="e.g. 180 mph" value="{{ $car->top_speed }}" class="w-full bg-surface-container-low border border-outline-variant/30 rounded px-3 py-2 text-on-surface focus:outline-none focus:border-primary text-xs font-mono">
+                                    </div>
+                                    <div>
+                                        <label class="block font-label-caps text-[10px] text-secondary mb-1">Transmission</label>
+                                        <input type="text" name="transmission" value="{{ $car->transmission }}" class="w-full bg-surface-container-low border border-outline-variant/30 rounded px-3 py-2 text-on-surface focus:outline-none focus:border-primary text-xs font-mono">
+                                    </div>
+                                    <div>
+                                        <label class="block font-label-caps text-[10px] text-secondary mb-1">Drivetrain</label>
+                                        <input type="text" name="drivetrain" value="{{ $car->drivetrain }}" class="w-full bg-surface-container-low border border-outline-variant/30 rounded px-3 py-2 text-on-surface focus:outline-none focus:border-primary text-xs font-mono">
+                                    </div>
+                                    <div>
+                                        <label class="block font-label-caps text-[10px] text-secondary mb-1">Entry Price ($)</label>
+                                        <input type="number" name="min_price" value="{{ $car->min_price }}" class="w-full bg-surface-container-low border border-outline-variant/30 rounded px-3 py-2 text-on-surface focus:outline-none focus:border-primary text-xs font-mono">
+                                    </div>
+                                    <div>
+                                        <label class="block font-label-caps text-[10px] text-secondary mb-1">Peak Price ($)</label>
+                                        <input type="number" name="max_price" value="{{ $car->max_price }}" class="w-full bg-surface-container-low border border-outline-variant/30 rounded px-3 py-2 text-on-surface focus:outline-none focus:border-primary text-xs font-mono">
+                                    </div>
+                                    <div class="md:col-span-2">
+                                        <label class="block font-label-caps text-[10px] text-secondary mb-1">Exhaust Sound URL</label>
+                                        <input type="url" name="engine_sound_url" placeholder="https://youtube.com/watch?v=..." value="{{ $car->engine_sound_url }}" class="w-full bg-surface-container-low border border-outline-variant/30 rounded px-3 py-2 text-on-surface focus:outline-none focus:border-primary text-xs font-mono">
+                                    </div>
+                                </div>
+                                
+                                <div class="pt-4 border-t border-outline-variant/30 flex justify-end gap-3">
+                                    <button type="button" @click="correctionModalOpen = false" class="px-4 py-2 border border-outline-variant/30 hover:bg-white/5 rounded text-xs font-label-caps text-on-surface transition-all">Cancel</button>
+                                    <button type="submit" class="px-4 py-2 bg-primary hover:bg-primary-hover text-on-primary rounded text-xs font-label-caps transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(152,203,255,0.3)]">
+                                        <span class="material-symbols-outlined text-sm">publish</span> Submit Correction
+                                    </button>
+                                </div>
+                            </form>
                         </div>
                     </div>
-                </section>
+                </div>
 
                 <!-- Pros & Cons -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-stack-sm">
@@ -553,6 +670,7 @@
 
                 function toggleSound(btn, url) {
                     const ytId = getYoutubeID(url);
+                    const carModel = "{{ $car->brands->first()->name ?? '' }} {{ $car->model }}";
 
                     if (ytId) {
                         if (!isYTReady) return;
@@ -562,9 +680,11 @@
                             if (state === 1) { // playing
                                 ytPlayer.pauseVideo();
                                 updateUI(btn, false);
+                                window.globalExhaustPlayer.updateUI(false);
                             } else {
                                 ytPlayer.playVideo();
                                 updateUI(btn, true);
+                                window.globalExhaustPlayer.show(carModel, true);
                             }
                         } else {
                             if (ytPlayer) ytPlayer.destroy();
@@ -583,9 +703,16 @@
                                         e.target.playVideo();
                                         updateUI(btn, true);
                                         currentBtn = btn;
+                                        window.globalExhaustPlayer.activeYtPlayer = ytPlayer;
+                                        window.globalExhaustPlayer.activeAudio = null;
+                                        window.globalExhaustPlayer.activeBtn = btn;
+                                        window.globalExhaustPlayer.show(carModel, true);
                                     },
                                     'onStateChange': (e) => {
-                                        if (e.data === 0) updateUI(btn, false); // ended
+                                        if (e.data === 0) {
+                                            updateUI(btn, false); // ended
+                                            window.globalExhaustPlayer.hide();
+                                        }
                                     }
                                 }
                             });
@@ -598,9 +725,11 @@
                             if (ytPlayer) ytPlayer.pauseVideo();
                             currentAudio.play();
                             updateUI(btn, true);
+                            window.globalExhaustPlayer.show(carModel, true);
                         } else {
                             currentAudio.pause();
                             updateUI(btn, false);
+                            window.globalExhaustPlayer.updateUI(false);
                         }
                     } else {
                         if (currentAudio) {
@@ -614,7 +743,15 @@
                         currentAudio.play();
                         updateUI(btn, true);
                         
-                        currentAudio.onended = () => updateUI(btn, false);
+                        window.globalExhaustPlayer.activeAudio = currentAudio;
+                        window.globalExhaustPlayer.activeYtPlayer = null;
+                        window.globalExhaustPlayer.activeBtn = btn;
+                        window.globalExhaustPlayer.show(carModel, true);
+                        
+                        currentAudio.onended = () => {
+                            updateUI(btn, false);
+                            window.globalExhaustPlayer.hide();
+                        };
                     }
                 }
 

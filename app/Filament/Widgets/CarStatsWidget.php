@@ -19,7 +19,7 @@ class CarStatsWidget extends BaseWidget
                 ->color('primary'),
             Stat::make('Manufacturer Index', Brand::count())
                 ->description('Verified brands on file')
-                ->descriptionIcon('heroicon-m-factory')
+                ->descriptionIcon('heroicon-m-building-office')
                 ->color('success'),
             Stat::make('Tactical Logs', Comment::count())
                 ->description('Community discussions recorded')

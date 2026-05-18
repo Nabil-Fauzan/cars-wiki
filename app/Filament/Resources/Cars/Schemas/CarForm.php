@@ -22,6 +22,7 @@ class CarForm
                 Section::make('General Information')
                     ->schema([
                         TextInput::make('model')
+                            ->label('Model Name')
                             ->required()
                             ->live(onBlur: true)
                             ->afterStateUpdated(function (Set $set, Get $get, $state) {
@@ -31,9 +32,9 @@ class CarForm
                                 $set('model_id', $slug);
                             }),
                         TextInput::make('model_id')
+                            ->label('Model ID')
                             ->required()
-                            ->unique(ignoreRecord: true)
-                            ->label('Vehicle Slug ID'),
+                            ->unique(ignoreRecord: true),
                         Select::make('brands')
                             ->relationship('brands', 'name')
                             ->multiple()
@@ -52,7 +53,6 @@ class CarForm
                             }),
                         TextInput::make('year')
                             ->required()
-                            ->numeric()
                             ->live(onBlur: true)
                             ->afterStateUpdated(function (Set $set, Get $get, $state) {
                                 $model = $get('model');
@@ -61,15 +61,14 @@ class CarForm
                                     $set('model_id', $slug);
                                 }
                             }),
-                        Select::make('category')
-                            ->options([
-                                'SUV' => 'SUV',
-                                'Sedan' => 'Sedan',
-                                'Coupe' => 'Coupe',
-                                'Supercar' => 'Supercar',
-                                'Hypercar' => 'Hypercar',
-                                'Classic' => 'Classic',
-                            ])
+                        TextInput::make('category')
+                            ->datalist(fn () => \App\Models\Car::query()
+                                ->whereNotNull('category')
+                                ->distinct()
+                                ->orderBy('category')
+                                ->pluck('category')
+                                ->toArray()
+                            )
                             ->required(),
                         TextInput::make('make')
                             ->hidden() // Keeping it for DB integrity but hidden from user as they select via 'brands'
@@ -86,18 +85,19 @@ class CarForm
                             ->placeholder('e.g. 3.0L V6'),
                         TextInput::make('transmission'),
                         TextInput::make('drivetrain'),
-                        TextInput::make('torque'),
+                        TagsInput::make('torque')
+                            ->label('Torque Ratings')
+                            ->placeholder('e.g. 350 lb-ft'),
                         TextInput::make('zero_to_sixty')
-                            ->numeric()
-                            ->step(0.1),
+                            ->label('0-60')
+                            ->placeholder('e.g. ~7.0 detik (NA) dan ~6.0 detik (Turbo)'),
                         TextInput::make('top_speed')
-                            ->numeric(),
+                            ->placeholder('e.g. 180 mph / 290 km/h'),
                         TextInput::make('aerodynamics')
-                            ->numeric()
-                            ->step(0.01),
+                            ->placeholder('e.g. 0.32 Cd'),
                         TextInput::make('braking')
-                            ->numeric()
-                            ->label('Braking (ft)'),
+                            ->label('Braking')
+                            ->placeholder('e.g. 112 ft / 34 m'),
                     ])->columns(3),
 
                 Section::make('Visuals & Content')
@@ -118,13 +118,16 @@ class CarForm
                                          $model = $get('model');
                                          if (!$model) return;
                                          
-                                         $response = \Illuminate\Support\Facades\Http::post(route('admin.ai.generate'), [
-                                             'model' => $model,
-                                             'field' => 'history'
-                                         ]);
+                                         $aiResponse = app(\App\Http\Controllers\Admin\CarAiController::class)->generate(
+                                             new \Illuminate\Http\Request([
+                                                 'model' => $model,
+                                                 'field' => 'history'
+                                             ])
+                                         );
                                          
-                                         if ($response->successful()) {
-                                             $set('history', $response->json('content'));
+                                         $content = json_decode($aiResponse->getContent(), true)['content'] ?? null;
+                                         if ($content) {
+                                             $set('history', $content);
                                          }
                                      })
                             ),
@@ -138,13 +141,15 @@ class CarForm
                                         $model = $get('model');
                                         if (!$model) return;
 
-                                        $response = \Illuminate\Support\Facades\Http::post(route('admin.ai.generate'), [
-                                            'model' => $model,
-                                            'field' => 'pros'
-                                        ]);
+                                        $aiResponse = app(\App\Http\Controllers\Admin\CarAiController::class)->generate(
+                                            new \Illuminate\Http\Request([
+                                                'model' => $model,
+                                                'field' => 'pros'
+                                            ])
+                                        );
                                         
-                                        if ($response->successful()) {
-                                            $content = $response->json('content');
+                                        $content = json_decode($aiResponse->getContent(), true)['content'] ?? null;
+                                        if ($content) {
                                             $data = is_string($content) ? json_decode($content, true) : $content;
                                             if (is_array($data)) $set('pros', $data);
                                         }
@@ -160,13 +165,15 @@ class CarForm
                                         $model = $get('model');
                                         if (!$model) return;
 
-                                        $response = \Illuminate\Support\Facades\Http::post(route('admin.ai.generate'), [
-                                            'model' => $model,
-                                            'field' => 'cons'
-                                        ]);
+                                        $aiResponse = app(\App\Http\Controllers\Admin\CarAiController::class)->generate(
+                                            new \Illuminate\Http\Request([
+                                                'model' => $model,
+                                                'field' => 'cons'
+                                            ])
+                                        );
                                         
-                                        if ($response->successful()) {
-                                            $content = $response->json('content');
+                                        $content = json_decode($aiResponse->getContent(), true)['content'] ?? null;
+                                        if ($content) {
                                             $data = is_string($content) ? json_decode($content, true) : $content;
                                             if (is_array($data)) $set('cons', $data);
                                         }
@@ -182,7 +189,11 @@ class CarForm
                             ->columnSpanFull(),
                         TextInput::make('engine_sound_url')
                             ->label('Engine Sound URL')
-                            ->url(),
+                            ->url()
+                            ->hint(fn ($state) => $state ? view('filament.components.audio-preview', [
+                                'state' => $state,
+                                'getState' => fn () => $state,
+                            ]) : null),
                         TextInput::make('min_price')
                             ->label('Entry Price')
                             ->prefix('$')

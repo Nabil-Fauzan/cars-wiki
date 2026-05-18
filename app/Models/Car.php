@@ -32,6 +32,7 @@ class Car extends Model implements HasMedia
         'cons' => 'array',
         'engine' => 'array',
         'hp' => 'array',
+        'torque' => 'array',
         'last_link_check_at' => 'datetime',
     ];
 

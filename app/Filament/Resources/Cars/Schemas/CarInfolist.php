@@ -25,16 +25,13 @@ class CarInfolist
                 TextEntry::make('torque')
                     ->placeholder('-'),
                 TextEntry::make('zero_to_sixty')
-                    ->numeric()
+                    ->label('0-60')
                     ->placeholder('-'),
                 TextEntry::make('top_speed')
-                    ->numeric()
                     ->placeholder('-'),
                 TextEntry::make('aerodynamics')
-                    ->numeric()
                     ->placeholder('-'),
                 TextEntry::make('braking')
-                    ->numeric()
                     ->placeholder('-'),
                 TextEntry::make('price_range')
                     ->label('Price Range')

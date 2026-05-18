@@ -35,6 +35,10 @@
                     <span class="material-symbols-outlined">factory</span>
                     <span class="font-label-caps text-label-caps">Manage Brands</span>
                 </a>
+                <a class="flex items-center gap-4 {{ request()->is('admin/data-audit*') ? 'bg-secondary-container/50 text-primary border-l-4 border-primary' : 'text-on-surface-variant hover:text-on-surface' }} px-4 py-3 active:translate-x-1 transition-transform duration-200" href="{{ url('/admin/data-audit') }}">
+                    <span class="material-symbols-outlined">shield</span>
+                    <span class="font-label-caps text-label-caps">Pusat Penjaminan Mutu</span>
+                </a>
             </nav>
             <div class="px-6 mt-auto">
                 <a href="{{ route('cars.create') }}" class="w-full bg-primary text-on-primary py-3 px-4 font-label-caps text-label-caps rounded-lg hover:opacity-90 transition-all text-center block">

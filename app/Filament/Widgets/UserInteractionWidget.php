@@ -29,7 +29,7 @@ class UserInteractionWidget extends StatsOverviewWidget
 
             Stat::make('Technical Battles', $totalBattles)
                 ->description('Total vehicle comparisons')
-                ->descriptionIcon('heroicon-m-swatches')
+                ->descriptionIcon('heroicon-m-scale')
                 ->color('success'),
         ];
     }

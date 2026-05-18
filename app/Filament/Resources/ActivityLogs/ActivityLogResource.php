@@ -8,7 +8,9 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Actions\ViewAction;
+use Filament\Schemas\Schema;
+use Filament\Infolists\Components\TextEntry;
+use Filament\Schemas\Components\Section;
 
 class ActivityLogResource extends Resource
 {
@@ -48,16 +50,58 @@ class ActivityLogResource extends Resource
                     ->limit(50)
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
+            ->defaultSort('created_at', 'desc')
             ->filters([
                 //
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
+                \Filament\Actions\ViewAction::make(),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                \Filament\Actions\BulkActionGroup::make([
+                    \Filament\Actions\DeleteBulkAction::make(),
                 ]),
+            ]);
+    }
+
+    public static function infolist(Schema $schema): Schema
+    {
+        return $schema
+            ->components([
+                Section::make('Audit Details')
+                    ->schema([
+                        TextEntry::make('created_at')
+                            ->label('Timestamp')
+                            ->dateTime()
+                            ->badge(),
+                        TextEntry::make('causer.name')
+                            ->label('Operator / Admin')
+                            ->placeholder('System')
+                            ->weight('bold'),
+                        TextEntry::make('description')
+                            ->label('Action')
+                            ->badge()
+                            ->color(fn (string $state): string => match ($state) {
+                                'created' => 'success',
+                                'updated' => 'warning',
+                                'deleted' => 'danger',
+                                default => 'gray',
+                            }),
+                        TextEntry::make('subject_type')
+                            ->label('Target Resource')
+                            ->formatStateUsing(fn ($state) => class_basename($state)),
+                        TextEntry::make('subject_id')
+                            ->label('Target Subject ID'),
+                    ])->columns(2),
+
+                Section::make('Data Changes (JSON Metadata)')
+                    ->schema([
+                        TextEntry::make('properties')
+                            ->label('State Properties')
+                            ->fontFamily('mono')
+                            ->formatStateUsing(fn ($state) => json_encode($state, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES))
+                            ->columnSpanFull(),
+                    ])
             ]);
     }
 

@@ -28,8 +28,9 @@ class CarsTable
                 TextColumn::make('model_id')
                     ->searchable()
                     ->copyable()
-                    ->label('ID'),
+                    ->label('Model ID'),
                 TextColumn::make('model')
+                    ->label('Model Name')
                     ->searchable()
                     ->weight('bold'),
                 TextColumn::make('brands.name')
@@ -84,6 +85,9 @@ class CarsTable
                         ";
                     })
                     ->sortable(),
+                \Filament\Tables\Columns\ViewColumn::make('engine_sound_url')
+                    ->label('Exhaust Audio')
+                    ->view('filament.components.audio-preview'),
                 TextColumn::make('history')
                     ->limit(20)
                     ->searchable()
@@ -94,9 +98,31 @@ class CarsTable
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                \Filament\Tables\Filters\SelectFilter::make('category'),
-                \Filament\Tables\Filters\SelectFilter::make('status'),
-                \Filament\Tables\Filters\SelectFilter::make('moderation_status'),
+                \Filament\Tables\Filters\SelectFilter::make('brands')
+                    ->relationship('brands', 'name')
+                    ->multiple()
+                    ->preload(),
+                \Filament\Tables\Filters\SelectFilter::make('category')
+                    ->options(fn () => \App\Models\Car::query()
+                        ->whereNotNull('category')
+                        ->distinct()
+                        ->orderBy('category')
+                        ->pluck('category', 'category')
+                        ->toArray()
+                    ),
+                \Filament\Tables\Filters\SelectFilter::make('status')
+                    ->options([
+                        'Live' => 'Live',
+                        'Draft' => 'Draft',
+                        'Archived' => 'Archived',
+                    ]),
+                \Filament\Tables\Filters\SelectFilter::make('moderation_status')
+                    ->label('Moderation')
+                    ->options([
+                        'draft' => 'Drafting',
+                        'review' => 'Pending Review',
+                        'published' => 'Published',
+                    ]),
                 \Filament\Tables\Filters\TernaryFilter::make('has_sound')
                     ->label('Has Engine Sound')
                     ->queries(
@@ -134,20 +160,53 @@ class CarsTable
             ->bulkActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
-                    BulkAction::make('export_csv')
-                        ->label('Export to CSV')
+                    BulkAction::make('export_excel')
+                        ->label('Export to Excel')
                         ->icon('heroicon-o-document-arrow-down')
                         ->action(function (\Illuminate\Database\Eloquent\Collection $records) {
-                            $filename = "pcar_export_" . now()->format('Y-m-d_His') . ".csv";
-                            $handle = fopen('php://temp', 'w+');
-                            fputcsv($handle, ['Model ID', 'Model', 'Year', 'Category', 'Price Min', 'Price Max']);
+                            $filename = "pcar_export_" . now()->format('Y-m-d_His') . ".xls";
+                            
+                            $html = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">';
+                            $html .= '<head>';
+                            $html .= '<meta http-equiv="Content-Type" content="text/html; charset=utf-8">';
+                            $html .= '<style>';
+                            $html .= 'table { border-collapse: collapse; font-family: "Segoe UI", "Inter", sans-serif; }';
+                            $html .= 'th { background-color: #98cbff; color: #0a0c10; font-weight: bold; border: 1px solid #64748b; padding: 10px 15px; text-align: left; font-size: 13px; text-transform: uppercase; }';
+                            $html .= 'td { border: 1px solid #cbd5e1; padding: 8px 12px; font-size: 12px; color: #1e293b; }';
+                            $html .= 'tr:nth-child(even) { background-color: #f8fafc; }';
+                            $html .= '</style>';
+                            $html .= '</head>';
+                            $html .= '<body>';
+                            $html .= '<table>';
+                            $html .= '<thead>';
+                            $html .= '<tr>';
+                            $html .= '<th bgcolor="#98cbff" style="background-color: #98cbff; color: #0a0c10; font-weight: bold; border: 1px solid #64748b; padding: 10px 15px; text-align: left; font-size: 13px; text-transform: uppercase;">Model ID</th>';
+                            $html .= '<th bgcolor="#98cbff" style="background-color: #98cbff; color: #0a0c10; font-weight: bold; border: 1px solid #64748b; padding: 10px 15px; text-align: left; font-size: 13px; text-transform: uppercase;">Model</th>';
+                            $html .= '<th bgcolor="#98cbff" style="background-color: #98cbff; color: #0a0c10; font-weight: bold; border: 1px solid #64748b; padding: 10px 15px; text-align: left; font-size: 13px; text-transform: uppercase;">Year</th>';
+                            $html .= '<th bgcolor="#98cbff" style="background-color: #98cbff; color: #0a0c10; font-weight: bold; border: 1px solid #64748b; padding: 10px 15px; text-align: left; font-size: 13px; text-transform: uppercase;">Category</th>';
+                            $html .= '<th bgcolor="#98cbff" style="background-color: #98cbff; color: #0a0c10; font-weight: bold; border: 1px solid #64748b; padding: 10px 15px; text-align: left; font-size: 13px; text-transform: uppercase;">Price Min</th>';
+                            $html .= '<th bgcolor="#98cbff" style="background-color: #98cbff; color: #0a0c10; font-weight: bold; border: 1px solid #64748b; padding: 10px 15px; text-align: left; font-size: 13px; text-transform: uppercase;">Price Max</th>';
+                            $html .= '</tr>';
+                            $html .= '</thead>';
+                            $html .= '<tbody>';
+                            
                             foreach ($records as $record) {
-                                fputcsv($handle, [$record->model_id, $record->model, $record->year, $record->category, $record->min_price, $record->max_price]);
+                                $html .= '<tr>';
+                                $html .= '<td>' . htmlspecialchars($record->model_id) . '</td>';
+                                $html .= '<td>' . htmlspecialchars($record->model) . '</td>';
+                                $html .= '<td>' . htmlspecialchars($record->year) . '</td>';
+                                $html .= '<td>' . htmlspecialchars($record->category) . '</td>';
+                                $html .= '<td>$' . number_format($record->min_price ?? 0, 2) . '</td>';
+                                $html .= '<td>$' . number_format($record->max_price ?? 0, 2) . '</td>';
+                                $html .= '</tr>';
                             }
-                            rewind($handle);
-                            $csv = stream_get_contents($handle);
-                            fclose($handle);
-                            return response()->streamDownload(fn() => print($csv), $filename);
+                            
+                            $html .= '</tbody>';
+                            $html .= '</table>';
+                            $html .= '</body>';
+                            $html .= '</html>';
+                            
+                            return response()->streamDownload(fn() => print($html), $filename);
                         }),
                 ]),
             ])
