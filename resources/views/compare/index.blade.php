@@ -3,7 +3,7 @@
         <!-- SideNavBar -->
         <aside class="hidden lg:flex flex-col w-64 bg-surface-container border-r border-outline-variant/20 py-8 overflow-y-auto">
             <div class="px-6 mb-8">
-                <h2 class="font-headline-md text-headline-md font-bold text-primary">PCAR Wiki</h2>
+                <h2 class="font-headline-md text-headline-md font-bold flex items-center"><span class="text-primary">Car</span><span class="text-on-surface">Dex</span>&nbsp;Wiki</h2>
                 <p class="font-body-md text-body-md text-on-surface-variant/70">Technical Encyclopedia</p>
             </div>
             <nav class="flex flex-col gap-1">

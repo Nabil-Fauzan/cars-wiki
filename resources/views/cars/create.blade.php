@@ -2,7 +2,7 @@
     <div class="max-w-4xl mx-auto px-margin-page py-stack-lg">
         <div class="mb-stack-md">
             <h1 class="font-headline-xl text-headline-xl text-on-surface">Deploy New Asset</h1>
-            <p class="text-on-surface-variant font-body-lg">Initialize technical data for the PCAR global database.</p>
+            <p class="text-on-surface-variant font-body-lg">Initialize technical data for the CarDex global database.</p>
         </div>
 
         @if ($errors->any())

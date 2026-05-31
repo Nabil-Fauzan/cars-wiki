@@ -1,7 +1,7 @@
 <x-app-layout>
     @section('meta')
-        <title>Privacy Policy | PCAR Wiki</title>
-        <meta name="description" content="Privacy Policy and Data Protection protocols for the PCAR Automotive Wiki.">
+        <title>Privacy Policy | CarDex Wiki</title>
+        <meta name="description" content="Privacy Policy and Data Protection protocols for the CarDex Automotive Wiki.">
     @endsection
 
     <div class="max-w-4xl mx-auto px-margin-page py-stack-lg lg:py-24">
@@ -19,7 +19,7 @@
                     <h2 class="text-2xl font-bold text-on-surface font-headline-md uppercase">Data Collection</h2>
                 </div>
                 <div class="prose prose-invert max-w-none text-secondary leading-relaxed space-y-4">
-                    <p>PCAR collects minimal data to provide a personalized automotive encyclopedia experience. This includes:</p>
+                    <p>CarDex collects minimal data to provide a personalized automotive encyclopedia experience. This includes:</p>
                     <ul class="list-disc pl-6 space-y-2">
                         <li><strong>Account Information:</strong> Google OAuth data (name, email, profile picture) for authentication.</li>
                         <li><strong>Technical Logs:</strong> Anonymous data regarding comparison sets and vehicle views for our heatmap analytics.</li>
@@ -64,7 +64,7 @@
                     <ul class="list-disc pl-6 space-y-2">
                         <li>Wipe your personal comparison history.</li>
                         <li>Clear your saved "Garage" specimens.</li>
-                        <li>Request full deletion of your identity from the PCAR registry.</li>
+                        <li>Request full deletion of your identity from the CarDex registry.</li>
                     </ul>
                 </div>
             </section>
@@ -72,7 +72,7 @@
 
         <div class="mt-20 p-8 border-t border-outline-variant/20 text-center">
             <p class="text-secondary text-sm mb-6">Questions regarding our tactical data handling?</p>
-            <a href="mailto:privacy@pcar.wiki" class="text-primary font-label-caps text-label-caps hover:underline">CONTACT DATA OFFICER</a>
+            <a href="mailto:privacy@cardex.wiki" class="text-primary font-label-caps text-label-caps hover:underline">CONTACT DATA OFFICER</a>
         </div>
     </div>
 </x-app-layout>

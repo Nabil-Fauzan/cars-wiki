@@ -1,7 +1,7 @@
 <x-app-layout>
     @section('meta')
-        <meta property="og:title" content="{{ $car->brands->first()->name ?? '' }} {{ $car->model }} | PCAR Wiki">
-        <meta property="og:description" content="{{ $car->history ? Str::limit($car->history, 160) : 'Explore technical specifications, performance metrics, and tactical data for the ' . $car->model . ' on PCAR Wiki.' }}">
+        <meta property="og:title" content="{{ $car->brands->first()->name ?? '' }} {{ $car->model }} | CarDex Wiki">
+        <meta property="og:description" content="{{ $car->history ? Str::limit($car->history, 160) : 'Explore technical specifications, performance metrics, and tactical data for the ' . $car->model . ' on CarDex Wiki.' }}">
         <meta property="og:image" content="{{ $car->image_url }}">
         <meta property="og:type" content="website">
         <meta name="twitter:card" content="summary_large_image">
@@ -294,7 +294,7 @@
                             <form action="{{ route('cars.suggest', $car) }}" method="POST" class="p-stack-md space-y-4">
                                 @csrf
                                 <p class="text-xs font-body-md text-on-surface-variant">
-                                    Help keep the PCAR Wiki database absolute and perfect. Diffs are compared side-by-side by the moderation queue. Leaving fields blank will preserve the current values.
+                                    Help keep the CarDex Wiki database absolute and perfect. Diffs are compared side-by-side by the moderation queue. Leaving fields blank will preserve the current values.
                                 </p>
                                 
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">

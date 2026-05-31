@@ -5,7 +5,7 @@
         </h2>
 
         <p class="mt-1 font-body-sm text-on-surface-variant">
-            Once your account is decommissioned, all associated tactical data will be permanently purged from the PCAR central database.
+            Once your account is decommissioned, all associated tactical data will be permanently purged from the CarDex central database.
         </p>
     </header>
 

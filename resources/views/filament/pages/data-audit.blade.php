@@ -5,7 +5,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&family=Inter:wght@400;600;700&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet">
 
     <style>
-        /* PCAR Premium Data Audit Styles (Non-Purgeable Custom Stylesheet) */
+        /* CarDex Premium Data Audit Styles (Non-Purgeable Custom Stylesheet) */
         .audit-container {
             font-family: 'Outfit', 'Inter', -apple-system, sans-serif;
             color: #cbd5e1;

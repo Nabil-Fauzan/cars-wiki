@@ -5,7 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <title>{{ config('app.name', 'PCAR') }} | Precision Automotive Wiki</title>
+        <title>{{ config('app.name', 'CarDex') }} | Precision Automotive Wiki</title>
 
         <!-- Favicon -->
         <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
@@ -25,7 +25,7 @@
             @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap');
             
             :root {
-                --primary: #98cbff;
+                --primary: #f59e0b;
                 --surface: #0a0c10;
                 --surface-container: #1a1d23;
             }
@@ -97,7 +97,7 @@
         <nav class="fixed top-0 z-50 w-full bg-surface/60 backdrop-blur-[20px] border-b border-outline-variant/30 shadow-[0_20px_50px_rgba(0,163,255,0.05)]">
             <div class="flex justify-between items-center w-full px-margin-page h-20 max-w-container-max mx-auto">
                 <div class="flex items-center gap-stack-lg">
-                    <a href="{{ url('/') }}" class="font-headline-lg text-headline-lg font-extrabold tracking-tighter text-on-surface">PCAR</a>
+                    <a href="{{ url('/') }}" class="font-headline-lg text-headline-lg font-extrabold tracking-tighter text-primary flex items-center">Car<span class="text-on-surface">Dex</span></a>
                     <div class="hidden md:flex items-center gap-gutter">
                         <a class="font-headline-md text-headline-md {{ request()->is('/') ? 'text-primary border-b-2 border-primary' : 'text-secondary hover:text-on-surface' }} pb-1 transition-all duration-200" href="{{ url('/') }}">Home</a>
                         <a class="font-headline-md text-headline-md {{ request()->is('cars*') ? 'text-primary border-b-2 border-primary' : 'text-secondary hover:text-on-surface' }} pb-1 transition-all duration-200" href="{{ route('cars.index') }}">Explore Cars</a>
@@ -214,13 +214,13 @@
         <footer class="w-full bg-surface-container-lowest border-t border-outline-variant/20 mb-20 lg:mb-0">
             <div class="w-full py-stack-lg px-margin-page flex flex-col md:flex-row justify-between items-start gap-gutter max-w-container-max mx-auto">
                 <div class="flex flex-col gap-stack-sm max-w-sm">
-                    <span class="font-headline-md text-headline-md text-on-surface-variant font-extrabold tracking-tighter">PCAR</span>
-                    <p class="font-body-md text-body-md text-on-surface-variant/70">© {{ date('Y') }} PCAR Automotive Encyclopedia. Precision Engineered for Enthusiasts.</p>
+                    <span class="font-headline-md text-headline-md font-extrabold tracking-tighter flex items-center text-primary">Car<span class="text-on-surface">Dex</span></span>
+                    <p class="font-body-md text-body-md text-on-surface-variant/70">© {{ date('Y') }} CarDex Automotive Encyclopedia. Precision Engineered for Enthusiasts.</p>
                 </div>
                 <div class="grid grid-cols-2 gap-stack-lg">
                     <div class="flex flex-col gap-3">
                         <span class="font-label-caps text-label-caps text-primary">RESOURCES</span>
-                        <a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors duration-300" href="{{ route('about') }}">About PCAR</a>
+                        <a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors duration-300" href="{{ route('about') }}">About CarDex</a>
                         <a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors duration-300" href="{{ route('contribution') }}">Contribution Guidelines</a>
                         <a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors duration-300" href="#">API Documentation</a>
                     </div>
@@ -301,7 +301,7 @@
         <script>
             function comparisonTray() {
                 return {
-                    compareList: JSON.parse(localStorage.getItem('pcar_compare_list') || '[]'),
+                    compareList: JSON.parse(localStorage.getItem('cardex_compare_list') || '[]'),
                     isTrayOpen: false,
 
                     init() {
@@ -309,7 +309,7 @@
                         this.compareList = this.compareList.filter(c => c && c.model_id);
                         
                         this.$watch('compareList', (value) => {
-                            localStorage.setItem('pcar_compare_list', JSON.stringify(value));
+                            localStorage.setItem('cardex_compare_list', JSON.stringify(value));
                         });
                     },
 

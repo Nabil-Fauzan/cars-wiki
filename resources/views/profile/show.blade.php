@@ -1,6 +1,6 @@
 <x-app-layout>
     @section('meta')
-        <title>{{ $user->name }}'s Tactical Profile | PCAR</title>
+        <title>{{ $user->name }}'s Tactical Profile | CarDex</title>
         <meta name="robots" content="{{ $user->is_public ? 'index, follow' : 'noindex, nofollow' }}">
     @endsection
 

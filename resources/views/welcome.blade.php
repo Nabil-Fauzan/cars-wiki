@@ -7,7 +7,7 @@
         </div>
         <div class="relative z-20 px-margin-page max-w-container-max mx-auto w-full">
             <div class="max-w-2xl">
-                <h1 class="font-headline-xl text-headline-xl text-on-surface mb-2 opacity-0 gsap-hero-title">PCAR</h1>
+                <h1 class="font-headline-xl text-headline-xl text-primary mb-2 opacity-0 gsap-hero-title flex items-center">Car<span class="text-on-surface">Dex</span></h1>
                 <p class="font-body-lg text-body-lg text-secondary mb-stack-md opacity-0 gsap-hero-text">Smart Automotive Wiki for Enthusiasts</p>
                 <form action="{{ route('home') }}" method="GET" id="filterForm" class="space-y-stack-md opacity-0 gsap-hero-form">
                     <input type="hidden" name="sort" value="{{ request('sort', 'newest') }}">
@@ -184,7 +184,7 @@
         <div class="max-w-container-max mx-auto grid grid-cols-1 lg:grid-cols-2 gap-stack-lg items-center">
             <div>
                 <h2 class="font-headline-lg text-headline-lg text-on-surface mb-stack-sm">The Encyclopedia Framework</h2>
-                <p class="font-body-lg text-body-lg text-secondary mb-gutter">PCAR is more than a database. It is a technical record of automotive history, utilizing precision data sources to provide enthusiasts with absolute accuracy.</p>
+                <p class="font-body-lg text-body-lg text-secondary mb-gutter">CarDex is more than a database. It is a technical record of automotive history, utilizing precision data sources to provide enthusiasts with absolute accuracy.</p>
                 <div class="flex flex-col gap-2">
                     <div class="flex justify-between items-center bg-surface-container-low/50 p-4 border-l-2 border-primary">
                         <span class="font-label-caps text-label-caps text-secondary">ACTIVE ENTRIES</span>

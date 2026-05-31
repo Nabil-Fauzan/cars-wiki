@@ -1,8 +1,8 @@
 <x-app-layout>
     @section('meta')
-        <title>About PCAR | The Automotive Wiki</title>
-        <meta name="description" content="PCAR is the precision-engineered encyclopedia for automotive purists. We document the technical legacy and tactical data of internal combustion masterpieces.">
-        <meta property="og:title" content="About PCAR | Automotive Wiki">
+        <title>About CarDex | The Automotive Wiki</title>
+        <meta name="description" content="CarDex is the precision-engineered encyclopedia for automotive purists. We document the technical legacy and tactical data of internal combustion masterpieces.">
+        <meta property="og:title" content="About CarDex | Automotive Wiki">
         <meta property="og:description" content="Exploring the soul of machinery and documenting automotive excellence.">
     @endsection
 
@@ -14,7 +14,7 @@
             
             <div class="relative z-10 text-center lg:text-left">
                 <h1 class="text-4xl md:text-6xl lg:text-8xl font-extrabold tracking-tighter text-on-surface mb-6 italic">
-                    ABOUT <span class="text-primary">PCAR</span>
+                    ABOUT <span class="text-primary">Car</span><span class="text-on-surface">Dex</span>
                 </h1>
                 <p class="text-lg md:text-xl lg:text-2xl text-secondary max-w-2xl leading-relaxed">
                     The precision-engineered encyclopedia for automotive purists. We don't just list cars; we document the soul of machinery.
@@ -40,7 +40,7 @@
                 </div>
                 <h3 class="text-2xl font-bold text-on-surface mb-4 font-headline-md">Enthusiast Driven</h3>
                 <p class="text-secondary leading-relaxed font-body-md">
-                    PCAR was born from the need for a unified repository that understands the difference between a daily driver and a masterpiece of engineering.
+                    CarDex was born from the need for a unified repository that understands the difference between a daily driver and a masterpiece of engineering.
                 </p>
             </div>
         </div>
@@ -83,7 +83,7 @@
         <!-- Contact/Footer -->
         <div class="text-center">
             <h4 class="text-secondary font-label-caps text-sm mb-8 tracking-[0.3em]">WANT TO CONTRIBUTE?</h4>
-            <a href="mailto:contact@pcar.wiki" 
+            <a href="mailto:contact@cardex.wiki" 
                class="inline-flex items-center gap-4 bg-surface-container-highest border border-primary/30 px-10 py-5 rounded-full text-on-surface hover:bg-primary/20 hover:border-primary transition-all active:scale-95 group">
                 <span class="font-bold tracking-widest text-sm uppercase">Secure Transmission</span>
                 <span class="material-symbols-outlined text-primary group-hover:translate-x-2 transition-transform">send</span>

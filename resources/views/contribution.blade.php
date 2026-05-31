@@ -1,7 +1,7 @@
 <x-app-layout>
     @section('meta')
-        <title>Contribution Guidelines | PCAR Wiki</title>
-        <meta name="description" content="Guidelines for contributing technical data and media to the PCAR Automotive Encyclopedia.">
+        <title>Contribution Guidelines | CarDex Wiki</title>
+        <meta name="description" content="Guidelines for contributing technical data and media to the CarDex Automotive Encyclopedia.">
     @endsection
 
     <div class="max-w-4xl mx-auto px-margin-page py-stack-lg lg:py-24">
@@ -19,7 +19,7 @@
                     Technical Accuracy
                 </h2>
                 <div class="prose prose-invert max-w-none text-secondary leading-relaxed">
-                    <p>PCAR is built on verifiable data. When contributing technical specs, please ensure:</p>
+                    <p>CarDex is built on verifiable data. When contributing technical specs, please ensure:</p>
                     <ul class="list-disc pl-6 space-y-3 mt-4">
                         <li><strong>OEM Sources Only:</strong> Data should be sourced from manufacturer press kits, technical manuals, or verified track test results.</li>
                         <li><strong>Unit Precision:</strong> Use Metric or Imperial units consistently. Power should be listed as HP (SAE) or PS (Metric) where possible.</li>
@@ -34,7 +34,7 @@
                     Media Standards
                 </h2>
                 <div class="prose prose-invert max-w-none text-secondary leading-relaxed">
-                    <p>Visual presentation is key to the PCAR aesthetic. All images should follow these protocols:</p>
+                    <p>Visual presentation is key to the CarDex aesthetic. All images should follow these protocols:</p>
                     <ul class="list-disc pl-6 space-y-3 mt-4">
                         <li><strong>High Resolution:</strong> Minimum 1920x1080px for Hero images.</li>
                         <li><strong>Clean Composition:</strong> No watermarks, generic dealership branding, or low-quality social media rips.</li>
