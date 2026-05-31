@@ -15,6 +15,17 @@ class BrandController extends Controller
         return view('brands.admin', compact('brands'));
     }
 
+    public function publicIndex()
+    {
+        $brands = Brand::with(['cars' => function($q) {
+                $q->where('status', 'Live')->where('moderation_status', 'published')->select('cars.id', 'image_url')->limit(1);
+            }])
+            ->withCount('cars')
+            ->orderBy('name')
+            ->get();
+        return view('brands.index', compact('brands'));
+    }
+
     public function store(Request $request)
     {
         $request->validate([

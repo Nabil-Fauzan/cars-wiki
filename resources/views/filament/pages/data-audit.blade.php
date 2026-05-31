@@ -319,7 +319,7 @@
                                         </div>
                                     </td>
                                     <td style="text-align: right;">
-                                        <a href="{{ route('filament.admin.resources.cars.edit', ['record' => $car]) }}" class="audit-btn audit-btn-primary">
+                                        <a href="{{ route('cars.edit', $car) }}" class="audit-btn audit-btn-primary">
                                             <span class="material-symbols-outlined" style="font-size: 14px;">edit</span> Edit Spec
                                         </a>
                                     </td>
@@ -362,7 +362,7 @@
                                         <span class="audit-badge bg-warning-dim">Gaps Detected</span>
                                     </td>
                                     <td style="text-align: right;">
-                                        <a href="{{ route('filament.admin.resources.cars.edit', ['record' => $car]) }}" class="audit-btn audit-btn-primary">
+                                        <a href="{{ route('cars.edit', $car) }}" class="audit-btn audit-btn-primary">
                                             <span class="material-symbols-outlined" style="font-size: 14px;">edit</span> Fix Price
                                         </a>
                                     </td>
@@ -405,7 +405,7 @@
                                         <span class="audit-badge bg-danger-dim">Silent</span>
                                     </td>
                                     <td style="text-align: right;">
-                                        <a href="{{ route('filament.admin.resources.cars.edit', ['record' => $car]) }}" class="audit-btn audit-btn-primary">
+                                        <a href="{{ route('cars.edit', $car) }}" class="audit-btn audit-btn-primary">
                                             <span class="material-symbols-outlined" style="font-size: 14px;">edit</span> Add Exhaust
                                         </a>
                                     </td>

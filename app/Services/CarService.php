@@ -65,6 +65,9 @@ class CarService
             $car->brands()->sync($request->brand_ids);
         }
 
+        // Trigger saving event again so data completion calculates with synced brands
+        $car->save();
+
         // data_completion is now handled by model saving event, but we can force it here if needed
         // $car->update(['data_completion' => $car->calculateDataCompletion()]);
 
@@ -85,8 +88,8 @@ class CarService
             $car->brands()->sync($request->brand_ids);
         }
 
-        // data_completion is now handled by model saving event
-        // $car->save(); // Trigger saving event again if brands changed
+        // data_completion is now handled by model saving event, but needs to be triggered again after brands are synced
+        $car->save(); 
 
         Cache::forget('pcar_brand_models_list');
         Cache::forget('pcar_categories_list_v2');

@@ -83,7 +83,7 @@
                 </div>
                 <div class="space-y-2">
                     <label class="font-label-caps text-label-caps text-secondary">TORQUE</label>
-                    <input type="text" name="torque" value="{{ $duplicate->torque ?? old('torque') }}" placeholder="650 LB-FT" class="w-full bg-surface-container border-none border-b border-outline-variant focus:ring-0 focus:border-primary text-on-surface p-3">
+                    <input type="text" name="torque" value="{{ old('torque', isset($duplicate) ? (is_array($duplicate->torque) ? implode(', ', $duplicate->torque) : $duplicate->torque) : '') }}" placeholder="650 LB-FT" class="w-full bg-surface-container border-none border-b border-outline-variant focus:ring-0 focus:border-primary text-on-surface p-3">
                 </div>
                 <div class="space-y-2">
                     <label class="font-label-caps text-label-caps text-secondary">TRANSMISSION</label>

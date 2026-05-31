@@ -113,27 +113,7 @@ class CarController extends Controller
         return view('welcome', compact('cars', 'brandModels', 'categories', 'transmissions', 'totalCars', 'dailyCount', 'averageCompletion'));
     }
 
-    public function brands()
-    {
-        $brands = Brand::with(['cars' => function($q) {
-                $q->where('status', 'Live')->where('moderation_status', 'published')->select('cars.id', 'image_url')->limit(1);
-            }])
-            ->withCount('cars')
-            ->orderBy('name')
-            ->get();
-        return view('brands.index', compact('brands'));
-    }
 
-    public function categories()
-    {
-        $categories = Car::where('status', 'Live')->where('moderation_status', 'published')
-            ->whereNotNull('category')
-            ->select('category', DB::raw('count(*) as total'), DB::raw('MAX(image_url) as image'))
-            ->groupBy('category')
-            ->orderBy('category')
-            ->get();
-        return view('categories.index', compact('categories'));
-    }
 
     public function show(string $model_id)
     {
@@ -163,42 +143,7 @@ class CarController extends Controller
         return view('cars.show', compact('car', 'rivals', 'ratingStats', 'personalNote'));
     }
 
-    public function garage()
-    {
-        /** @var User $user */
-        $user = Auth::user();
-        $favorites = $user->favorites()->with('brands')->get();
-        $comparisonSets = $user->comparisonSets()->with(['car1.brands', 'car2.brands', 'car3.brands'])->latest()->get();
-        $personalNotes = $user->personalNotes()->with('car.brands')->latest()->get();
 
-        return view('profile.garage', compact('favorites', 'comparisonSets', 'personalNotes'));
-    }
-
-    public function dashboard(Request $request)
-    {
-        $this->authorize('viewAny', Car::class);
-
-        $query = Car::with('brands')->latest();
-
-        if ($request->filled('search')) {
-            $searchTerm = $request->search;
-            $query->where(function($q) use ($searchTerm) {
-                $q->where('model', 'like', "%{$searchTerm}%")
-                  ->orWhere('model_id', 'like', "%{$searchTerm}%")
-                  ->orWhere('year', 'like', "%{$searchTerm}%")
-                  ->orWhereHas('brands', function($bq) use ($searchTerm) {
-                      $bq->where('name', 'like', "%{$searchTerm}%");
-                  });
-            });
-        }
-
-        $cars = $query->get();
-        $stats = [
-            'total' => Car::count(),
-            'completion' => Car::avg('data_completion') ?? 0,
-        ];
-        return view('dashboard', compact('cars', 'stats'));
-    }
 
     public function toggleStatus(Car $car)
     {
@@ -210,73 +155,7 @@ class CarController extends Controller
         return back()->with('success', 'Status updated for ' . $car->model_id);
     }
 
-    public function compare(Request $request)
-    {
-        $car1 = $request->has('car1') ? Car::with('brands')->where('model_id', $request->car1)->first() : null;
-        $car2 = $request->has('car2') ? Car::with('brands')->where('model_id', $request->car2)->first() : null;
-        $car3 = $request->has('car3') ? Car::with('brands')->where('model_id', $request->car3)->first() : null;
 
-        if (!$car1 && !$car2) {
-            $defaultCars = Car::with('brands')
-                ->where('status', 'Live')
-                ->where('moderation_status', 'published')
-                ->limit(3)
-                ->get();
-            $car1 = $defaultCars[0] ?? null;
-            $car2 = $defaultCars[1] ?? null;
-            $car3 = $defaultCars[2] ?? null;
-        }
-
-        // Log Comparison for Heatmap (Optimized)
-        $uniquePairs = [];
-        $ids = array_filter([$car1?->id, $car2?->id, $car3?->id]);
-        sort($ids);
-        
-        for ($i = 0; $i < count($ids); $i++) {
-            for ($j = $i + 1; $j < count($ids); $j++) {
-                $pair = $ids[$i] . '-' . $ids[$j];
-                if (!in_array($pair, $uniquePairs)) {
-                    \App\Models\ComparisonLog::create(['car_a_id' => $ids[$i], 'car_b_id' => $ids[$j]]);
-                    $uniquePairs[] = $pair;
-                }
-            }
-        }
-        
-        // Increment counts
-        foreach ($ids as $id) {
-            Car::where('id', $id)->increment('comparison_count');
-        }
-
-        $allCars = Car::with('brands')->where('status', 'Live')->orderBy('model')->get();
-
-        $differences = [];
-        $cars = array_filter([$car1, $car2, $car3]);
-        
-        if (count($cars) >= 2) {
-            $metrics = [
-                'category', 'year', 'hp', 'torque', 'engine', 'transmission', 'drivetrain', 
-                'zero_to_sixty', 'top_speed', 'aerodynamics', 'braking', 'brands',
-                'min_price', 'max_price', 'data_completion'
-            ];
-            foreach ($metrics as $metric) {
-                $values = [];
-                foreach ($cars as $car) {
-                    $val = $car->$metric;
-                    if ($metric === 'brands') {
-                        $val = $val->pluck('name')->sort()->values()->toJson();
-                    }
-                    if (is_array($val)) $val = json_encode($val);
-                    $values[] = $val;
-                }
-                
-                if (count(array_unique($values)) > 1) {
-                    $differences[] = $metric;
-                }
-            }
-        }
-
-        return view('compare.index', compact('car1', 'car2', 'car3', 'allCars', 'differences'));
-    }
 
     public function create()
     {
@@ -332,111 +211,5 @@ class CarController extends Controller
         return redirect()->route('dashboard')->with('success', 'Asset decommissioned.');
     }
 
-    public function toggleFavorite(Car $car)
-    {
-        /** @var \App\Models\User $user */
-        $user = Auth::user();
-        $user->favorites()->toggle($car->id);
-        
-        return back()->with('success', 'Wishlist updated.');
-    }
 
-    public function favorites()
-    {
-        /** @var \App\Models\User $user */
-        $user = Auth::user();
-        $cars = $user->favorites()->with('brands')->paginate(12)->withQueryString();
-        
-        // Stats for the sidebar/header
-        $totalCars = Car::where('status', 'Live')->where('moderation_status', 'published')->count();
-        $dailyCount = Car::where('status', 'Live')->where('moderation_status', 'published')->where('created_at', '>=', now()->subDay())->count();
-        $averageCompletion = Car::where('status', 'Live')->where('moderation_status', 'published')->avg('data_completion') ?? 0;
-
-        return view('favorites.index', compact('cars', 'totalCars', 'dailyCount', 'averageCompletion'));
-    }
-
-    public function rate(Request $request, Car $car)
-    {
-        $request->validate([
-            'comfort' => 'required|integer|min:1|max:5',
-            'performance' => 'required|integer|min:1|max:5',
-            'design' => 'required|integer|min:1|max:5',
-            'value' => 'required|integer|min:1|max:5',
-        ]);
-
-        $car->ratings()->updateOrCreate(
-            ['user_id' => Auth::id()],
-            $request->only(['comfort', 'performance', 'design', 'value'])
-        );
-
-        return back()->with('success', 'Rating submitted.');
-    }
-
-    public function saveComparisonSet(Request $request)
-    {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'car1_id' => 'required|string',
-            'car2_id' => 'required|string',
-            'car3_id' => 'nullable|string',
-        ]);
-
-        /** @var User $user */
-        $user = Auth::user();
-        $user->comparisonSets()->create($request->all());
-
-        return back()->with('success', 'Battle Set saved to your Garage.');
-    }
-
-    public function savePersonalNote(Request $request, Car $car)
-    {
-        $request->validate([
-            'content' => 'required|string|max:1000',
-        ]);
-
-        /** @var User $user */
-        $user = Auth::user();
-        $user->personalNotes()->updateOrCreate(
-            ['car_id' => $car->model_id],
-            ['content' => $request->content]
-        );
-
-        return back()->with('success', 'Personal note updated.');
-    }
-
-    public function suggestRevision(Request $request, Car $car)
-    {
-        $validated = $request->validate([
-            'hp' => 'nullable|string|max:255',
-            'torque' => 'nullable|string|max:255',
-            'zero_to_sixty' => 'nullable|string|max:255',
-            'top_speed' => 'nullable|string|max:255',
-            'transmission' => 'nullable|string|max:255',
-            'drivetrain' => 'nullable|string|max:255',
-            'min_price' => 'nullable|numeric|min:0',
-            'max_price' => 'nullable|numeric|min:0',
-            'engine_sound_url' => 'nullable|url|max:255',
-        ]);
-
-        // Filter out empty suggestions
-        $proposedData = array_filter($validated, fn($val) => $val !== null && $val !== '');
-
-        if (empty($proposedData)) {
-            return back()->with('error', 'You must fill out at least one field to suggest a correction.');
-        }
-
-        // Format hp to array structure matching the database casts
-        if (isset($proposedData['hp'])) {
-            $proposedData['hp'] = [$proposedData['hp']];
-        }
-
-        \App\Models\ContributionSuggestion::create([
-            'user_id' => Auth::id(),
-            'car_id' => $car->id,
-            'proposed_data' => $proposedData,
-            'status' => 'pending',
-        ]);
-
-        return back()->with('success', 'Your spec correction has been submitted to the moderation queue! Once approved, you will be awarded +50 points.');
-    }
 }

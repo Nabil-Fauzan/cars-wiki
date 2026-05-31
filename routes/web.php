@@ -9,12 +9,18 @@ Route::get('auth/google/callback', [GoogleController::class, 'handleGoogleCallba
 
 use App\Http\Controllers\CarController;
 use App\Http\Controllers\CommentController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\GarageController;
+use App\Http\Controllers\CompareController;
+use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\BrandController;
+use App\Http\Controllers\ContributionController;
 
 Route::get('/', [CarController::class, 'index'])->name('home');
 Route::get('/cars', [CarController::class, 'index'])->name('cars.index');
-Route::get('/compare', [CarController::class, 'compare'])->name('compare');
-Route::get('/brands', [CarController::class, 'brands'])->name('brands');
-Route::get('/categories', [CarController::class, 'categories'])->name('categories');
+Route::get('/compare', [CompareController::class, 'index'])->name('compare');
+Route::get('/brands', [BrandController::class, 'publicIndex'])->name('brands');
+Route::get('/categories', [CategoryController::class, 'index'])->name('categories');
 Route::get('/about', function () {
     return view('about', [
         'carCount' => \App\Models\Car::count()
@@ -30,8 +36,8 @@ Route::get('/contribution-guidelines', function () {
 })->name('contribution');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('/dashboard', [CarController::class, 'dashboard'])->name('dashboard');
-    Route::get('/garage', [CarController::class, 'garage'])->name('garage');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/garage', [GarageController::class, 'index'])->name('garage');
     Route::get('/cars/{car}/duplicate', [CarController::class, 'duplicate'])->name('cars.duplicate');
     Route::post('/cars/{car}/toggle-status', [CarController::class, 'toggleStatus'])->name('cars.toggle-status');
     Route::resource('cars', CarController::class)->except(['index', 'show']);
@@ -59,20 +65,20 @@ Route::middleware('auth')->group(function () {
     Route::delete('/comments/{comment}', [CommentController::class, 'destroy'])->name('comments.destroy');
 
     // Favorites
-    Route::post('/cars/{car}/favorite', [CarController::class, 'toggleFavorite'])->name('cars.favorite');
-    Route::get('/favorites', [CarController::class, 'favorites'])->name('favorites.index');
+    Route::post('/cars/{car}/favorite', [GarageController::class, 'toggleFavorite'])->name('cars.favorite');
+    Route::get('/favorites', [GarageController::class, 'favorites'])->name('favorites.index');
 
     // Ratings
-    Route::post('/cars/{car}/rate', [CarController::class, 'rate'])->name('cars.rate');
+    Route::post('/cars/{car}/rate', [GarageController::class, 'rate'])->name('cars.rate');
 
     // Personal Notes
-    Route::post('/cars/{car}/notes', [CarController::class, 'savePersonalNote'])->name('cars.notes.save');
+    Route::post('/cars/{car}/notes', [GarageController::class, 'savePersonalNote'])->name('cars.notes.save');
 
     // Comparison Sets
-    Route::post('/compare/save', [CarController::class, 'saveComparisonSet'])->name('compare.save');
+    Route::post('/compare/save', [CompareController::class, 'save'])->name('compare.save');
 
     // Contribution Suggestions
-    Route::post('/cars/{car}/suggest', [CarController::class, 'suggestRevision'])->name('cars.suggest');
+    Route::post('/cars/{car}/suggest', [ContributionController::class, 'suggestRevision'])->name('cars.suggest');
 });
 
 require __DIR__.'/auth.php';
