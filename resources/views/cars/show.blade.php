@@ -240,7 +240,7 @@
                                     @endif
                                 </div>
                             </div>
-                            <div class="grid grid-cols-2 p-stack-sm hover:bg-white/5 transition-colors">
+                            <div class="grid grid-cols-2 p-stack-sm hover:bg-white/5 transition-colors opacity-0 gsap-spec-row">
                                 <span class="font-label-caps text-label-caps text-secondary">Horsepower Output</span>
                                 <div class="flex flex-col gap-1">
                                     @if(is_array($car->hp))
@@ -252,7 +252,7 @@
                                     @endif
                                 </div>
                             </div>
-                            <div class="grid grid-cols-2 p-stack-sm hover:bg-white/5 transition-colors">
+                            <div class="grid grid-cols-2 p-stack-sm hover:bg-white/5 transition-colors opacity-0 gsap-spec-row">
                                 <span class="font-label-caps text-label-caps text-secondary">Torque</span>
                                 <div class="flex flex-col gap-1">
                                     @if(is_array($car->torque))
@@ -264,7 +264,7 @@
                                     @endif
                                 </div>
                             </div>
-                            <div class="grid grid-cols-2 p-stack-sm hover:bg-white/5 transition-colors">
+                            <div class="grid grid-cols-2 p-stack-sm hover:bg-white/5 transition-colors opacity-0 gsap-spec-row">
                                 <span class="font-label-caps text-label-caps text-secondary">Transmission</span>
                                 <span class="font-body-md text-body-md text-on-surface">{{ $car->transmission }}</span>
                             </div>
@@ -354,7 +354,7 @@
                             <span class="material-symbols-outlined text-sm">add_circle</span> Strategic Advantages
                         </h4>
                         <ul class="space-y-3 font-body-md text-on-surface-variant">
-                            @foreach($car->pros as $pro)
+                            @foreach($car->pros ?? [] as $pro)
                                 <li class="flex items-start gap-2"><span class="material-symbols-outlined text-primary text-sm mt-1">check</span> {{ $pro }}</li>
                             @endforeach
                         </ul>
@@ -364,7 +364,7 @@
                             <span class="material-symbols-outlined text-sm">remove_circle</span> Engineering Trade-offs
                         </h4>
                         <ul class="space-y-3 font-body-md text-on-surface-variant">
-                            @foreach($car->cons as $con)
+                            @foreach($car->cons ?? [] as $con)
                                 <li class="flex items-start gap-2"><span class="material-symbols-outlined text-error text-sm mt-1">close</span> {{ $con }}</li>
                             @endforeach
                         </ul>
@@ -777,6 +777,11 @@
                 }
             </script>
             <style>
+                .gauge-segment {
+                    height: 6px;
+                    background-color: var(--primary, #f59e0b);
+                    border-radius: 2px;
+                }
                 @keyframes soundWave {
                     0% { height: 4px; }
                     100% { height: 16px; }

@@ -1,14 +1,14 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="dark">
+<html lang="<?php echo e(str_replace('_', '-', app()->getLocale())); ?>" class="dark">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="csrf-token" content="{{ csrf_token() }}">
+        <meta name="csrf-token" content="<?php echo e(csrf_token()); ?>">
 
-        <title>{{ config('app.name', 'CarDex') }} | Precision Automotive Wiki</title>
+        <title><?php echo e(config('app.name', 'CarDex')); ?> | Precision Automotive Wiki</title>
 
         <!-- Favicon -->
-        <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
+        <link rel="icon" type="image/png" href="<?php echo e(asset('favicon.png')); ?>">
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -17,9 +17,9 @@
         <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
 
         <!-- Scripts -->
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
+        <?php echo app('Illuminate\Foundation\Vite')(['resources/css/app.css', 'resources/js/app.js']); ?>
 
-        @yield('meta')
+        <?php echo $__env->yieldContent('meta'); ?>
 
         <style>
             @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap');
@@ -78,7 +78,7 @@
     </head>
     <body x-data="comparisonTray()" class="bg-background text-on-surface selection:bg-primary selection:text-on-primary font-sans antialiased">
         <!-- Notification Toast -->
-        @if (session('success'))
+        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(session('success')): ?>
             <div x-data="{ show: true }" 
                  x-init="setTimeout(() => show = false, 4000)"
                  x-show="show"
@@ -94,39 +94,40 @@
                 </div>
                 <div>
                     <p class="font-label-caps text-[10px] text-secondary">SYSTEM CONFIRMATION</p>
-                    <p class="font-body-md text-on-surface">{{ session('success') }}</p>
+                    <p class="font-body-md text-on-surface"><?php echo e(session('success')); ?></p>
                 </div>
             </div>
-        @endif
+        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
         <!-- Top Navigation Bar -->
         <nav class="fixed top-0 z-50 w-full bg-surface/60 backdrop-blur-[20px] border-b border-outline-variant/30 shadow-[0_20px_50px_rgba(0,163,255,0.05)]">
             <div class="flex justify-between items-center w-full px-margin-page h-20 max-w-container-max mx-auto">
                 <div class="flex items-center gap-stack-lg">
-                    <a href="{{ url('/') }}" class="font-headline-lg text-headline-lg font-extrabold tracking-tighter text-primary flex items-center">Car<span class="text-on-surface">Dex</span></a>
+                    <a href="<?php echo e(url('/')); ?>" class="font-headline-lg text-headline-lg font-extrabold tracking-tighter text-primary flex items-center">Car<span class="text-on-surface">Dex</span></a>
                     <div class="hidden md:flex items-center gap-gutter">
-                        <a class="font-headline-md text-headline-md {{ request()->is('/') ? 'text-primary border-b-2 border-primary' : 'text-secondary hover:text-on-surface' }} pb-1 transition-all duration-200" href="{{ url('/') }}">Home</a>
-                        <a class="font-headline-md text-headline-md {{ request()->is('cars*') ? 'text-primary border-b-2 border-primary' : 'text-secondary hover:text-on-surface' }} pb-1 transition-all duration-200" href="{{ route('cars.index') }}">Explore Cars</a>
-                        <a class="font-headline-md text-headline-md {{ request()->is('compare*') ? 'text-primary border-b-2 border-primary' : 'text-secondary hover:text-on-surface' }} pb-1 transition-all duration-200" href="{{ route('compare') }}">Compare</a>
-                        <a class="font-headline-md text-headline-md {{ request()->is('brands*') ? 'text-primary border-b-2 border-primary' : 'text-secondary hover:text-on-surface' }} pb-1 transition-all duration-200" href="{{ route('brands') }}">Brands</a>
-                        <a class="font-headline-md text-headline-md {{ request()->is('categories*') ? 'text-primary border-b-2 border-primary' : 'text-secondary hover:text-on-surface' }} pb-1 transition-all duration-200" href="{{ route('categories') }}">Categories</a>
+                        <a class="font-headline-md text-headline-md <?php echo e(request()->is('/') ? 'text-primary border-b-2 border-primary' : 'text-secondary hover:text-on-surface'); ?> pb-1 transition-all duration-200" href="<?php echo e(url('/')); ?>">Home</a>
+                        <a class="font-headline-md text-headline-md <?php echo e(request()->is('cars*') ? 'text-primary border-b-2 border-primary' : 'text-secondary hover:text-on-surface'); ?> pb-1 transition-all duration-200" href="<?php echo e(route('cars.index')); ?>">Explore Cars</a>
+                        <a class="font-headline-md text-headline-md <?php echo e(request()->is('compare*') ? 'text-primary border-b-2 border-primary' : 'text-secondary hover:text-on-surface'); ?> pb-1 transition-all duration-200" href="<?php echo e(route('compare')); ?>">Compare</a>
+                        <a class="font-headline-md text-headline-md <?php echo e(request()->is('brands*') ? 'text-primary border-b-2 border-primary' : 'text-secondary hover:text-on-surface'); ?> pb-1 transition-all duration-200" href="<?php echo e(route('brands')); ?>">Brands</a>
+                        <a class="font-headline-md text-headline-md <?php echo e(request()->is('categories*') ? 'text-primary border-b-2 border-primary' : 'text-secondary hover:text-on-surface'); ?> pb-1 transition-all duration-200" href="<?php echo e(route('categories')); ?>">Categories</a>
                     </div>
                 </div>
                 <div class="flex items-center gap-stack-sm">
-                    <form action="{{ route('home') }}" method="GET" class="relative hidden lg:block group">
-                        <input name="search" value="{{ request('search') }}" class="bg-surface-container-high border-none border-b border-secondary/30 focus:ring-0 focus:border-primary text-body-md font-body-md px-4 py-2 w-64 transition-all" placeholder="Search technical database..." type="text"/>
+                    <form action="<?php echo e(route('home')); ?>" method="GET" class="relative hidden lg:block group">
+                        <input name="search" value="<?php echo e(request('search')); ?>" class="bg-surface-container-high border-none border-b border-secondary/30 focus:ring-0 focus:border-primary text-body-md font-body-md px-4 py-2 w-64 transition-all" placeholder="Search technical database..." type="text"/>
                         <button type="submit" class="absolute right-2 top-1/2 -translate-y-1/2">
                             <span class="material-symbols-outlined text-secondary group-hover:text-primary transition-colors">search</span>
                         </button>
                     </form>
-                    <a href="{{ route('favorites.index') }}" class="p-2 hover:bg-white/5 rounded-full transition-colors active:scale-95 flex items-center justify-center">
+                    <a href="<?php echo e(route('favorites.index')); ?>" class="p-2 hover:bg-white/5 rounded-full transition-colors active:scale-95 flex items-center justify-center">
                         <span class="material-symbols-outlined text-on-surface-variant">favorite</span>
                     </a>
-                    @auth
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(auth()->guard()->check()): ?>
                         <div class="relative" x-data="{ open: false }">
                             <button @click="open = !open" @click.away="open = false" class="flex items-center gap-3 pl-3 pr-1 py-1 bg-surface-container-high hover:bg-surface-container-highest rounded-full border border-outline-variant/30 transition-all active:scale-95">
-                                <span class="font-label-caps text-[10px] text-primary hidden md:block">{{ Auth::user()->name }}</span>
+                                <span class="font-label-caps text-[10px] text-primary hidden md:block"><?php echo e(Auth::user()->name); ?></span>
                                 <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center font-bold text-on-primary text-xs">
-                                    {{ substr(Auth::user()->name, 0, 1) }}
+                                    <?php echo e(substr(Auth::user()->name, 0, 1)); ?>
+
                                 </div>
                             </button>
 
@@ -143,27 +144,27 @@
                                 
                                 <div class="px-4 py-2 border-b border-outline-variant/20 mb-2">
                                     <p class="text-[10px] font-label-caps text-secondary">Authorized Operator</p>
-                                    <p class="font-body-md text-on-surface truncate">{{ Auth::user()->email }}</p>
+                                    <p class="font-body-md text-on-surface truncate"><?php echo e(Auth::user()->email); ?></p>
                                 </div>
 
-                                <a href="{{ route('profile.show', Auth::user()) }}" class="flex items-center gap-3 px-4 py-2 text-on-surface hover:bg-primary/10 hover:text-primary transition-colors">
+                                <a href="<?php echo e(route('profile.show', Auth::user())); ?>" class="flex items-center gap-3 px-4 py-2 text-on-surface hover:bg-primary/10 hover:text-primary transition-colors">
                                     <span class="material-symbols-outlined text-sm">person</span>
                                     <span class="font-label-caps text-xs">Tactical Profile</span>
                                 </a>
 
-                                <a href="{{ route('dashboard') }}" class="flex items-center gap-3 px-4 py-2 text-on-surface hover:bg-primary/10 hover:text-primary transition-colors">
+                                <a href="<?php echo e(route('dashboard')); ?>" class="flex items-center gap-3 px-4 py-2 text-on-surface hover:bg-primary/10 hover:text-primary transition-colors">
                                     <span class="material-symbols-outlined text-sm">dashboard</span>
                                     <span class="font-label-caps text-xs">Admin Dashboard</span>
                                 </a>
 
-                                <a href="{{ route('profile.edit') }}" class="flex items-center gap-3 px-4 py-2 text-on-surface hover:bg-primary/10 hover:text-primary transition-colors">
+                                <a href="<?php echo e(route('profile.edit')); ?>" class="flex items-center gap-3 px-4 py-2 text-on-surface hover:bg-primary/10 hover:text-primary transition-colors">
                                     <span class="material-symbols-outlined text-sm">person_gear</span>
                                     <span class="font-label-caps text-xs">Profile Settings</span>
                                 </a>
 
                                 <div class="border-t border-outline-variant/20 mt-2 pt-2">
-                                    <form method="POST" action="{{ route('logout') }}">
-                                        @csrf
+                                    <form method="POST" action="<?php echo e(route('logout')); ?>">
+                                        <?php echo csrf_field(); ?>
                                         <button type="submit" class="w-full flex items-center gap-3 px-4 py-2 text-error hover:bg-error/10 transition-colors">
                                             <span class="material-symbols-outlined text-sm">logout</span>
                                             <span class="font-label-caps text-xs uppercase">Terminate Session</span>
@@ -172,47 +173,48 @@
                                 </div>
                             </div>
                         </div>
-                    @else
-                        <a href="{{ route('login') }}" class="font-label-caps text-label-caps text-secondary hover:text-primary transition-colors">LOGIN</a>
-                    @endauth
+                    <?php else: ?>
+                        <a href="<?php echo e(route('login')); ?>" class="font-label-caps text-label-caps text-secondary hover:text-primary transition-colors">LOGIN</a>
+                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                 </div>
             </div>
         </nav>
 
         <main class="pt-20 min-h-screen">
-            {{ $slot }}
+            <?php echo e($slot); ?>
+
         </main>
 
         <!-- Mobile Bottom Navigation -->
         <nav class="lg:hidden fixed bottom-0 left-0 right-0 bg-surface-container/90 backdrop-blur-3xl border-t border-outline-variant/10 z-[110] px-4 py-3 safe-area-bottom shadow-[0_-10px_40px_rgba(0,0,0,0.4)]">
             <div class="flex justify-around items-center max-w-md mx-auto relative">
-                <a href="{{ url('/') }}" class="flex flex-col items-center gap-1 relative group {{ Request::is('/') ? 'text-primary' : 'text-on-surface-variant' }}">
-                    <span class="material-symbols-outlined {{ Request::is('/') ? 'fill-1 scale-110' : 'opacity-70' }} transition-all">home</span>
+                <a href="<?php echo e(url('/')); ?>" class="flex flex-col items-center gap-1 relative group <?php echo e(Request::is('/') ? 'text-primary' : 'text-on-surface-variant'); ?>">
+                    <span class="material-symbols-outlined <?php echo e(Request::is('/') ? 'fill-1 scale-110' : 'opacity-70'); ?> transition-all">home</span>
                     <span class="text-[9px] font-label-caps tracking-tighter">Home</span>
-                    @if(Request::is('/')) <div class="nav-active-pill"></div> @endif
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(Request::is('/')): ?> <div class="nav-active-pill"></div> <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                 </a>
-                <a href="{{ route('cars.index') }}" class="flex flex-col items-center gap-1 relative group {{ Request::is('cars*') && !Request::is('cars/favorites') ? 'text-primary' : 'text-on-surface-variant' }}">
-                    <span class="material-symbols-outlined {{ Request::is('cars*') && !Request::is('cars/favorites') ? 'fill-1 scale-110' : 'opacity-70' }} transition-all">explore</span>
+                <a href="<?php echo e(route('cars.index')); ?>" class="flex flex-col items-center gap-1 relative group <?php echo e(Request::is('cars*') && !Request::is('cars/favorites') ? 'text-primary' : 'text-on-surface-variant'); ?>">
+                    <span class="material-symbols-outlined <?php echo e(Request::is('cars*') && !Request::is('cars/favorites') ? 'fill-1 scale-110' : 'opacity-70'); ?> transition-all">explore</span>
                     <span class="text-[9px] font-label-caps tracking-tighter">Explore</span>
-                    @if(Request::is('cars*') && !Request::is('cars/favorites')) <div class="nav-active-pill"></div> @endif
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(Request::is('cars*') && !Request::is('cars/favorites')): ?> <div class="nav-active-pill"></div> <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                 </a>
-                <a href="{{ route('compare') }}" class="flex flex-col items-center gap-1 relative group {{ Request::is('compare*') ? 'text-primary' : 'text-on-surface-variant' }}">
-                    <span class="material-symbols-outlined {{ Request::is('compare*') ? 'fill-1 scale-110' : 'opacity-70' }} transition-all">compare_arrows</span>
+                <a href="<?php echo e(route('compare')); ?>" class="flex flex-col items-center gap-1 relative group <?php echo e(Request::is('compare*') ? 'text-primary' : 'text-on-surface-variant'); ?>">
+                    <span class="material-symbols-outlined <?php echo e(Request::is('compare*') ? 'fill-1 scale-110' : 'opacity-70'); ?> transition-all">compare_arrows</span>
                     <span class="text-[9px] font-label-caps tracking-tighter">Compare</span>
-                    @if(Request::is('compare*')) <div class="nav-active-pill"></div> @endif
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(Request::is('compare*')): ?> <div class="nav-active-pill"></div> <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                 </a>
-                <a href="{{ route('favorites.index') }}" class="flex flex-col items-center gap-1 relative group {{ Request::is('*favorites*') ? 'text-primary' : 'text-on-surface-variant' }}">
-                    <span class="material-symbols-outlined {{ Request::is('*favorites*') ? 'fill-1 scale-110' : 'opacity-70' }} transition-all">favorite</span>
+                <a href="<?php echo e(route('favorites.index')); ?>" class="flex flex-col items-center gap-1 relative group <?php echo e(Request::is('*favorites*') ? 'text-primary' : 'text-on-surface-variant'); ?>">
+                    <span class="material-symbols-outlined <?php echo e(Request::is('*favorites*') ? 'fill-1 scale-110' : 'opacity-70'); ?> transition-all">favorite</span>
                     <span class="text-[9px] font-label-caps tracking-tighter">Saved</span>
-                    @if(Request::is('*favorites*')) <div class="nav-active-pill"></div> @endif
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(Request::is('*favorites*')): ?> <div class="nav-active-pill"></div> <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                 </a>
-                @auth
-                    <a href="{{ route('garage') }}" class="flex flex-col items-center gap-1 relative group {{ Request::is('garage*') ? 'text-primary' : 'text-on-surface-variant' }}">
-                        <span class="material-symbols-outlined {{ Request::is('garage*') ? 'fill-1 scale-110' : 'opacity-70' }} transition-all">garage</span>
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(auth()->guard()->check()): ?>
+                    <a href="<?php echo e(route('garage')); ?>" class="flex flex-col items-center gap-1 relative group <?php echo e(Request::is('garage*') ? 'text-primary' : 'text-on-surface-variant'); ?>">
+                        <span class="material-symbols-outlined <?php echo e(Request::is('garage*') ? 'fill-1 scale-110' : 'opacity-70'); ?> transition-all">garage</span>
                         <span class="text-[9px] font-label-caps tracking-tighter">Garage</span>
-                        @if(Request::is('garage*')) <div class="nav-active-pill"></div> @endif
+                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(Request::is('garage*')): ?> <div class="nav-active-pill"></div> <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                     </a>
-                @endauth
+                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
             </div>
         </nav>
 
@@ -220,18 +222,18 @@
             <div class="w-full py-stack-lg px-margin-page flex flex-col md:flex-row justify-between items-start gap-gutter max-w-container-max mx-auto">
                 <div class="flex flex-col gap-stack-sm max-w-sm">
                     <span class="font-headline-md text-headline-md font-extrabold tracking-tighter flex items-center text-primary">Car<span class="text-on-surface">Dex</span></span>
-                    <p class="font-body-md text-body-md text-on-surface-variant/70">© {{ date('Y') }} CarDex Automotive Encyclopedia. Precision Engineered for Enthusiasts.</p>
+                    <p class="font-body-md text-body-md text-on-surface-variant/70">© <?php echo e(date('Y')); ?> CarDex Automotive Encyclopedia. Precision Engineered for Enthusiasts.</p>
                 </div>
                 <div class="grid grid-cols-2 gap-stack-lg">
                     <div class="flex flex-col gap-3">
                         <span class="font-label-caps text-label-caps text-primary">RESOURCES</span>
-                        <a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors duration-300" href="{{ route('about') }}">About CarDex</a>
-                        <a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors duration-300" href="{{ route('contribution') }}">Contribution Guidelines</a>
+                        <a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors duration-300" href="<?php echo e(route('about')); ?>">About CarDex</a>
+                        <a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors duration-300" href="<?php echo e(route('contribution')); ?>">Contribution Guidelines</a>
                         <a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors duration-300" href="#">API Documentation</a>
                     </div>
                     <div class="flex flex-col gap-3">
                         <span class="font-label-caps text-label-caps text-primary">LEGAL</span>
-                        <a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors duration-300" href="{{ route('privacy') }}">Privacy Policy</a>
+                        <a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors duration-300" href="<?php echo e(route('privacy')); ?>">Privacy Policy</a>
                         <a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors duration-300" href="#">Contact Support</a>
                     </div>
                 </div>
@@ -251,9 +253,9 @@
             </div>
             
             <div class="flex items-center gap-1.5 h-4 shrink-0 pr-1" id="floating-visualizer">
-                @for($i=0; $i<8; $i++)
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php for($i=0; $i<8; $i++): ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoopIteration(); ?><?php endif; ?>
                     <div class="w-[3px] bg-primary/40 rounded-full h-1.5 floating-wave-bar"></div>
-                @endfor
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endfor; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
             </div>
         </div>
     </div>
@@ -347,7 +349,7 @@
                         const car2 = this.compareList[1].model_id;
                         const car3 = this.compareList[2] ? this.compareList[2].model_id : '';
                         
-                        let url = `{{ route('compare') }}?car1=${car1}&car2=${car2}`;
+                        let url = `<?php echo e(route('compare')); ?>?car1=${car1}&car2=${car2}`;
                         if (car3) url += `&car3=${car3}`;
                         
                         window.location.href = url;
@@ -459,3 +461,4 @@
         </script>
     </body>
 </html>
+<?php /**PATH C:\xampp\htdocs\pcar\resources\views/layouts/app.blade.php ENDPATH**/ ?>

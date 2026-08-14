@@ -88,9 +88,9 @@
                                     @endif
                                 </div>
                                 <select name="car{{ $idx }}" onchange="this.form.submit()" class="w-full bg-transparent border-none border-b border-outline-variant/30 focus:ring-0 focus:border-primary text-on-surface font-headline-sm md:font-headline-md p-1 appearance-none text-sm md:text-base truncate">
-                                    <option value="">{{ $idx == 3 ? 'Optional' : 'Select Vehicle' }}</option>
+                                    <option value="" class="bg-surface text-on-surface">{{ $idx == 3 ? 'Optional' : 'Select Vehicle' }}</option>
                                     @foreach($allCars as $c)
-                                        <option value="{{ $c->model_id }}" {{ ($car && $car->model_id == $c->model_id) ? 'selected' : '' }}>
+                                        <option value="{{ $c->model_id }}" class="bg-surface text-on-surface" {{ ($car && $car->model_id == $c->model_id) ? 'selected' : '' }}>
                                             {{ $c->model }}
                                         </option>
                                     @endforeach
@@ -153,7 +153,7 @@
                                         foreach ($allValues as $idx => $v) {
                                             if ($v === null || $v === '') continue;
                                             $n = 0;
-                                            if ($key == 'hp' && is_array($v)) preg_match('/\d+/', $v[0] ?? '', $m);
+                                            if (is_array($v)) preg_match('/\d+/', $v[0] ?? '', $m);
                                             elseif ($key == 'year') preg_match('/\d{4}/', $v, $m);
                                             else preg_match('/\d+/', (string)$v, $m);
                                             
@@ -217,6 +217,12 @@
                                                 <div class="flex flex-col gap-0.5">
                                                     @foreach($val as $v)
                                                         <span class="text-[9px] md:text-xs leading-tight">{{ str_ireplace(' hp', '', $v) }}<span class="hidden md:inline"> HP</span></span>
+                                                    @endforeach
+                                                </div>
+                                            @elseif(is_array($val))
+                                                <div class="flex flex-col gap-0.5">
+                                                    @foreach($val as $v)
+                                                        <span class="text-[9px] md:text-xs leading-tight">{{ $v }}</span>
                                                     @endforeach
                                                 </div>
                                             @else <span class="truncate w-full">{{ $val }}</span> @endif

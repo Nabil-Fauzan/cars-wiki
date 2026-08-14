@@ -26,6 +26,30 @@
                         @endif
                         <div class="absolute inset-0 bg-gradient-to-t from-background to-transparent"></div>
                         <div class="absolute inset-0 flex flex-col items-center justify-center p-6">
+                            <!-- Brand Logo / Icon Badge -->
+                            <div class="w-20 h-20 mb-4 flex items-center justify-center bg-surface-container/60 backdrop-blur-md rounded-full p-4 border border-outline-variant/30 shadow-lg group-hover:scale-110 group-hover:border-primary/50 group-hover:bg-surface-container/85 transition-all duration-300">
+                                @php
+                                    $logoPath = null;
+                                    $extensions = ['png', 'svg', 'webp', 'jpg', 'jpeg'];
+                                    foreach ($extensions as $ext) {
+                                        if (file_exists(public_path("images/brands/{$brand->slug}.{$ext}"))) {
+                                            $logoPath = "images/brands/{$brand->slug}.{$ext}";
+                                            break;
+                                        } elseif (file_exists(public_path("images/brands/{$brand->slug}-preview.{$ext}"))) {
+                                            $logoPath = "images/brands/{$brand->slug}-preview.{$ext}";
+                                            break;
+                                        }
+                                    }
+                                @endphp
+                                @if($brand->logo_url && file_exists(public_path($brand->logo_url)))
+                                    <img src="{{ asset($brand->logo_url) }}" alt="{{ $brand->name }} Logo" class="max-w-full max-h-full object-contain">
+                                @elseif($logoPath)
+                                    <img src="{{ asset($logoPath) }}" alt="{{ $brand->name }} Logo" class="max-w-full max-h-full object-contain">
+                                @else
+                                    <span class="material-symbols-outlined text-[36px] text-primary/80 group-hover:text-primary transition-colors">factory</span>
+                                @endif
+                            </div>
+
                             <span class="font-headline-lg text-headline-lg text-on-surface text-center uppercase tracking-tighter">{{ $brand->name }}</span>
                             <span class="font-label-caps text-label-caps text-primary mt-2">{{ $brand->cars_count }} SPECIMENS</span>
                         </div>

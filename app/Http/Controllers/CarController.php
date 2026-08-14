@@ -45,7 +45,7 @@ class CarController extends Controller
         // Brand Filter (Updated for Many-to-Many)
         if ($request->filled('brand')) {
             $query->whereHas('brands', function($q) use ($request) {
-                $q->where('name', $request->brand);
+                $q->where('name', $request->brand)->orWhere('slug', $request->brand);
             });
         }
 
@@ -93,9 +93,9 @@ class CarController extends Controller
         $cars = $query->paginate(12)->withQueryString();
 
         // Calculate dynamic stats for the Encyclopedia Framework
-        $totalCars = Car::where('status', 'Live')->count();
-        $dailyCount = Car::where('status', 'Live')->where('created_at', '>=', now()->subDay())->count();
-        $averageCompletion = Car::where('status', 'Live')->avg('data_completion') ?? 0;
+        $totalCars = Car::where('status', 'Live')->where('moderation_status', 'published')->count();
+        $dailyCount = Car::where('status', 'Live')->where('moderation_status', 'published')->where('created_at', '>=', now()->subDay())->count();
+        $averageCompletion = Car::where('status', 'Live')->where('moderation_status', 'published')->avg('data_completion') ?? 0;
 
         $brandModels = Brand::has('cars')->orderBy('name')->get();
         
@@ -119,11 +119,11 @@ class CarController extends Controller
     {
         $car = Car::where('model_id', $model_id)->firstOrFail();
         
-        // Moderation Check: Only published cars are visible to the public.
-        // Admin and Editor can view drafts/pending.
+        // Moderation Check: Only published and Live cars are visible to the public.
+        // Admin and Editor can view drafts/pending/offline.
         /** @var User $user */
         $user = Auth::user();
-        if ($car->moderation_status !== 'published' && (!$user || !$user->hasAnyRole(['admin', 'editor']))) {
+        if (($car->status !== 'Live' || $car->moderation_status !== 'published') && (!$user || !$user->hasAnyRole(['admin', 'editor']))) {
             abort(403, 'This specimen is currently under classification and not yet public.');
         }
 
@@ -131,7 +131,11 @@ class CarController extends Controller
             ->selectRaw('avg(comfort) as comfort, avg(performance) as performance, avg(design) as design, avg(value) as value')
             ->first();
 
-        $rivals = Car::where('model_id', '!=', $model_id)->limit(2)->get();
+        $rivalsQuery = Car::where('model_id', '!=', $model_id);
+        if (!$user || !$user->hasAnyRole(['admin', 'editor'])) {
+            $rivalsQuery->where('status', 'Live')->where('moderation_status', 'published');
+        }
+        $rivals = $rivalsQuery->limit(2)->get();
         
         $personalNote = null;
         if (Auth::check()) {
