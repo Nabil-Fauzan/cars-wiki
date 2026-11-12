@@ -45,7 +45,7 @@ class CarController extends Controller
         // Brand Filter (Updated for Many-to-Many)
         if ($request->filled('brand')) {
             $query->whereHas('brands', function($q) use ($request) {
-                $q->where('name', $request->brand);
+                $q->where('name', $request->brand)->orWhere('slug', $request->brand);
             });
         }
 

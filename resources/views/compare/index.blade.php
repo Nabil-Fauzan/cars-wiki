@@ -88,9 +88,9 @@
                                     @endif
                                 </div>
                                 <select name="car{{ $idx }}" onchange="this.form.submit()" class="w-full bg-transparent border-none border-b border-outline-variant/30 focus:ring-0 focus:border-primary text-on-surface font-headline-sm md:font-headline-md p-1 appearance-none text-sm md:text-base truncate">
-                                    <option value="">{{ $idx == 3 ? 'Optional' : 'Select Vehicle' }}</option>
+                                    <option value="" class="bg-surface text-on-surface">{{ $idx == 3 ? 'Optional' : 'Select Vehicle' }}</option>
                                     @foreach($allCars as $c)
-                                        <option value="{{ $c->model_id }}" {{ ($car && $car->model_id == $c->model_id) ? 'selected' : '' }}>
+                                        <option value="{{ $c->model_id }}" class="bg-surface text-on-surface" {{ ($car && $car->model_id == $c->model_id) ? 'selected' : '' }}>
                                             {{ $c->model }}
                                         </option>
                                     @endforeach
