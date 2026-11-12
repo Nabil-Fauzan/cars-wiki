@@ -153,7 +153,7 @@
                                         foreach ($allValues as $idx => $v) {
                                             if ($v === null || $v === '') continue;
                                             $n = 0;
-                                            if ($key == 'hp' && is_array($v)) preg_match('/\d+/', $v[0] ?? '', $m);
+                                            if (is_array($v)) preg_match('/\d+/', $v[0] ?? '', $m);
                                             elseif ($key == 'year') preg_match('/\d{4}/', $v, $m);
                                             else preg_match('/\d+/', (string)$v, $m);
                                             
@@ -217,6 +217,12 @@
                                                 <div class="flex flex-col gap-0.5">
                                                     @foreach($val as $v)
                                                         <span class="text-[9px] md:text-xs leading-tight">{{ str_ireplace(' hp', '', $v) }}<span class="hidden md:inline"> HP</span></span>
+                                                    @endforeach
+                                                </div>
+                                            @elseif(is_array($val))
+                                                <div class="flex flex-col gap-0.5">
+                                                    @foreach($val as $v)
+                                                        <span class="text-[9px] md:text-xs leading-tight">{{ $v }}</span>
                                                     @endforeach
                                                 </div>
                                             @else <span class="truncate w-full">{{ $val }}</span> @endif

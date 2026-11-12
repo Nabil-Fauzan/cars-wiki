@@ -10,6 +10,12 @@ class ContributionController extends Controller
 {
     public function suggestRevision(Request $request, Car $car)
     {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+        if (($car->status !== 'Live' || $car->moderation_status !== 'published') && (!$user || !$user->hasAnyRole(['admin', 'editor']))) {
+            abort(403, 'This specimen is currently under classification and not yet public.');
+        }
+
         $validated = $request->validate([
             'hp' => 'nullable|string|max:255',
             'torque' => 'nullable|string|max:255',

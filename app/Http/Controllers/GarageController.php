@@ -37,6 +37,10 @@ class GarageController extends Controller
     {
         /** @var \App\Models\User $user */
         $user = Auth::user();
+        if (($car->status !== 'Live' || $car->moderation_status !== 'published') && (!$user || !$user->hasAnyRole(['admin', 'editor']))) {
+            abort(403, 'This specimen is currently under classification and not yet public.');
+        }
+
         $user->favorites()->toggle($car->id);
         
         return back()->with('success', 'Wishlist updated.');
@@ -44,6 +48,12 @@ class GarageController extends Controller
 
     public function rate(Request $request, Car $car)
     {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+        if (($car->status !== 'Live' || $car->moderation_status !== 'published') && (!$user || !$user->hasAnyRole(['admin', 'editor']))) {
+            abort(403, 'This specimen is currently under classification and not yet public.');
+        }
+
         $request->validate([
             'comfort' => 'required|integer|min:1|max:5',
             'performance' => 'required|integer|min:1|max:5',
@@ -61,12 +71,16 @@ class GarageController extends Controller
 
     public function savePersonalNote(Request $request, Car $car)
     {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+        if (($car->status !== 'Live' || $car->moderation_status !== 'published') && (!$user || !$user->hasAnyRole(['admin', 'editor']))) {
+            abort(403, 'This specimen is currently under classification and not yet public.');
+        }
+
         $request->validate([
             'content' => 'required|string|max:1000',
         ]);
 
-        /** @var \App\Models\User $user */
-        $user = Auth::user();
         $user->personalNotes()->updateOrCreate(
             ['car_id' => $car->model_id],
             ['content' => $request->content]

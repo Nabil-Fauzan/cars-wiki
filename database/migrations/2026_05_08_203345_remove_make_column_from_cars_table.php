@@ -9,6 +9,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('cars', function (Blueprint $table) {
+            $table->dropIndex(['make']);
             $table->dropColumn('make');
         });
     }
@@ -17,6 +18,7 @@ return new class extends Migration
     {
         Schema::table('cars', function (Blueprint $table) {
             $table->string('make')->nullable()->after('model_id');
+            $table->index('make');
         });
     }
 };

@@ -11,12 +11,21 @@ class Brand extends Model
 {
     use HasFactory, LogsActivity;
 
-    protected $fillable = ['name', 'logo_url', 'country', 'description'];
+    protected $fillable = ['name', 'slug', 'logo_url', 'country', 'description'];
+
+    protected static function booted()
+    {
+        static::creating(function (Brand $brand) {
+            if (empty($brand->slug)) {
+                $brand->slug = \Illuminate\Support\Str::slug($brand->name);
+            }
+        });
+    }
 
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-            ->logOnly(['name', 'country', 'description'])
+            ->logOnly(['name', 'slug', 'country', 'description'])
             ->logOnlyDirty()
             ->dontLogEmptyChanges();
     }

@@ -20,7 +20,9 @@ class BrandController extends Controller
         $brands = Brand::with(['cars' => function($q) {
                 $q->where('status', 'Live')->where('moderation_status', 'published')->select('cars.id', 'image_url')->limit(1);
             }])
-            ->withCount('cars')
+            ->withCount(['cars' => function($q) {
+                $q->where('status', 'Live')->where('moderation_status', 'published');
+            }])
             ->orderBy('name')
             ->get();
         return view('brands.index', compact('brands'));
@@ -34,7 +36,6 @@ class BrandController extends Controller
 
         Brand::create([
             'name' => $request->name,
-            'slug' => Str::slug($request->name),
         ]);
 
         return back()->with('success', 'New brand added to the registry.');

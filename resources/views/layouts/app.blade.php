@@ -69,6 +69,11 @@
                 transition: all 0.3s ease;
             }
             .fill-1 { font-variation-settings: 'FILL' 1; }
+            
+            @keyframes soundWave {
+                0% { height: 6px; }
+                100% { height: 20px; }
+            }
         </style>
     </head>
     <body x-data="comparisonTray()" class="bg-background text-on-surface selection:bg-primary selection:text-on-primary font-sans antialiased">

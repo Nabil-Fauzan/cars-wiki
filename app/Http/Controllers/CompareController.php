@@ -9,9 +9,21 @@ class CompareController extends Controller
 {
     public function index(Request $request)
     {
-        $car1 = $request->has('car1') ? Car::with('brands')->where('model_id', $request->car1)->first() : null;
-        $car2 = $request->has('car2') ? Car::with('brands')->where('model_id', $request->car2)->first() : null;
-        $car3 = $request->has('car3') ? Car::with('brands')->where('model_id', $request->car3)->first() : null;
+        /** @var \App\Models\User $user */
+        $user = \Illuminate\Support\Facades\Auth::user();
+        $isAdminOrEditor = $user && $user->hasAnyRole(['admin', 'editor']);
+
+        $queryBuilder = function ($modelId) use ($isAdminOrEditor) {
+            $query = Car::with('brands')->where('model_id', $modelId);
+            if (!$isAdminOrEditor) {
+                $query->where('status', 'Live')->where('moderation_status', 'published');
+            }
+            return $query->first();
+        };
+
+        $car1 = $request->has('car1') ? $queryBuilder($request->car1) : null;
+        $car2 = $request->has('car2') ? $queryBuilder($request->car2) : null;
+        $car3 = $request->has('car3') ? $queryBuilder($request->car3) : null;
 
         if (!$car1 && !$car2) {
             $defaultCars = Car::with('brands')
@@ -44,7 +56,11 @@ class CompareController extends Controller
             Car::where('id', $id)->increment('comparison_count');
         }
 
-        $allCars = Car::with('brands')->where('status', 'Live')->orderBy('model')->get();
+        $allCarsQuery = Car::with('brands')->where('status', 'Live');
+        if (!$isAdminOrEditor) {
+            $allCarsQuery->where('moderation_status', 'published');
+        }
+        $allCars = $allCarsQuery->orderBy('model')->get();
 
         $differences = [];
         $cars = array_filter([$car1, $car2, $car3]);

@@ -39,18 +39,7 @@ class CarForm
                             ->relationship('brands', 'name')
                             ->multiple()
                             ->preload()
-                            ->required()
-                            ->live()
-                            ->afterStateUpdated(function (Set $set, Get $get, $state) {
-                                // Auto-sync 'make' from the first selected brand
-                                if (!empty($state)) {
-                                    $brandId = is_array($state) ? $state[0] : $state;
-                                    $brand = \App\Models\Brand::find($brandId);
-                                    if ($brand) $set('make', $brand->name);
-                                } else {
-                                    $set('make', null);
-                                }
-                            }),
+                            ->required(),
                         TextInput::make('year')
                             ->required()
                             ->live(onBlur: true)
@@ -70,9 +59,6 @@ class CarForm
                                 ->toArray()
                             )
                             ->required(),
-                        TextInput::make('make')
-                            ->hidden() // Keeping it for DB integrity but hidden from user as they select via 'brands'
-                            ->dehydrated(true),
                     ])->columns(2),
 
                 Section::make('Performance Specs')
